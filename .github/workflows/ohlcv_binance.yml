@@ -1,9 +1,9 @@
-name: OHLCV Feed (Binance Spot) - Core10 TXT (H1/H4/D1/W1, closed)
+name: OHLCV Feed (Binance Spot) - Core10 TXT (H1/H4/D1/W1, closed, resilient)
 
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 * * * *"  # каждый час (UTC)
+    - cron: "0 * * * *" # hourly UTC
 
 permissions:
   contents: write
@@ -27,11 +27,12 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Build TXT feed (CSV format), closed candles only + symbols.json + index
+      - name: Build TXT feed (CSV in .txt), closed only + symbols.json + index
         shell: bash
         run: |
+          set -euo pipefail
           python - << 'PY'
-          import json, os, time, glob
+          import json, os, time, glob, sys
           from datetime import datetime, timezone
           from urllib.parse import urlencode
           from urllib.request import Request, urlopen
@@ -46,91 +47,137 @@ jobs:
           CORE10 = ["BTCUSDT","ETHUSDT","SOLUSDT","BNBUSDT","AVAXUSDT","LINKUSDT","AAVEUSDT","UNIUSDT","ARBUSDT","ADAUSDT"]
 
           # tf -> (binance interval, limit)
-          # Важно: 1000 — максимальный limit у /api/v3/klines
+          # Примечание: limit max = 1000; для H1 обычно хватает 720 (30 дней) — меньше шанс 429/таймаутов.
           TFS = {
-            "H1": ("1h", 1000),
+            "H1": ("1h", 720),
             "H4": ("4h", 240),
             "D1": ("1d", 365),
             "W1": ("1w", 260),
           }
 
+          # небольшая пауза между запросами, чтобы не ловить 429
+          SLEEP_PER_CALL = 0.12
+
           def iso_utc(ms: int) -> str:
             return datetime.fromtimestamp(ms/1000, tz=timezone.utc).isoformat().replace("+00:00","Z")
 
-          def http_get_json(path, params=None, timeout=30, retries=4):
+          def http_get_json(path, params=None, timeout=35, retries=10):
+            """
+            Устойчивый GET:
+            - ретраи с экспон. бэкоффом
+            - отдельно обрабатываем 429/418/5xx
+            - печатаем нормальные ошибки
+            """
             last_err = None
             for base in BASES:
               url = base + path
               if params:
                 url += "?" + urlencode(params)
+
+              backoff = 1.0
               for i in range(retries):
                 try:
-                  req = Request(url, headers={"User-Agent":"ohlcv-feed/4.0"})
+                  req = Request(url, headers={"User-Agent":"ohlcv-feed/5.0"})
                   with urlopen(req, timeout=timeout) as r:
-                    return json.loads(r.read().decode("utf-8"))
-                except (HTTPError, URLError) as e:
-                  last_err = e
-                  time.sleep(1.2*(i+1))
-            raise last_err
+                    data = r.read().decode("utf-8")
+                    return json.loads(data)
 
-          # server time — только чтобы отрезать незакрытую свечу
+                except HTTPError as e:
+                  last_err = e
+                  code = getattr(e, "code", None)
+
+                  # Binance может резать по 429/418, или падать 5xx
+                  if code in (418, 429, 500, 502, 503, 504):
+                    print(f"[WARN] HTTP {code} for {url} (try {i+1}/{retries}), sleep {backoff:.1f}s")
+                    time.sleep(backoff)
+                    backoff = min(backoff * 1.6, 15.0)
+                    continue
+
+                  # остальные HTTP ошибки — обычно фатальные (например, invalid symbol)
+                  body = ""
+                  try:
+                    body = e.read().decode("utf-8")[:300]
+                  except Exception:
+                    pass
+                  raise RuntimeError(f"HTTP {code} for {url} :: {body}")
+
+                except URLError as e:
+                  last_err = e
+                  print(f"[WARN] URLError for {url} (try {i+1}/{retries}), sleep {backoff:.1f}s :: {e}")
+                  time.sleep(backoff)
+                  backoff = min(backoff * 1.6, 15.0)
+                  continue
+
+                finally:
+                  time.sleep(SLEEP_PER_CALL)
+
+            raise RuntimeError(f"Failed GET {path} params={params} last_err={last_err}")
+
+          print("[INFO] Fetch server time…")
           now_ms = int(http_get_json("/api/v3/time")["serverTime"])
+          print(f"[INFO] serverTime={now_ms} ({iso_utc(now_ms)})")
 
           os.makedirs(OUT_DIR, exist_ok=True)
 
-          # чистим старые артефакты (чтобы не рос репо и не было мусора)
+          # чистим старые артефакты (только файлы)
           for p in glob.glob(os.path.join(OUT_DIR, "*")):
             if os.path.isfile(p):
               os.remove(p)
 
-          last_h4_close_ms_all = []
-
           header = "open_ms,open,high,low,close,volume,close_ms\n"
+
+          # updated_utc берём как самый свежий close среди всех ТФ (H1 будет самым свежим)
+          last_close_ms_all = []
+          last_close_by_tf = {tf: None for tf in TFS.keys()}
+
+          total_calls = len(CORE10) * len(TFS)
+          call_n = 0
 
           for sym in CORE10:
             for tf, (interval, limit) in TFS.items():
+              call_n += 1
+              print(f"[INFO] ({call_n}/{total_calls}) {sym} {tf} interval={interval} limit={limit}")
               kl = http_get_json("/api/v3/klines", {"symbol": sym, "interval": interval, "limit": str(limit)})
 
-              # только закрытые свечи (closeTime <= serverTime)
+              # только закрытые свечи
               closed = [k for k in kl if int(k[6]) <= now_ms]
               if not closed:
                 raise RuntimeError(f"No closed candles for {sym} {tf}")
 
-              if tf == "H4":
-                last_h4_close_ms_all.append(int(closed[-1][6]))
+              last_close_ms = int(closed[-1][6])
+              last_close_ms_all.append(last_close_ms)
 
-              # TXT (CSV-формат) — то, что я буду скачивать и парсить
+              if last_close_by_tf[tf] is None or last_close_ms > last_close_by_tf[tf]:
+                last_close_by_tf[tf] = last_close_ms
+
               path = os.path.join(OUT_DIR, f"{sym}_{tf}.txt")
               with open(path, "w", encoding="utf-8") as f:
                 f.write(header)
                 for k in closed:
-                  # k: [openTime, open, high, low, close, volume, closeTime, ...]
                   open_ms = int(k[0])
                   o = float(k[1]); h = float(k[2]); l = float(k[3]); c = float(k[4]); v = float(k[5])
                   close_ms = int(k[6])
                   f.write(f"{open_ms},{o},{h},{l},{c},{v},{close_ms}\n")
 
-          updated_utc = iso_utc(max(last_h4_close_ms_all)) if last_h4_close_ms_all else iso_utc(now_ms)
+          updated_utc = iso_utc(max(last_close_ms_all)) if last_close_ms_all else iso_utc(now_ms)
 
           manifest = {
-            "schema": "ohlcv-symbols-v2",
+            "schema": "ohlcv-symbols-v3",
             "source": "Binance/spot",
             "timezone": "UTC",
             "symbols": CORE10,
             "updated_utc": updated_utc,
             "tfs": list(TFS.keys()),
-            "paths": {
-              "txt_per_tf": "/ohlcv/binance/{SYMBOL}_{TF}.txt"
-            },
+            "paths": {"txt_per_tf": "/ohlcv/binance/{SYMBOL}_{TF}.txt"},
             "format": "CSV",
             "columns": ["open_ms","open","high","low","close","volume","close_ms"],
-            "closed_only": True
+            "closed_only": True,
+            "last_close_utc_by_tf": {tf: (iso_utc(ms) if ms else None) for tf, ms in last_close_by_tf.items()}
           }
 
           with open(os.path.join(OUT_DIR, "symbols.json"), "w", encoding="utf-8") as f:
             json.dump(manifest, f, ensure_ascii=False, indent=2)
 
-          # index.html — минимально, чтобы были кликабельные ссылки
           def links(sym: str) -> str:
             return (
               f"<a href='ohlcv/binance/{sym}_H1.txt'>{sym}_H1</a> | "
@@ -145,9 +192,8 @@ jobs:
           <meta charset="utf-8">
           <title>OHLCV Feed</title>
           <h3>OHLCV Feed (Binance Spot) — TXT only (CSV)</h3>
-          <p>Last update (UTC, by last closed H4): <code>{updated_utc}</code></p>
+          <p>Updated (UTC, latest closed among all TF): <code>{updated_utc}</code></p>
           <p>Manifest: <a href="ohlcv/binance/symbols.json">symbols.json</a></p>
-          <p>Files: <code>/ohlcv/binance/SYMBOL_TF.txt</code> where TF ∈ {list(TFS.keys())}. Closed candles only.</p>
           <ul>
           {items}
           </ul>
@@ -155,14 +201,15 @@ jobs:
           with open("index.html", "w", encoding="utf-8") as f:
             f.write(html)
 
-          # чтобы Pages не пытался прогонять через Jekyll
           with open(".nojekyll", "w", encoding="utf-8") as f:
             f.write("")
+          print("[OK] Build complete.")
           PY
 
       - name: Commit & push (only if changed)
         shell: bash
         run: |
+          set -euo pipefail
           if [[ -z "$(git status --porcelain)" ]]; then
             echo "No changes to commit."
           else
