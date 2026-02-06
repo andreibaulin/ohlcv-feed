@@ -41,7 +41,6 @@ jobs:
 
           CORE10 = ["BTCUSDT","ETHUSDT","SOLUSDT","BNBUSDT","AVAXUSDT","LINKUSDT","AAVEUSDT","UNIUSDT","ARBUSDT","ADAUSDT"]
 
-          # tf -> (interval, limit). limit max=1000.
           TFS = {
             "H1": ("1h", 720),   # ~30 дней
             "H4": ("4h", 240),
@@ -63,7 +62,7 @@ jobs:
               backoff = 1.0
               for i in range(retries):
                 try:
-                  req = Request(url, headers={"User-Agent":"ohlcv-feed-pages/1.0"})
+                  req = Request(url, headers={"User-Agent":"ohlcv-feed-pages/2.0"})
                   with urlopen(req, timeout=timeout) as r:
                     return json.loads(r.read().decode("utf-8"))
                 except HTTPError as e:
@@ -92,7 +91,6 @@ jobs:
           last_close_ms_all = []
           last_close_by_tf = {tf: None for tf in TFS.keys()}
 
-          # небольшая пауза против 429
           sleep_per_call = 0.12
 
           for sym in CORE10:
