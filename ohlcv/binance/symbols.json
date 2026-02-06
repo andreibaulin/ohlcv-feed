@@ -16,6 +16,7 @@
   ],
   "updated_utc": "2026-02-06T15:59:59.999000Z",
   "tfs": [
+    "H1",
     "H4",
     "D1",
     "W1"
@@ -23,7 +24,7 @@
   "paths": {
     "txt_per_tf": "/ohlcv/binance/{SYMBOL}_{TF}.txt"
   },
-  "format": "TSV",
+  "format": "CSV",
   "columns": [
     "open_ms",
     "open",
@@ -32,5 +33,6 @@
     "close",
     "volume",
     "close_ms"
-  ]
+  ],
+  "closed_only": true
 }
