@@ -32,7 +32,7 @@ jobs:
         run: |
           set -euo pipefail
           python - << 'PY'
-          import json, os, time, glob, sys
+          import json, os, time, glob
           from datetime import datetime, timezone
           from urllib.parse import urlencode
           from urllib.request import Request, urlopen
@@ -47,7 +47,7 @@ jobs:
           CORE10 = ["BTCUSDT","ETHUSDT","SOLUSDT","BNBUSDT","AVAXUSDT","LINKUSDT","AAVEUSDT","UNIUSDT","ARBUSDT","ADAUSDT"]
 
           # tf -> (binance interval, limit)
-          # Примечание: limit max = 1000; для H1 обычно хватает 720 (30 дней) — меньше шанс 429/таймаутов.
+          # limit max = 1000; H1 ставим 720 (~30 дней) чтобы реже ловить 429
           TFS = {
             "H1": ("1h", 720),
             "H4": ("4h", 240),
@@ -55,19 +55,13 @@ jobs:
             "W1": ("1w", 260),
           }
 
-          # небольшая пауза между запросами, чтобы не ловить 429
+          # пауза между запросами против 429
           SLEEP_PER_CALL = 0.12
 
           def iso_utc(ms: int) -> str:
             return datetime.fromtimestamp(ms/1000, tz=timezone.utc).isoformat().replace("+00:00","Z")
 
           def http_get_json(path, params=None, timeout=35, retries=10):
-            """
-            Устойчивый GET:
-            - ретраи с экспон. бэкоффом
-            - отдельно обрабатываем 429/418/5xx
-            - печатаем нормальные ошибки
-            """
             last_err = None
             for base in BASES:
               url = base + path
@@ -77,33 +71,31 @@ jobs:
               backoff = 1.0
               for i in range(retries):
                 try:
-                  req = Request(url, headers={"User-Agent":"ohlcv-feed/5.0"})
+                  req = Request(url, headers={"User-Agent":"ohlcv-feed/6.0"})
                   with urlopen(req, timeout=timeout) as r:
-                    data = r.read().decode("utf-8")
-                    return json.loads(data)
+                    return json.loads(r.read().decode("utf-8"))
 
                 except HTTPError as e:
                   last_err = e
                   code = getattr(e, "code", None)
 
-                  # Binance может резать по 429/418, или падать 5xx
+                  # Binance: 429/418 rate-limit, 5xx — временно
                   if code in (418, 429, 500, 502, 503, 504):
-                    print(f"[WARN] HTTP {code} for {url} (try {i+1}/{retries}), sleep {backoff:.1f}s")
+                    print(f"[WARN] HTTP {code} {url} (try {i+1}/{retries}) sleep={backoff:.1f}s")
                     time.sleep(backoff)
                     backoff = min(backoff * 1.6, 15.0)
                     continue
 
-                  # остальные HTTP ошибки — обычно фатальные (например, invalid symbol)
                   body = ""
                   try:
                     body = e.read().decode("utf-8")[:300]
                   except Exception:
                     pass
-                  raise RuntimeError(f"HTTP {code} for {url} :: {body}")
+                  raise RuntimeError(f"HTTP {code} {url} :: {body}")
 
                 except URLError as e:
                   last_err = e
-                  print(f"[WARN] URLError for {url} (try {i+1}/{retries}), sleep {backoff:.1f}s :: {e}")
+                  print(f"[WARN] URLError {url} (try {i+1}/{retries}) sleep={backoff:.1f}s :: {e}")
                   time.sleep(backoff)
                   backoff = min(backoff * 1.6, 15.0)
                   continue
@@ -119,14 +111,13 @@ jobs:
 
           os.makedirs(OUT_DIR, exist_ok=True)
 
-          # чистим старые артефакты (только файлы)
+          # чистим старые файлы (чтобы не было мусора)
           for p in glob.glob(os.path.join(OUT_DIR, "*")):
             if os.path.isfile(p):
               os.remove(p)
 
           header = "open_ms,open,high,low,close,volume,close_ms\n"
 
-          # updated_utc берём как самый свежий close среди всех ТФ (H1 будет самым свежим)
           last_close_ms_all = []
           last_close_by_tf = {tf: None for tf in TFS.keys()}
 
@@ -139,7 +130,6 @@ jobs:
               print(f"[INFO] ({call_n}/{total_calls}) {sym} {tf} interval={interval} limit={limit}")
               kl = http_get_json("/api/v3/klines", {"symbol": sym, "interval": interval, "limit": str(limit)})
 
-              # только закрытые свечи
               closed = [k for k in kl if int(k[6]) <= now_ms]
               if not closed:
                 raise RuntimeError(f"No closed candles for {sym} {tf}")
@@ -154,10 +144,10 @@ jobs:
               with open(path, "w", encoding="utf-8") as f:
                 f.write(header)
                 for k in closed:
-                  open_ms = int(k[0])
-                  o = float(k[1]); h = float(k[2]); l = float(k[3]); c = float(k[4]); v = float(k[5])
-                  close_ms = int(k[6])
-                  f.write(f"{open_ms},{o},{h},{l},{c},{v},{close_ms}\n")
+                  f.write(
+                    f"{int(k[0])},{float(k[1])},{float(k[2])},{float(k[3])},"
+                    f"{float(k[4])},{float(k[5])},{int(k[6])}\n"
+                  )
 
           updated_utc = iso_utc(max(last_close_ms_all)) if last_close_ms_all else iso_utc(now_ms)
 
@@ -192,7 +182,7 @@ jobs:
           <meta charset="utf-8">
           <title>OHLCV Feed</title>
           <h3>OHLCV Feed (Binance Spot) — TXT only (CSV)</h3>
-          <p>Updated (UTC, latest closed among all TF): <code>{updated_utc}</code></p>
+          <p>Updated (UTC, latest closed): <code>{updated_utc}</code></p>
           <p>Manifest: <a href="ohlcv/binance/symbols.json">symbols.json</a></p>
           <ul>
           {items}
@@ -210,13 +200,14 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if [[ -z "$(git status --porcelain)" ]]; then
-            echo "No changes to commit."
-          else
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add -A
-            git commit -m "Update OHLCV feed (TXT CSV, add H1)"
-            git push
-          fi
-          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add -A
+
+          # Нет изменений — выходим без ошибок (без if/fi).
+          git diff --cached --quiet && { echo "No changes to commit."; exit 0; }
+
+          git commit -m "Update OHLCV feed (TXT CSV, H1/H4/D1/W1)"
+          git push
