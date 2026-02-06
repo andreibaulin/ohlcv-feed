@@ -1,9 +1,9 @@
-name: OHLCV Feed (Binance Spot) - Core10 H4/D1/W1 (pretty+min, closed, stable commits)
+name: OHLCV Feed (Binance Spot) - Core10 H4/D1/W1 (pretty+min+csv, closed, stable commits)
 
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 * * * *"  # hourly (UTC)
+    - cron: "0 * * * *"  # каждый час (UTC)
 
 permissions:
   contents: write
@@ -27,28 +27,23 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Fetch OHLCV and write JSON (pretty + min, closed only, stable)
+      - name: Fetch OHLCV and write JSON (pretty + min) + CSV (per TF), closed only, stable
         shell: bash
         run: |
           python - << 'PY'
-          import json, os, time
+          import json, os, time, csv
           from datetime import datetime, timezone
           from urllib.parse import urlencode
           from urllib.request import Request, urlopen
           from urllib.error import HTTPError, URLError
 
-          # primary + fallback
           BASES = [
             "https://data-api.binance.vision",
             "https://api.binance.com",
           ]
 
           OUT_DIR = "ohlcv/binance"
-
-          CORE10 = [
-            "BTCUSDT","ETHUSDT","SOLUSDT","BNBUSDT","AVAXUSDT",
-            "LINKUSDT","AAVEUSDT","UNIUSDT","ARBUSDT","ADAUSDT"
-          ]
+          CORE10 = ["BTCUSDT","ETHUSDT","SOLUSDT","BNBUSDT","AVAXUSDT","LINKUSDT","AAVEUSDT","UNIUSDT","ARBUSDT","ADAUSDT"]
 
           # tf -> (binance interval, limit)
           TFS = {
@@ -68,7 +63,7 @@ jobs:
                 url += "?" + urlencode(params)
               for i in range(retries):
                 try:
-                  req = Request(url, headers={"User-Agent":"ohlcv-feed/1.0"})
+                  req = Request(url, headers={"User-Agent":"ohlcv-feed/1.1"})
                   with urlopen(req, timeout=timeout) as r:
                     return json.loads(r.read().decode("utf-8"))
                 except (HTTPError, URLError) as e:
@@ -76,7 +71,7 @@ jobs:
                   time.sleep(1.2*(i+1))
             raise last_err
 
-          # server time only to cut open candle (do NOT write to JSON to keep commits stable)
+          # server time (только чтобы отсечь незакрытую свечу; в JSON не пишем, чтобы коммиты были стабильными)
           now_ms = int(http_get_json("/api/v3/time")["serverTime"])
 
           os.makedirs(OUT_DIR, exist_ok=True)
@@ -92,17 +87,23 @@ jobs:
                 "symbol": sym,
                 "timezone": "UTC",
                 "ts_ms": "openTime",
+                # generated_utc запишем позже как общую последнюю закрытую H4
                 "generated_utc": None
               }
             }
 
+            # держим закрытые klines для CSV, чтобы не дергать API второй раз
+            closed_by_tf = {}
+
             for tf, (interval, limit) in TFS.items():
               kl = http_get_json("/api/v3/klines", {"symbol": sym, "interval": interval, "limit": str(limit)})
 
-              # closed only: closeTime <= serverTime
+              # closed only (closeTime <= serverTime)
               closed = [k for k in kl if int(k[6]) <= now_ms]
               if len(closed) == 0:
                 raise RuntimeError(f"No closed candles for {sym} {tf}")
+
+              closed_by_tf[tf] = closed
 
               last_close_ms = int(closed[-1][6])
               if tf == "H4":
@@ -123,10 +124,27 @@ jobs:
 
             payloads[sym] = payload
 
-          # stable timestamp for commits: last closed H4 (max over symbols)
+            # CSV per TF (меньше и проще парсить снаружи)
+            for tf in ["H4","D1","W1"]:
+              closed = closed_by_tf[tf]
+              csv_path = os.path.join(OUT_DIR, f"{sym}_{tf}.csv")
+              with open(csv_path, "w", encoding="utf-8", newline="") as f:
+                w = csv.writer(f)
+                w.writerow(["open_ms","open","high","low","close","volume","close_ms"])
+                for k in closed:
+                  w.writerow([
+                    int(k[0]),
+                    float(k[1]),
+                    float(k[2]),
+                    float(k[3]),
+                    float(k[4]),
+                    float(k[5]),
+                    int(k[6]),
+                  ])
+
           updated_utc = iso_utc(max(last_h4_close_ms_all)) if last_h4_close_ms_all else iso_utc(now_ms)
 
-          # write per-symbol files
+          # set stable generated_utc for all symbols + write JSON
           for sym in CORE10:
             payloads[sym]["meta"]["generated_utc"] = updated_utc
 
@@ -138,33 +156,44 @@ jobs:
             with open(os.path.join(OUT_DIR, f"{sym}.min.json"), "w", encoding="utf-8") as f:
               json.dump(payloads[sym], f, ensure_ascii=False, separators=(",", ":"))
 
-          # symbols (pretty + min)
-          symbols_obj = {
+          # symbols
+          symbols_pretty = {
             "schema": "ohlcv-symbols-v1",
             "symbols": CORE10,
             "updated_utc": updated_utc,
             "paths": {
               "pretty": "/ohlcv/binance/{SYMBOL}.json",
-              "min": "/ohlcv/binance/{SYMBOL}.min.json"
-            }
+              "min": "/ohlcv/binance/{SYMBOL}.min.json",
+              "csv_per_tf": "/ohlcv/binance/{SYMBOL}_{TF}.csv"
+            },
+            "tfs": list(TFS.keys())
           }
 
           with open(os.path.join(OUT_DIR, "symbols.json"), "w", encoding="utf-8") as f:
-            json.dump(symbols_obj, f, ensure_ascii=False, indent=2)
+            json.dump(symbols_pretty, f, ensure_ascii=False, indent=2)
 
           with open(os.path.join(OUT_DIR, "symbols.min.json"), "w", encoding="utf-8") as f:
-            json.dump(symbols_obj, f, ensure_ascii=False, separators=(",", ":"))
+            json.dump(symbols_pretty, f, ensure_ascii=False, separators=(",", ":"))
 
           # index.html (links)
           pretty_links = "\n".join([f"  <li><a href='ohlcv/binance/{s}.json'>{s}.json</a></li>" for s in CORE10])
           min_links    = "\n".join([f"  <li><a href='ohlcv/binance/{s}.min.json'>{s}.min.json</a></li>" for s in CORE10])
+
+          def csv_links_for(sym: str) -> str:
+            return (
+              f"<a href='ohlcv/binance/{sym}_H4.csv'>{sym}_H4.csv</a> | "
+              f"<a href='ohlcv/binance/{sym}_D1.csv'>{sym}_D1.csv</a> | "
+              f"<a href='ohlcv/binance/{sym}_W1.csv'>{sym}_W1.csv</a>"
+            )
+
+          csv_links = "\n".join([f"  <li>{csv_links_for(s)}</li>" for s in CORE10])
 
           html = f"""<!doctype html>
           <meta charset="utf-8">
           <title>OHLCV Feed</title>
           <h3>OHLCV Feed (Binance Spot)</h3>
           <p>Last update (UTC, by last closed H4): <code>{updated_utc}</code></p>
-          <p>Files: <code>/ohlcv/binance/SYMBOL.json</code> (pretty) и <code>/ohlcv/binance/SYMBOL.min.json</code> (min). Closed candles only.</p>
+          <p>Files: <code>/ohlcv/binance/SYMBOL.json</code> (pretty), <code>/ohlcv/binance/SYMBOL.min.json</code> (min), и <code>/ohlcv/binance/SYMBOL_TF.csv</code> (csv). Closed candles only.</p>
           <p>Symbols list: <a href="ohlcv/binance/symbols.json">symbols.json</a> | <a href="ohlcv/binance/symbols.min.json">symbols.min.json</a></p>
 
           <h4>Pretty JSON</h4>
@@ -176,12 +205,17 @@ jobs:
           <ul>
           {min_links}
           </ul>
+
+          <h4>CSV (per TF)</h4>
+          <ul>
+          {csv_links}
+          </ul>
           """
 
           with open("index.html", "w", encoding="utf-8") as f:
             f.write(html)
 
-          # serve JSON as-is
+          # disable Jekyll (serve JSON as-is)
           with open(".nojekyll", "w", encoding="utf-8") as f:
             f.write("")
           PY
