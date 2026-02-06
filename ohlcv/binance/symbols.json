@@ -1,19 +1,5 @@
 {
-  "meta": {
-    "source": "Binance/Spot",
-    "timezone": "UTC",
-    "tfs": [
-      "H4",
-      "D1",
-      "W1"
-    ],
-    "limit": 240,
-    "closed_only": true,
-    "paths": {
-      "pretty": "/ohlcv/binance/{SYMBOL}.json",
-      "min": "/ohlcv/binance/{SYMBOL}.min.json"
-    }
-  },
+  "schema": "ohlcv-symbols-v1",
   "symbols": [
     "BTCUSDT",
     "ETHUSDT",
@@ -27,5 +13,5 @@
     "ADAUSDT"
   ],
   "updated_utc": "2026-02-06T15:59:59.999000Z",
-  "server_time_utc": "2026-02-06T16:46:11.738000Z"
+  "server_time_utc": "2026-02-06T17:38:51.712000Z"
 }
