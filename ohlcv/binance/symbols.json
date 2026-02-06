@@ -11,5 +11,19 @@
     "ARBUSDT",
     "ADAUSDT"
   ],
-  "serverTime_utc": "2026-02-06T14:02:20.627000Z"
+  "updated_utc": "2026-02-06T11:59:59.999000Z",
+  "generated_utc": "2026-02-06T11:59:59.999000Z",
+  "source": "Binance/Spot",
+  "timezone": "UTC",
+  "tfs": [
+    "H4",
+    "D1",
+    "W1"
+  ],
+  "limit": 240,
+  "closed_only": true,
+  "files": {
+    "pretty": "ohlcv/binance/SYMBOL.json",
+    "min": "ohlcv/binance/SYMBOL.min.json"
+  }
 }
