@@ -67,6 +67,7 @@ jobs:
 
           # Binance server time (ms) — режем незакрытую свечу
           now_ms = int(http_get("/api/v3/time")["serverTime"])
+          server_time_utc = iso_utc(now_ms)
 
           out_dir = os.path.join("ohlcv", "binance")
           os.makedirs(out_dir, exist_ok=True)
@@ -79,7 +80,8 @@ jobs:
                 "source": "Binance/Spot",
                 "symbol": sym,
                 "quote": "USDT",
-                "timezone": "UTC"
+                "timezone": "UTC",
+                "server_time_utc": server_time_utc
               }
             }
 
@@ -93,7 +95,7 @@ jobs:
               # ТОЛЬКО закрытые свечи: closeTime <= serverTime
               closed = [row for row in kl if int(row[6]) <= now_ms]
               if len(closed) < 10:
-                raise RuntimeError(f"Not enough closed candles for {sym} {tf_key}")
+                raise RuntimeError(f"Not enough closed candles for {sym} {tf_key}: {len(closed)}")
 
               data = []
               for row in closed:
@@ -102,7 +104,6 @@ jobs:
                 data.append([t_open, o, h, l, c, v])
 
               last_close_ms = int(closed[-1][6])
-
               payload[tf_key] = {
                 "tf": tf_key,
                 "bars": len(data),
@@ -113,65 +114,66 @@ jobs:
               if tf_key == "H4":
                 last_close_h4_ms = last_close_ms
 
-            # generated_utc привязываем к последнему закрытию H4 (чтобы не было “пустых” коммитов)
+            # generated_utc привязываем к последнему закрытию H4, чтобы не коммитить “впустую”
             if last_close_h4_ms is not None:
               payload["meta"]["generated_utc"] = iso_utc(last_close_h4_ms)
-              payload["meta"]["last_h4_close_utc"] = iso_utc(last_close_h4_ms)
               h4_last_close_all.append(last_close_h4_ms)
             else:
-              payload["meta"]["generated_utc"] = iso_utc(now_ms)
+              payload["meta"]["generated_utc"] = server_time_utc
 
-            # pretty JSON (читабельно)
+            # pretty + min
             with open(os.path.join(out_dir, f"{sym}.json"), "w", encoding="utf-8") as f:
               json.dump(payload, f, ensure_ascii=False, indent=2)
 
-            # minified JSON (для “машин”)
             with open(os.path.join(out_dir, f"{sym}.min.json"), "w", encoding="utf-8") as f:
               json.dump(payload, f, ensure_ascii=False, separators=(",", ":"))
 
-          updated_utc = iso_utc(max(h4_last_close_all)) if h4_last_close_all else iso_utc(now_ms)
+          updated_utc = iso_utc(max(h4_last_close_all)) if h4_last_close_all else server_time_utc
 
-          # symbols.json — стабильный (без serverTime), чтобы не было коммита каждый час
           symbols_payload = {
+            "meta": {
+              "source": "Binance/Spot",
+              "timezone": "UTC",
+              "tfs": [k for k, _ in TF_ORDER],
+              "limit": LIMIT,
+              "closed_only": True,
+              "paths": {
+                "pretty": "/ohlcv/binance/{SYMBOL}.json",
+                "min": "/ohlcv/binance/{SYMBOL}.min.json"
+              }
+            },
             "symbols": CORE10,
             "updated_utc": updated_utc,
-            "generated_utc": updated_utc,
-            "source": "Binance/Spot",
-            "timezone": "UTC",
-            "tfs": ["H4", "D1", "W1"],
-            "limit": LIMIT,
-            "closed_only": True,
-            "files": {
-              "pretty": "ohlcv/binance/SYMBOL.json",
-              "min": "ohlcv/binance/SYMBOL.min.json"
-            }
+            "server_time_utc": server_time_utc
           }
 
           with open(os.path.join(out_dir, "symbols.json"), "w", encoding="utf-8") as f:
             json.dump(symbols_payload, f, ensure_ascii=False, indent=2)
 
-          # index.html со ссылками
-          pretty_links = "\n".join([f"<li><a href='ohlcv/binance/{s}.json'>{s}.json</a></li>" for s in CORE10])
-          min_links = "\n".join([f"<li><a href='ohlcv/binance/{s}.min.json'>{s}.min.json</a></li>" for s in CORE10])
+          with open(os.path.join(out_dir, "symbols.min.json"), "w", encoding="utf-8") as f:
+            json.dump(symbols_payload, f, ensure_ascii=False, separators=(",", ":"))
+
+          # index.html со ссылками (pretty + min)
+          links_pretty = "\n".join([f"<li><a href='ohlcv/binance/{s}.json'>{s}.json</a></li>" for s in CORE10])
+          links_min = "\n".join([f"<li><a href='ohlcv/binance/{s}.min.json'>{s}.min.json</a></li>" for s in CORE10])
 
           html = f"""<!doctype html>
           <meta charset="utf-8">
           <title>OHLCV Feed</title>
           <h3>OHLCV Feed (Binance Spot)</h3>
           <p>Last update (UTC, by last closed H4): <code>{updated_utc}</code></p>
-          <p>Closed candles only. Timeframes inside each file: H4, D1, W1.</p>
-          <p>Symbols list: <a href="ohlcv/binance/symbols.json">symbols.json</a></p>
-
-          <h4>Pretty JSON (recommended for reading)</h4>
-          <ul>{pretty_links}</ul>
-
-          <h4>Minified JSON (machine-friendly)</h4>
-          <ul>{min_links}</ul>
+          <p>Files: <code>/ohlcv/binance/SYMBOL.json</code> (pretty) and <code>/ohlcv/binance/SYMBOL.min.json</code> (min). Closed candles only.</p>
+          <p>Symbols list: <a href="ohlcv/binance/symbols.json">symbols.json</a> | <a href="ohlcv/binance/symbols.min.json">symbols.min.json</a></p>
+          <h4>Pretty JSON</h4>
+          <ul>{links_pretty}</ul>
+          <h4>Minified JSON</h4>
+          <ul>{links_min}</ul>
           """
+
           with open("index.html", "w", encoding="utf-8") as f:
             f.write(html)
 
-          # отключаем Jekyll
+          # чтобы Pages не пытался прогонять Jekyll
           with open(".nojekyll", "w", encoding="utf-8") as f:
             f.write("")
 
