@@ -36,7 +36,7 @@ jobs:
           from urllib.parse import urlencode
           from urllib.request import Request, urlopen
 
-          BASE = "https://api.binance.com"  # Binance Spot REST
+          BASE = "https://data-api.binance.vision"  # Binance Spot REST
           CORE10 = ["BTCUSDT","ETHUSDT","SOLUSDT","BNBUSDT","AVAXUSDT","LINKUSDT","AAVEUSDT","UNIUSDT","ARBUSDT","ADAUSDT"]
 
           TF_MAP = {"H4":"4h", "D1":"1d", "W1":"1w"}  # интервалы чувствительны к регистру 3
