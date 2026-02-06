@@ -1,1 +1,36 @@
-{"schema":"ohlcv-symbols-v2","source":"Binance/spot","timezone":"UTC","symbols":["BTCUSDT","ETHUSDT","SOLUSDT","BNBUSDT","AVAXUSDT","LINKUSDT","AAVEUSDT","UNIUSDT","ARBUSDT","ADAUSDT"],"updated_utc":"2026-02-06T15:59:59.999000Z","tfs":["H4","D1","W1"],"paths":{"txt_per_tf":"/ohlcv/binance/{SYMBOL}_{TF}.txt"}}
+{
+  "schema": "ohlcv-symbols-v2",
+  "source": "Binance/spot",
+  "timezone": "UTC",
+  "symbols": [
+    "BTCUSDT",
+    "ETHUSDT",
+    "SOLUSDT",
+    "BNBUSDT",
+    "AVAXUSDT",
+    "LINKUSDT",
+    "AAVEUSDT",
+    "UNIUSDT",
+    "ARBUSDT",
+    "ADAUSDT"
+  ],
+  "updated_utc": "2026-02-06T15:59:59.999000Z",
+  "tfs": [
+    "H4",
+    "D1",
+    "W1"
+  ],
+  "paths": {
+    "txt_per_tf": "/ohlcv/binance/{SYMBOL}_{TF}.txt"
+  },
+  "format": "TSV",
+  "columns": [
+    "open_ms",
+    "open",
+    "high",
+    "low",
+    "close",
+    "volume",
+    "close_ms"
+  ]
+}
