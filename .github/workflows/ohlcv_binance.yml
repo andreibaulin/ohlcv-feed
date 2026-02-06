@@ -1,4 +1,4 @@
-name: OHLCV Feed (Binance Spot) - Core10 TXT only (H4/D1/W1, closed, stable)
+name: OHLCV Feed (Binance Spot) - Core10 TXT (TSV, multiline, closed)
 
 on:
   workflow_dispatch:
@@ -27,135 +27,103 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Fetch OHLCV and write TXT (CSV format), closed only + manifest + index
+      - name: Build TXT feed (TSV), plus readable symbols.json + index
         shell: bash
         run: |
           python - << 'PY'
-          import json, os, time, csv, glob
+          import json, os, time, glob
           from datetime import datetime, timezone
           from urllib.parse import urlencode
           from urllib.request import Request, urlopen
           from urllib.error import HTTPError, URLError
 
-          BASES = [
-            "https://data-api.binance.vision",
-            "https://api.binance.com",
-          ]
-
+          BASES = ["https://data-api.binance.vision","https://api.binance.com"]
           OUT_DIR = "ohlcv/binance"
           CORE10 = ["BTCUSDT","ETHUSDT","SOLUSDT","BNBUSDT","AVAXUSDT","LINKUSDT","AAVEUSDT","UNIUSDT","ARBUSDT","ADAUSDT"]
+          TFS = {"H4":("4h",240),"D1":("1d",365),"W1":("1w",260)}
 
-          # tf -> (binance interval, limit)
-          TFS = {
-            "H4": ("4h", 240),
-            "D1": ("1d", 365),
-            "W1": ("1w", 260),
-          }
-
-          def iso_utc(ms: int) -> str:
+          def iso_utc(ms:int)->str:
             return datetime.fromtimestamp(ms/1000, tz=timezone.utc).isoformat().replace("+00:00","Z")
 
           def http_get_json(path, params=None, timeout=30, retries=4):
-            last_err = None
+            last_err=None
             for base in BASES:
-              url = base + path
-              if params:
-                url += "?" + urlencode(params)
+              url = base + path + (("?" + urlencode(params)) if params else "")
               for i in range(retries):
                 try:
-                  req = Request(url, headers={"User-Agent":"ohlcv-feed/2.0"})
+                  req = Request(url, headers={"User-Agent":"ohlcv-feed/3.0"})
                   with urlopen(req, timeout=timeout) as r:
                     return json.loads(r.read().decode("utf-8"))
                 except (HTTPError, URLError) as e:
-                  last_err = e
+                  last_err=e
                   time.sleep(1.2*(i+1))
             raise last_err
 
-          # server time (нужно только, чтобы отрезать незакрытую свечу)
           now_ms = int(http_get_json("/api/v3/time")["serverTime"])
-
           os.makedirs(OUT_DIR, exist_ok=True)
 
-          # CLEANUP: убираем старые артефакты, чтобы не рос репо и не было путаницы
+          # чистим старьё, чтобы не было мусора
           for p in glob.glob(os.path.join(OUT_DIR, "*")):
-            # оставим только директорию, если будет; все файлы удаляем
             if os.path.isfile(p):
               os.remove(p)
 
           last_h4_close_ms_all = []
 
+          header = "open_ms\topen\thigh\tlow\tclose\tvolume\tclose_ms\n"
+
           for sym in CORE10:
             for tf, (interval, limit) in TFS.items():
               kl = http_get_json("/api/v3/klines", {"symbol": sym, "interval": interval, "limit": str(limit)})
-
-              # closed only
               closed = [k for k in kl if int(k[6]) <= now_ms]
               if not closed:
                 raise RuntimeError(f"No closed candles for {sym} {tf}")
 
-              last_close_ms = int(closed[-1][6])
               if tf == "H4":
-                last_h4_close_ms_all.append(last_close_ms)
+                last_h4_close_ms_all.append(int(closed[-1][6]))
 
-              # TXT (CSV-format) — то, что я буду реально скачивать и парсить
-              txt_path = os.path.join(OUT_DIR, f"{sym}_{tf}.txt")
-              with open(txt_path, "w", encoding="utf-8", newline="") as f:
-                w = csv.writer(f, lineterminator="\n")
-                w.writerow(["open_ms","open","high","low","close","volume","close_ms"])
+              path = os.path.join(OUT_DIR, f"{sym}_{tf}.txt")
+              with open(path, "w", encoding="utf-8") as f:
+                f.write(header)
                 for k in closed:
-                  w.writerow([
-                    int(k[0]),
-                    float(k[1]),
-                    float(k[2]),
-                    float(k[3]),
-                    float(k[4]),
-                    float(k[5]),
-                    int(k[6]),
-                  ])
+                  # k: [openTime, open, high, low, close, volume, closeTime, ...]
+                  f.write(
+                    f"{int(k[0])}\t{float(k[1])}\t{float(k[2])}\t{float(k[3])}\t{float(k[4])}\t{float(k[5])}\t{int(k[6])}\n"
+                  )
 
           updated_utc = iso_utc(max(last_h4_close_ms_all)) if last_h4_close_ms_all else iso_utc(now_ms)
 
-          symbols = {
-            "schema": "ohlcv-symbols-v2",
-            "source": "Binance/spot",
-            "timezone": "UTC",
+          manifest = {
+            "schema":"ohlcv-symbols-v2",
+            "source":"Binance/spot",
+            "timezone":"UTC",
             "symbols": CORE10,
             "updated_utc": updated_utc,
             "tfs": list(TFS.keys()),
-            "paths": {
-              "txt_per_tf": "/ohlcv/binance/{SYMBOL}_{TF}.txt"
-            }
+            "paths": {"txt_per_tf": "/ohlcv/binance/{SYMBOL}_{TF}.txt"},
+            "format": "TSV",
+            "columns": ["open_ms","open","high","low","close","volume","close_ms"]
           }
 
           with open(os.path.join(OUT_DIR, "symbols.json"), "w", encoding="utf-8") as f:
-            json.dump(symbols, f, ensure_ascii=False, separators=(",", ":"))
+            json.dump(manifest, f, ensure_ascii=False, indent=2)
 
-          # index.html (минимум, чтобы я мог кликать ссылки)
-          def txt_links_for(sym: str) -> str:
-            return (
-              f"<a href='ohlcv/binance/{sym}_H4.txt'>{sym}_H4.txt</a> | "
-              f"<a href='ohlcv/binance/{sym}_D1.txt'>{sym}_D1.txt</a> | "
-              f"<a href='ohlcv/binance/{sym}_W1.txt'>{sym}_W1.txt</a>"
-            )
+          def links(sym):
+            return (f"<a href='ohlcv/binance/{sym}_H4.txt'>{sym}_H4</a> | "
+                    f"<a href='ohlcv/binance/{sym}_D1.txt'>{sym}_D1</a> | "
+                    f"<a href='ohlcv/binance/{sym}_W1.txt'>{sym}_W1</a>")
 
-          txt_links = "\n".join([f"  <li>{txt_links_for(s)}</li>" for s in CORE10])
+          items = "\n".join([f"<li>{links(s)}</li>" for s in CORE10])
 
-          html = f"""<!doctype html>
-          <meta charset="utf-8">
+          html = f"""<!doctype html><meta charset="utf-8">
           <title>OHLCV Feed</title>
-          <h3>OHLCV Feed (Binance Spot) — TXT only</h3>
+          <h3>OHLCV Feed (Binance Spot) — TXT (TSV)</h3>
           <p>Last update (UTC, by last closed H4): <code>{updated_utc}</code></p>
           <p>Manifest: <a href="ohlcv/binance/symbols.json">symbols.json</a></p>
-          <p>Files: <code>/ohlcv/binance/SYMBOL_TF.txt</code> (CSV format, closed candles only)</p>
-          <h4>TXT (per TF)</h4>
-          <ul>
-          {txt_links}
-          </ul>
+          <ul>{items}</ul>
           """
           with open("index.html", "w", encoding="utf-8") as f:
             f.write(html)
 
-          # disable Jekyll
           with open(".nojekyll", "w", encoding="utf-8") as f:
             f.write("")
           PY
@@ -169,6 +137,6 @@ jobs:
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git add -A
-            git commit -m "Update OHLCV feed (TXT only, closed)"
+            git commit -m "Update OHLCV feed (TXT TSV multiline, closed)"
             git push
           fi
