@@ -1,4 +1,4 @@
-name: OHLCV Feed (Binance Spot) - Core10 H4/D1/W1 (pretty + min, closed, stable commits)
+name: OHLCV Feed (Binance Spot) - Core10 H4/D1/W1 (pretty + min, closed, stable commits + deploy pages)
 
 on:
   workflow_dispatch:
@@ -7,6 +7,8 @@ on:
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
 
 concurrency:
   group: ohlcv-feed
@@ -15,6 +17,7 @@ concurrency:
 jobs:
   build-feed:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -27,168 +30,183 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Fetch OHLCV from Binance and write JSON (pretty + min, closed only)
+      - name: Fetch OHLCV and write JSON (pretty + min, closed)
         shell: bash
         run: |
           python - << 'PY'
           import json, os, time
           from datetime import datetime, timezone
           from urllib.parse import urlencode
-          from urllib.request import Request, urlopen
-          from urllib.error import HTTPError, URLError
+          from urllib.request import urlopen, Request
 
-          # Market Data Only base endpoint (обычно не ловит 451 в GitHub Actions)
-          BASE = "https://data-api.binance.vision"
+          BASE = "https://api.binance.com"
+          OUT_DIR = "ohlcv/binance"
 
-          CORE10 = [
-            "BTCUSDT","ETHUSDT","SOLUSDT","BNBUSDT","AVAXUSDT",
-            "LINKUSDT","AAVEUSDT","UNIUSDT","ARBUSDT","ADAUSDT"
-          ]
+          CORE10 = ["BTCUSDT","ETHUSDT","SOLUSDT","BNBUSDT","AVAXUSDT","LINKUSDT","AAVEUSDT","UNIUSDT","ARBUSDT","ADAUSDT"]
 
-          TF_ORDER = [("H4", "4h"), ("D1", "1d"), ("W1", "1w")]
-          LIMIT = 240  # удобно читать, достаточно для свинга
+          # label, binance_interval, bars_limit
+          TFS = {
+            "H4": ("4H", "4h", 240),
+            "D1": ("D1", "1d", 365),
+            "W1": ("W1", "1w", 260),
+          }
+
+          def http_get_json(path, params=None, timeout=20):
+            url = BASE + path
+            if params:
+              url += "?" + urlencode(params)
+            req = Request(url, headers={"User-Agent": "ohlcv-feed/1.0"})
+            with urlopen(req, timeout=timeout) as r:
+              return json.loads(r.read().decode("utf-8"))
 
           def iso_utc(ms: int) -> str:
-            return datetime.fromtimestamp(ms / 1000, tz=timezone.utc).isoformat().replace("+00:00", "Z")
+            return datetime.fromtimestamp(ms/1000, tz=timezone.utc).isoformat().replace("+00:00","Z")
 
-          def http_get(path, params=None, retries=4):
-            qs = ("?" + urlencode(params)) if params else ""
-            url = BASE + path + qs
-            last_err = None
-            for i in range(retries):
-              try:
-                req = Request(url, headers={"User-Agent": "ohlcv-feed-gh-actions"})
-                with urlopen(req, timeout=30) as r:
-                  return json.loads(r.read().decode("utf-8"))
-              except (HTTPError, URLError) as e:
-                last_err = e
-                time.sleep(1.2 * (i + 1))
-            raise last_err
+          # Binance server time
+          server_time = http_get_json("/api/v3/time")
+          now_ms = int(server_time["serverTime"])
 
-          # Binance server time (ms) — режем незакрытую свечу
-          now_ms = int(http_get("/api/v3/time")["serverTime"])
-          server_time_utc = iso_utc(now_ms)
+          os.makedirs(OUT_DIR, exist_ok=True)
 
-          out_dir = os.path.join("ohlcv", "binance")
-          os.makedirs(out_dir, exist_ok=True)
+          # disable Jekyll so JSON is served as-is
+          with open(".nojekyll", "w", encoding="utf-8") as f:
+            f.write("")
 
           h4_last_close_all = []
 
           for sym in CORE10:
             payload = {
               "meta": {
-                "source": "Binance/Spot",
+                "source": "Binance/spot",
                 "symbol": sym,
-                "quote": "USDT",
                 "timezone": "UTC",
-                "server_time_utc": server_time_utc
+                "generated_utc": None
               }
             }
 
-            last_close_h4_ms = None
+            for key, (tf_label, interval, limit) in TFS.items():
+              # retry a few times
+              klines = None
+              for attempt in range(5):
+                try:
+                  klines = http_get_json("/api/v3/klines", {
+                    "symbol": sym,
+                    "interval": interval,
+                    "limit": limit
+                  })
+                  break
+                except Exception:
+                  time.sleep(1.5 * (attempt + 1))
 
-            for tf_key, interval in TF_ORDER:
-              kl = http_get("/api/v3/klines", {"symbol": sym, "interval": interval, "limit": str(LIMIT)})
-              if not isinstance(kl, list) or len(kl) == 0:
-                raise RuntimeError(f"Empty klines for {sym} {tf_key}")
+              if not klines:
+                raise RuntimeError(f"Failed to fetch klines for {sym} {interval}")
 
-              # ТОЛЬКО закрытые свечи: closeTime <= serverTime
-              closed = [row for row in kl if int(row[6]) <= now_ms]
-              if len(closed) < 10:
-                raise RuntimeError(f"Not enough closed candles for {sym} {tf_key}: {len(closed)}")
+              # keep only closed candles (closeTime < serverTime)
+              closed = [k for k in klines if int(k[6]) < now_ms]
+              if not closed:
+                raise RuntimeError(f"No closed candles for {sym} {interval}")
+
+              last_close_ms = int(closed[-1][6])  # closeTime
+              if key == "H4":
+                h4_last_close_all.append(last_close_ms)
 
               data = []
-              for row in closed:
-                t_open = int(row[0])
-                o = float(row[1]); h = float(row[2]); l = float(row[3]); c = float(row[4]); v = float(row[5])
-                data.append([t_open, o, h, l, c, v])
+              for k in closed:
+                close_ms = int(k[6])
+                o = float(k[1]); h = float(k[2]); l = float(k[3]); c = float(k[4]); v = float(k[5])
+                data.append([close_ms, o, h, l, c, v])
 
-              last_close_ms = int(closed[-1][6])
-              payload[tf_key] = {
-                "tf": tf_key,
+              payload[key] = {
+                "tf": tf_label,
                 "bars": len(data),
                 "last_close_utc": iso_utc(last_close_ms),
                 "data": data
               }
 
-              if tf_key == "H4":
-                last_close_h4_ms = last_close_ms
+            # временно; перезапишем ниже общим updated_utc
+            payload["meta"]["generated_utc"] = iso_utc(now_ms)
 
-            # generated_utc привязываем к последнему закрытию H4, чтобы не коммитить “впустую”
-            if last_close_h4_ms is not None:
-              payload["meta"]["generated_utc"] = iso_utc(last_close_h4_ms)
-              h4_last_close_all.append(last_close_h4_ms)
-            else:
-              payload["meta"]["generated_utc"] = server_time_utc
-
-            # pretty + min
-            with open(os.path.join(out_dir, f"{sym}.json"), "w", encoding="utf-8") as f:
+            # pretty JSON
+            with open(os.path.join(OUT_DIR, f"{sym}.json"), "w", encoding="utf-8") as f:
               json.dump(payload, f, ensure_ascii=False, indent=2)
 
-            with open(os.path.join(out_dir, f"{sym}.min.json"), "w", encoding="utf-8") as f:
+            # minified JSON
+            with open(os.path.join(OUT_DIR, f"{sym}.min.json"), "w", encoding="utf-8") as f:
               json.dump(payload, f, ensure_ascii=False, separators=(",", ":"))
 
-          updated_utc = iso_utc(max(h4_last_close_all)) if h4_last_close_all else server_time_utc
+          updated_utc = iso_utc(max(h4_last_close_all)) if h4_last_close_all else iso_utc(now_ms)
 
-          symbols_payload = {
-            "meta": {
-              "source": "Binance/Spot",
-              "timezone": "UTC",
-              "tfs": [k for k, _ in TF_ORDER],
-              "limit": LIMIT,
-              "closed_only": True,
-              "paths": {
-                "pretty": "/ohlcv/binance/{SYMBOL}.json",
-                "min": "/ohlcv/binance/{SYMBOL}.min.json"
-              }
-            },
-            "symbols": CORE10,
-            "updated_utc": updated_utc,
-            "server_time_utc": server_time_utc
-          }
+          # rewrite meta.generated_utc to updated_utc (stable + consistent)
+          for sym in CORE10:
+            p_path = os.path.join(OUT_DIR, f"{sym}.json")
+            m_path = os.path.join(OUT_DIR, f"{sym}.min.json")
+            with open(p_path, "r", encoding="utf-8") as f:
+              obj = json.load(f)
+            obj["meta"]["generated_utc"] = updated_utc
+            with open(p_path, "w", encoding="utf-8") as f:
+              json.dump(obj, f, ensure_ascii=False, indent=2)
+            with open(m_path, "w", encoding="utf-8") as f:
+              json.dump(obj, f, ensure_ascii=False, separators=(",", ":"))
 
-          with open(os.path.join(out_dir, "symbols.json"), "w", encoding="utf-8") as f:
-            json.dump(symbols_payload, f, ensure_ascii=False, indent=2)
+          with open(os.path.join(OUT_DIR, "symbols.json"), "w", encoding="utf-8") as f:
+            json.dump({
+              "symbols": CORE10,
+              "updated_utc": updated_utc,
+              "server_time_utc": iso_utc(now_ms)
+            }, f, ensure_ascii=False, indent=2)
 
-          with open(os.path.join(out_dir, "symbols.min.json"), "w", encoding="utf-8") as f:
-            json.dump(symbols_payload, f, ensure_ascii=False, separators=(",", ":"))
-
-          # index.html со ссылками (pretty + min)
-          links_pretty = "\n".join([f"<li><a href='ohlcv/binance/{s}.json'>{s}.json</a></li>" for s in CORE10])
-          links_min = "\n".join([f"<li><a href='ohlcv/binance/{s}.min.json'>{s}.min.json</a></li>" for s in CORE10])
+          pretty_links = "\n".join([f"  <li><a href='ohlcv/binance/{s}.json'>{s}.json</a></li>" for s in CORE10])
+          min_links    = "\n".join([f"  <li><a href='ohlcv/binance/{s}.min.json'>{s}.min.json</a></li>" for s in CORE10])
 
           html = f"""<!doctype html>
           <meta charset="utf-8">
           <title>OHLCV Feed</title>
           <h3>OHLCV Feed (Binance Spot)</h3>
           <p>Last update (UTC, by last closed H4): <code>{updated_utc}</code></p>
-          <p>Files: <code>/ohlcv/binance/SYMBOL.json</code> (pretty) and <code>/ohlcv/binance/SYMBOL.min.json</code> (min). Closed candles only.</p>
-          <p>Symbols list: <a href="ohlcv/binance/symbols.json">symbols.json</a> | <a href="ohlcv/binance/symbols.min.json">symbols.min.json</a></p>
-          <h4>Pretty JSON</h4>
-          <ul>{links_pretty}</ul>
-          <h4>Minified JSON</h4>
-          <ul>{links_min}</ul>
+          <p>Closed candles only. Timeframes inside each file: H4, D1, W1.</p>
+          <p>Symbols list: <a href="ohlcv/binance/symbols.json">symbols.json</a></p>
+          <h4>Pretty JSON (recommended for reading)</h4>
+          <ul>
+          {pretty_links}
+          </ul>
+          <h4>Minified JSON (machine-friendly)</h4>
+          <ul>
+          {min_links}
+          </ul>
           """
-
           with open("index.html", "w", encoding="utf-8") as f:
             f.write(html)
-
-          # чтобы Pages не пытался прогонять Jekyll
-          with open(".nojekyll", "w", encoding="utf-8") as f:
-            f.write("")
-
-          print("Done.")
           PY
 
-      - name: Commit & push (only if changed)
+      - name: Commit changes (if any)
         shell: bash
         run: |
-          if [ -n "$(git status --porcelain)" ]; then
-            git config user.name "github-actions[bot]"
-            git config user.email "github-actions[bot]@users.noreply.github.com"
-            git add -A
-            git commit -m "Update OHLCV feed (pretty+min, closed only) [skip ci]" || exit 0
-            git push
+          if [[ -z "$(git status --porcelain)" ]]; then
+            echo "No changes to commit."
           else
-            echo "No changes."
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add -A
+            git commit -m "Update OHLCV feed (Binance Spot)"
+            git push
           fi
+
+      - name: Prepare publish dir
+        shell: bash
+        run: |
+          rm -rf public
+          mkdir -p public
+          cp -f index.html public/
+          cp -f .nojekyll public/ || true
+          cp -R ohlcv public/
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4
