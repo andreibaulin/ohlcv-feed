@@ -1,1 +1,1 @@
-{"updated_utc": "2026-02-07T19:28:01.320587Z", "ok": true}
+{"updated_utc":"2026-02-07T19:54:40.986758Z","entrypoints":{"manifest":"ohlcv/binance/symbols.json","core5_ohlcv":"ohlcv/binance/core5_latest.json","core10_ohlcv":"ohlcv/binance/core10_latest.json","core5_deriv":"deriv/binance/core5_latest.json","core10_deriv":"deriv/binance/core10_latest.json"}}
