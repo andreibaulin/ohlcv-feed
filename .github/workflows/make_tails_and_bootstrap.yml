@@ -24,7 +24,7 @@ jobs:
           set -euo pipefail
 
           TAIL="${{ github.event.inputs.tail_lines }}"
-          BASE="ohlcv/binance"
+          BASE="docs/ohlcv/binance"
 
           # Сюда можешь добавить символы, если захочешь расширить
           SYMBOLS=(BTCUSDT ETHUSDT SOLUSDT)
@@ -74,7 +74,7 @@ jobs:
           } > "$BOOT"
 
           # И стартовую HTML-страницу в корне Pages (тоже стабильный URL)
-          cat > start.html <<'HTML'
+          cat > docs/start.html <<'HTML'
           <!doctype html>
           <html>
             <head>
@@ -100,7 +100,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          git add ohlcv/binance/*tail*.txt ohlcv/binance/bootstrap.txt start.html || true
+          git add docs/ohlcv/binance/*tail*.txt docs/ohlcv/binance/bootstrap.txt docs/start.html || true
 
           if git diff --cached --quiet; then
             echo "No changes to commit."
