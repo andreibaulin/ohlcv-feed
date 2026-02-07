@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       tail_lines:
-        description: "Tail lines for *_tailN.txt (e.g. 500 or 1000)"
+        description: "Tail lines for *_tailN.txt (e.g. 200/500/1000)"
         required: true
         default: "500"
   schedule:
@@ -38,7 +38,7 @@ jobs:
           import json, os, time, datetime, urllib.parse, urllib.request
           from urllib.error import HTTPError, URLError
 
-          # === CONFIG ===
+          # ===== CONFIG =====
           REPO_PAGES_BASE = "https://andreibaulin.github.io/ohlcv-feed"
           OUT_DIR = "_site/ohlcv/binance"
           os.makedirs(OUT_DIR, exist_ok=True)
@@ -51,19 +51,18 @@ jobs:
             "W1": "1w",
           }
 
-          # На schedule inputs отсутствуют, поэтому дефолт тут
+          # schedule запускается без inputs -> берём дефолт
           tail_env = os.environ.get("TAIL_LINES")
           if not tail_env or not tail_env.strip():
             tail_env = "500"
           TAIL = int(tail_env)
 
-          # ВАЖНО: market-data-only endpoint (часто обходит 451 на api.binance.com)
+          # market-data-only endpoint (часто обходит 451 на api.binance.com)
           KLINES_BASE = "https://data-api.binance.vision/api/v3/klines"
 
           def fetch_klines(symbol: str, interval: str, limit: int = 1000):
             qs = urllib.parse.urlencode({"symbol": symbol, "interval": interval, "limit": str(limit)})
             url = f"{KLINES_BASE}?{qs}"
-
             last_err = None
             for _ in range(8):
               try:
@@ -87,10 +86,14 @@ jobs:
           def tail_lines(lines, n):
             return lines[-n:] if len(lines) > n else lines
 
-          # === GENERATE TXT + TAIL ===
+          def ms_to_utc(ms: int) -> str:
+            return datetime.datetime.utcfromtimestamp(ms/1000).strftime("%Y-%m-%d %H:%M:%SZ")
+
+          # ===== GENERATE TXT + TAIL =====
           for sym in SYMBOLS:
             for tf, interval in TFS.items():
               kl = fetch_klines(sym, interval, limit=1000)
+
               full_path = os.path.join(OUT_DIR, f"{sym}_{tf}.txt")
               write_txt(full_path, kl)
 
@@ -103,7 +106,7 @@ jobs:
 
           updated_utc = datetime.datetime.utcnow().replace(microsecond=0).isoformat() + "Z"
 
-          # === symbols.json ===
+          # ===== symbols.json =====
           symbols_json = {
             "tfs": list(TFS.keys()),
             "updated_utc": updated_utc,
@@ -111,9 +114,10 @@ jobs:
             "base_url": f"{REPO_PAGES_BASE}/ohlcv/binance/"
           }
           with open(os.path.join(OUT_DIR, "symbols.json"), "w", encoding="utf-8") as f:
-            json.dump(symbols_json, f, ensure_ascii=False, indent=0)
+            json.dump(symbols_json, f, ensure_ascii=False, indent=2)
+            f.write("\n")
 
-          # === core5_latest.json (PACK) ===
+          # ===== core5_latest.json (PACK) =====
           pack = {
             "meta": {
               "source": "Binance Spot market-data-only (data-api.binance.vision) /api/v3/klines",
@@ -137,24 +141,48 @@ jobs:
                 for r in rows
               ]
 
+          # Компактный JSON (для сайта), а читаемый текст — отдельным файлом ниже
           with open(os.path.join(OUT_DIR, "core5_latest.json"), "w", encoding="utf-8") as f:
-            json.dump(pack, f, ensure_ascii=False, indent=0)
+            json.dump(pack, f, ensure_ascii=False)
+            f.write("\n")
 
-          # === bootstrap.txt ===
+          # ===== health.txt (короткий, железно читается) =====
+          health_path = os.path.join(OUT_DIR, "health.txt")
+          with open(health_path, "w", encoding="utf-8") as hf:
+            hf.write(f"generated_utc={updated_utc} tail={TAIL}\n")
+            for sym in SYMBOLS:
+              for tf in TFS.keys():
+                arr = pack["data"][sym][tf]
+                last = arr[-1]
+                t, o, h, l, c, v = last
+                hf.write(f"{sym} {tf} last_open_utc={ms_to_utc(t)} close={c} volume={v}\n")
+
+          # ===== core5_latest_pretty.txt (text/plain с переносами) =====
+          pretty_path = os.path.join(OUT_DIR, "core5_latest_pretty.txt")
+          with open(pretty_path, "w", encoding="utf-8") as pf:
+            pf.write(json.dumps(pack, ensure_ascii=False, indent=2))
+            pf.write("\n")
+
+          # ===== bootstrap.txt =====
           with open(os.path.join(OUT_DIR, "bootstrap.txt"), "w", encoding="utf-8") as f:
             f.write("OHLCVFEED_BOOTSTRAP_20260207\n\n")
+            f.write("# MAIN\n")
+            f.write(f"{REPO_PAGES_BASE}/ohlcv/binance/health.txt\n")
+            f.write(f"{REPO_PAGES_BASE}/ohlcv/binance/core5_latest_pretty.txt\n\n")
+
             f.write("# PACK / manifest\n")
             f.write("core5_latest:\n")
             f.write(f"{REPO_PAGES_BASE}/ohlcv/binance/core5_latest.json\n\n")
             f.write("symbols:\n")
             f.write(f"{REPO_PAGES_BASE}/ohlcv/binance/symbols.json\n\n")
+
             for sym in SYMBOLS:
               f.write(f"# {sym} (H1/H4/D1/W1) tail{TAIL}\n")
               for tf in TFS.keys():
                 f.write(f"{REPO_PAGES_BASE}/ohlcv/binance/{sym}_{tf}_tail{TAIL}.txt\n")
               f.write("\n")
 
-          # === start.html + index.html ===
+          # ===== start.html + index.html =====
           start_html = """<!doctype html>
           <html>
             <head>
@@ -165,6 +193,8 @@ jobs:
             <body>
               <h1>OHLCVFEED_BOOTSTRAP_20260207</h1>
               <ul>
+                <li><a href="ohlcv/binance/health.txt">health.txt</a></li>
+                <li><a href="ohlcv/binance/core5_latest_pretty.txt">core5_latest_pretty.txt</a></li>
                 <li><a href="ohlcv/binance/bootstrap.txt">bootstrap.txt</a></li>
                 <li><a href="ohlcv/binance/core5_latest.json">core5_latest.json</a></li>
                 <li><a href="ohlcv/binance/symbols.json">symbols.json</a></li>
