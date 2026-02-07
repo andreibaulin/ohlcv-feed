@@ -129,7 +129,7 @@ jobs:
               pack["data"][sym][tf] = [[int(r[0]), float(r[1]), float(r[2]), float(r[3]), float(r[4]), float(r[5])] for r in rows]
 
           with open(os.path.join(OUT_DIR, "core5_latest.json"), "w", encoding="utf-8") as f:
-            json.dump(pack, f, ensure_ascii=False)
+            json.dump(symbols_json, f, ensure_ascii=False, indent=0)
 
           # bootstrap.txt
           bootstrap_txt = os.path.join(OUT_DIR, "bootstrap.txt")
