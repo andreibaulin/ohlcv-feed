@@ -32,17 +32,17 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          TAIL="${{ github.event.inputs.tail_lines }}"
           mkdir -p _site/ohlcv/binance
 
           python - <<'PY'
           import json, os, time, datetime, urllib.parse, urllib.request
+          from urllib.error import HTTPError, URLError
 
           REPO_PAGES_BASE = "https://andreibaulin.github.io/ohlcv-feed"
           OUT_DIR = "_site/ohlcv/binance"
           os.makedirs(OUT_DIR, exist_ok=True)
 
-          # core5 по твоей схеме
+          # core5
           SYMBOLS = ["BTCUSDT","ETHUSDT","SOLUSDT","BNBUSDT","LINKUSDT"]
           TFS = {
             "H1": "1h",
@@ -51,54 +51,54 @@ jobs:
             "W1": "1w",
           }
 
-          TAIL = int(os.environ.get("TAIL_LINES","500"))
+          tail_env = os.environ.get("TAIL_LINES") or "500"
+          TAIL = int(tail_env)
+
+          # ВАЖНО: market-data-only endpoint (обходит 451 на api.binance.com)
+          BASE = "https://data-api.binance.vision/api/v3/klines"
 
           def fetch_klines(symbol: str, interval: str, limit: int = 1000):
-            base = "https://api.binance.com/api/v3/klines"
             qs = urllib.parse.urlencode({"symbol": symbol, "interval": interval, "limit": str(limit)})
-            url = f"{base}?{qs}"
+            url = f"{BASE}?{qs}"
 
-            # простая ретрай-логика
             last_err = None
-            for _ in range(5):
+            for _ in range(6):
               try:
-                with urllib.request.urlopen(url, timeout=20) as r:
+                req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+                with urllib.request.urlopen(req, timeout=25) as r:
                   data = r.read().decode("utf-8")
                 return json.loads(data)
-              except Exception as e:
+              except (HTTPError, URLError, TimeoutError) as e:
                 last_err = e
-                time.sleep(1.2)
+                time.sleep(1.5)
             raise RuntimeError(f"Failed to fetch klines {symbol} {interval}: {last_err}")
 
           def write_txt(path: str, klines):
-            # Формат как в твоих txt: open_time,open,high,low,close,volume,close_time
             lines = []
             for k in klines:
-              # k: [0 openTime,1 open,2 high,3 low,4 close,5 volume,6 closeTime, ...]
               lines.append(f"{k[0]},{k[1]},{k[2]},{k[3]},{k[4]},{k[5]},{k[6]}")
             with open(path, "w", encoding="utf-8") as f:
               f.write("\n".join(lines) + "\n")
 
           def tail_lines(lines, n):
-            if n <= 0: return []
             return lines[-n:] if len(lines) > n else lines
 
-          # Генерация txt + tail
+          # TXT + TAIL
           for sym in SYMBOLS:
             for tf, interval in TFS.items():
               kl = fetch_klines(sym, interval, limit=1000)
               full_path = os.path.join(OUT_DIR, f"{sym}_{tf}.txt")
               write_txt(full_path, kl)
 
-              # tailN
               with open(full_path, "r", encoding="utf-8") as f:
                 raw = [ln.rstrip("\n") for ln in f.readlines() if ln.strip()]
               tpath = os.path.join(OUT_DIR, f"{sym}_{tf}_tail{TAIL}.txt")
               with open(tpath, "w", encoding="utf-8") as f:
                 f.write("\n".join(tail_lines(raw, TAIL)) + "\n")
 
-          # symbols.json
           updated_utc = datetime.datetime.utcnow().replace(microsecond=0).isoformat() + "Z"
+
+          # symbols.json
           symbols_json = {
             "tfs": list(TFS.keys()),
             "updated_utc": updated_utc,
@@ -108,10 +108,10 @@ jobs:
           with open(os.path.join(OUT_DIR, "symbols.json"), "w", encoding="utf-8") as f:
             json.dump(symbols_json, f, ensure_ascii=False, separators=(",",":"))
 
-          # core5_latest.json (pack по tailN, чтобы был компактный и читабельный)
+          # core5_latest.json (pack по tail)
           pack = {
             "meta": {
-              "source": "Binance Spot /api/v3/klines",
+              "source": "Binance Spot market-data-only (data-api.binance.vision) /api/v3/klines",
               "generated_utc": updated_utc,
               "tail_lines": TAIL,
               "symbols": SYMBOLS,
@@ -119,19 +119,19 @@ jobs:
             },
             "data": {}
           }
+
           for sym in SYMBOLS:
             pack["data"][sym] = {}
             for tf in TFS.keys():
               tpath = os.path.join(OUT_DIR, f"{sym}_{tf}_tail{TAIL}.txt")
               with open(tpath, "r", encoding="utf-8") as f:
                 rows = [ln.strip().split(",") for ln in f.readlines() if ln.strip()]
-              # pack свеча: [t,o,h,l,c,v] (close_time не кладём, чтобы меньше весило)
               pack["data"][sym][tf] = [[int(r[0]), float(r[1]), float(r[2]), float(r[3]), float(r[4]), float(r[5])] for r in rows]
 
           with open(os.path.join(OUT_DIR, "core5_latest.json"), "w", encoding="utf-8") as f:
             json.dump(pack, f, ensure_ascii=False)
 
-          # bootstrap.txt + start.html + index.html
+          # bootstrap.txt
           bootstrap_txt = os.path.join(OUT_DIR, "bootstrap.txt")
           with open(bootstrap_txt, "w", encoding="utf-8") as f:
             f.write("OHLCVFEED_BOOTSTRAP_20260207\n\n")
@@ -146,6 +146,7 @@ jobs:
                 f.write(f"{REPO_PAGES_BASE}/ohlcv/binance/{sym}_{tf}_tail{TAIL}.txt\n")
               f.write("\n")
 
+          # start.html + index.html
           start_html = """<!doctype html>
           <html>
             <head>
@@ -167,8 +168,11 @@ jobs:
             f.write(start_html)
           with open("_site/index.html", "w", encoding="utf-8") as f:
             f.write(start_html)
+
+          print("OK:", updated_utc, "tail", TAIL)
           PY
         env:
+          # важно: на schedule inputs нет, поэтому fallback через "or" в python
           TAIL_LINES: ${{ github.event.inputs.tail_lines }}
 
       - name: Upload Pages artifact
