@@ -106,7 +106,7 @@ jobs:
             "base_url": f"{REPO_PAGES_BASE}/ohlcv/binance/"
           }
           with open(os.path.join(OUT_DIR, "symbols.json"), "w", encoding="utf-8") as f:
-            json.dump(symbols_json, f, ensure_ascii=False, separators=(",",":"))
+            json.dump(pack, f, ensure_ascii=False, indent=0)
 
           # core5_latest.json (pack по tail)
           pack = {
