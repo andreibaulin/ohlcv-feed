@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       tail_lines:
-        description: "Tail lines for *_tailN.txt and core5_latest pack (e.g. 500)"
+        description: "Tail lines for *_tailN.txt (e.g. 500 or 1000)"
         required: true
         default: "500"
   schedule:
@@ -38,11 +38,11 @@ jobs:
           import json, os, time, datetime, urllib.parse, urllib.request
           from urllib.error import HTTPError, URLError
 
+          # === CONFIG ===
           REPO_PAGES_BASE = "https://andreibaulin.github.io/ohlcv-feed"
           OUT_DIR = "_site/ohlcv/binance"
           os.makedirs(OUT_DIR, exist_ok=True)
 
-          # core5
           SYMBOLS = ["BTCUSDT","ETHUSDT","SOLUSDT","BNBUSDT","LINKUSDT"]
           TFS = {
             "H1": "1h",
@@ -51,18 +51,21 @@ jobs:
             "W1": "1w",
           }
 
-          tail_env = os.environ.get("TAIL_LINES") or "500"
+          # На schedule inputs отсутствуют, поэтому дефолт тут
+          tail_env = os.environ.get("TAIL_LINES")
+          if not tail_env or not tail_env.strip():
+            tail_env = "500"
           TAIL = int(tail_env)
 
-          # ВАЖНО: market-data-only endpoint (обходит 451 на api.binance.com)
-          BASE = "https://data-api.binance.vision/api/v3/klines"
+          # ВАЖНО: market-data-only endpoint (часто обходит 451 на api.binance.com)
+          KLINES_BASE = "https://data-api.binance.vision/api/v3/klines"
 
           def fetch_klines(symbol: str, interval: str, limit: int = 1000):
             qs = urllib.parse.urlencode({"symbol": symbol, "interval": interval, "limit": str(limit)})
-            url = f"{BASE}?{qs}"
+            url = f"{KLINES_BASE}?{qs}"
 
             last_err = None
-            for _ in range(6):
+            for _ in range(8):
               try:
                 req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
                 with urllib.request.urlopen(req, timeout=25) as r:
@@ -74,6 +77,7 @@ jobs:
             raise RuntimeError(f"Failed to fetch klines {symbol} {interval}: {last_err}")
 
           def write_txt(path: str, klines):
+            # open_time,open,high,low,close,volume,close_time
             lines = []
             for k in klines:
               lines.append(f"{k[0]},{k[1]},{k[2]},{k[3]},{k[4]},{k[5]},{k[6]}")
@@ -83,7 +87,7 @@ jobs:
           def tail_lines(lines, n):
             return lines[-n:] if len(lines) > n else lines
 
-          # TXT + TAIL
+          # === GENERATE TXT + TAIL ===
           for sym in SYMBOLS:
             for tf, interval in TFS.items():
               kl = fetch_klines(sym, interval, limit=1000)
@@ -92,13 +96,14 @@ jobs:
 
               with open(full_path, "r", encoding="utf-8") as f:
                 raw = [ln.rstrip("\n") for ln in f.readlines() if ln.strip()]
+
               tpath = os.path.join(OUT_DIR, f"{sym}_{tf}_tail{TAIL}.txt")
               with open(tpath, "w", encoding="utf-8") as f:
                 f.write("\n".join(tail_lines(raw, TAIL)) + "\n")
 
           updated_utc = datetime.datetime.utcnow().replace(microsecond=0).isoformat() + "Z"
 
-          # symbols.json
+          # === symbols.json ===
           symbols_json = {
             "tfs": list(TFS.keys()),
             "updated_utc": updated_utc,
@@ -106,9 +111,9 @@ jobs:
             "base_url": f"{REPO_PAGES_BASE}/ohlcv/binance/"
           }
           with open(os.path.join(OUT_DIR, "symbols.json"), "w", encoding="utf-8") as f:
-            json.dump(pack, f, ensure_ascii=False, indent=0)
+            json.dump(symbols_json, f, ensure_ascii=False, indent=0)
 
-          # core5_latest.json (pack по tail)
+          # === core5_latest.json (PACK) ===
           pack = {
             "meta": {
               "source": "Binance Spot market-data-only (data-api.binance.vision) /api/v3/klines",
@@ -126,14 +131,17 @@ jobs:
               tpath = os.path.join(OUT_DIR, f"{sym}_{tf}_tail{TAIL}.txt")
               with open(tpath, "r", encoding="utf-8") as f:
                 rows = [ln.strip().split(",") for ln in f.readlines() if ln.strip()]
-              pack["data"][sym][tf] = [[int(r[0]), float(r[1]), float(r[2]), float(r[3]), float(r[4]), float(r[5])] for r in rows]
+              # pack свеча: [t,o,h,l,c,v]
+              pack["data"][sym][tf] = [
+                [int(r[0]), float(r[1]), float(r[2]), float(r[3]), float(r[4]), float(r[5])]
+                for r in rows
+              ]
 
           with open(os.path.join(OUT_DIR, "core5_latest.json"), "w", encoding="utf-8") as f:
-            json.dump(symbols_json, f, ensure_ascii=False, indent=0)
+            json.dump(pack, f, ensure_ascii=False, indent=0)
 
-          # bootstrap.txt
-          bootstrap_txt = os.path.join(OUT_DIR, "bootstrap.txt")
-          with open(bootstrap_txt, "w", encoding="utf-8") as f:
+          # === bootstrap.txt ===
+          with open(os.path.join(OUT_DIR, "bootstrap.txt"), "w", encoding="utf-8") as f:
             f.write("OHLCVFEED_BOOTSTRAP_20260207\n\n")
             f.write("# PACK / manifest\n")
             f.write("core5_latest:\n")
@@ -146,7 +154,7 @@ jobs:
                 f.write(f"{REPO_PAGES_BASE}/ohlcv/binance/{sym}_{tf}_tail{TAIL}.txt\n")
               f.write("\n")
 
-          # start.html + index.html
+          # === start.html + index.html ===
           start_html = """<!doctype html>
           <html>
             <head>
@@ -172,7 +180,6 @@ jobs:
           print("OK:", updated_utc, "tail", TAIL)
           PY
         env:
-          # важно: на schedule inputs нет, поэтому fallback через "or" в python
           TAIL_LINES: ${{ github.event.inputs.tail_lines }}
 
       - name: Upload Pages artifact
