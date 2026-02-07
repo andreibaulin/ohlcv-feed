@@ -1,33 +1,35 @@
-name: Feed smoke test
+name: Update OHLCV feed
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: "7 * * * *" # hourly at :07 UTC
 
 permissions:
   contents: write
 
+concurrency:
+  group: ohlcv-feed
+  cancel-in-progress: true
+
 jobs:
-  test:
+  update:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Create docs files
-        run: |
-          mkdir -p docs
-          echo "" > docs/.nojekyll
-          echo "<!doctype html><meta charset=utf-8><h1>OK</h1>" > docs/index.html
-          python - <<'PY'
-          import json, datetime
-          d = {"updated_utc": datetime.datetime.utcnow().isoformat()+"Z", "ok": True}
-          open("docs/feed.json","w",encoding="utf-8").write(json.dumps(d))
-          print("Wrote docs/feed.json")
-          PY
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
 
-      - name: Commit & push
+      - name: Generate feed
+        run: python scripts/generate_feed.py
+
+      - name: Commit & push if changed
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add docs
-          git commit -m "smoke test feed"
+          git add docs scripts
+          git diff --cached --quiet && exit 0
+          git commit -m "update feed: $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
           git push
