@@ -1,0 +1,187 @@
+name: Rebuild OHLCV Feed (GitHub Pages)
+
+on:
+  workflow_dispatch:
+    inputs:
+      tail_lines:
+        description: "Tail lines for *_tailN.txt and core5_latest pack (e.g. 500)"
+        required: true
+        default: "500"
+  schedule:
+    - cron: "*/30 * * * *"   # каждые 30 минут
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Generate site (from scratch)
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAIL="${{ github.event.inputs.tail_lines }}"
+          mkdir -p _site/ohlcv/binance
+
+          python - <<'PY'
+          import json, os, time, datetime, urllib.parse, urllib.request
+
+          REPO_PAGES_BASE = "https://andreibaulin.github.io/ohlcv-feed"
+          OUT_DIR = "_site/ohlcv/binance"
+          os.makedirs(OUT_DIR, exist_ok=True)
+
+          # core5 по твоей схеме
+          SYMBOLS = ["BTCUSDT","ETHUSDT","SOLUSDT","BNBUSDT","LINKUSDT"]
+          TFS = {
+            "H1": "1h",
+            "H4": "4h",
+            "D1": "1d",
+            "W1": "1w",
+          }
+
+          TAIL = int(os.environ.get("TAIL_LINES","500"))
+
+          def fetch_klines(symbol: str, interval: str, limit: int = 1000):
+            base = "https://api.binance.com/api/v3/klines"
+            qs = urllib.parse.urlencode({"symbol": symbol, "interval": interval, "limit": str(limit)})
+            url = f"{base}?{qs}"
+
+            # простая ретрай-логика
+            last_err = None
+            for _ in range(5):
+              try:
+                with urllib.request.urlopen(url, timeout=20) as r:
+                  data = r.read().decode("utf-8")
+                return json.loads(data)
+              except Exception as e:
+                last_err = e
+                time.sleep(1.2)
+            raise RuntimeError(f"Failed to fetch klines {symbol} {interval}: {last_err}")
+
+          def write_txt(path: str, klines):
+            # Формат как в твоих txt: open_time,open,high,low,close,volume,close_time
+            lines = []
+            for k in klines:
+              # k: [0 openTime,1 open,2 high,3 low,4 close,5 volume,6 closeTime, ...]
+              lines.append(f"{k[0]},{k[1]},{k[2]},{k[3]},{k[4]},{k[5]},{k[6]}")
+            with open(path, "w", encoding="utf-8") as f:
+              f.write("\n".join(lines) + "\n")
+
+          def tail_lines(lines, n):
+            if n <= 0: return []
+            return lines[-n:] if len(lines) > n else lines
+
+          # Генерация txt + tail
+          for sym in SYMBOLS:
+            for tf, interval in TFS.items():
+              kl = fetch_klines(sym, interval, limit=1000)
+              full_path = os.path.join(OUT_DIR, f"{sym}_{tf}.txt")
+              write_txt(full_path, kl)
+
+              # tailN
+              with open(full_path, "r", encoding="utf-8") as f:
+                raw = [ln.rstrip("\n") for ln in f.readlines() if ln.strip()]
+              tpath = os.path.join(OUT_DIR, f"{sym}_{tf}_tail{TAIL}.txt")
+              with open(tpath, "w", encoding="utf-8") as f:
+                f.write("\n".join(tail_lines(raw, TAIL)) + "\n")
+
+          # symbols.json
+          updated_utc = datetime.datetime.utcnow().replace(microsecond=0).isoformat() + "Z"
+          symbols_json = {
+            "tfs": list(TFS.keys()),
+            "updated_utc": updated_utc,
+            "symbols": SYMBOLS,
+            "base_url": f"{REPO_PAGES_BASE}/ohlcv/binance/"
+          }
+          with open(os.path.join(OUT_DIR, "symbols.json"), "w", encoding="utf-8") as f:
+            json.dump(symbols_json, f, ensure_ascii=False, separators=(",",":"))
+
+          # core5_latest.json (pack по tailN, чтобы был компактный и читабельный)
+          pack = {
+            "meta": {
+              "source": "Binance Spot /api/v3/klines",
+              "generated_utc": updated_utc,
+              "tail_lines": TAIL,
+              "symbols": SYMBOLS,
+              "tfs": list(TFS.keys())
+            },
+            "data": {}
+          }
+          for sym in SYMBOLS:
+            pack["data"][sym] = {}
+            for tf in TFS.keys():
+              tpath = os.path.join(OUT_DIR, f"{sym}_{tf}_tail{TAIL}.txt")
+              with open(tpath, "r", encoding="utf-8") as f:
+                rows = [ln.strip().split(",") for ln in f.readlines() if ln.strip()]
+              # pack свеча: [t,o,h,l,c,v] (close_time не кладём, чтобы меньше весило)
+              pack["data"][sym][tf] = [[int(r[0]), float(r[1]), float(r[2]), float(r[3]), float(r[4]), float(r[5])] for r in rows]
+
+          with open(os.path.join(OUT_DIR, "core5_latest.json"), "w", encoding="utf-8") as f:
+            json.dump(pack, f, ensure_ascii=False)
+
+          # bootstrap.txt + start.html + index.html
+          bootstrap_txt = os.path.join(OUT_DIR, "bootstrap.txt")
+          with open(bootstrap_txt, "w", encoding="utf-8") as f:
+            f.write("OHLCVFEED_BOOTSTRAP_20260207\n\n")
+            f.write("# PACK / manifest\n")
+            f.write("core5_latest:\n")
+            f.write(f"{REPO_PAGES_BASE}/ohlcv/binance/core5_latest.json\n\n")
+            f.write("symbols:\n")
+            f.write(f"{REPO_PAGES_BASE}/ohlcv/binance/symbols.json\n\n")
+            for sym in SYMBOLS:
+              f.write(f"# {sym} (H1/H4/D1/W1) tail{TAIL}\n")
+              for tf in TFS.keys():
+                f.write(f"{REPO_PAGES_BASE}/ohlcv/binance/{sym}_{tf}_tail{TAIL}.txt\n")
+              f.write("\n")
+
+          start_html = """<!doctype html>
+          <html>
+            <head>
+              <meta charset="utf-8">
+              <title>OHLCVFEED_BOOTSTRAP_20260207</title>
+              <meta name="robots" content="index,follow">
+            </head>
+            <body>
+              <h1>OHLCVFEED_BOOTSTRAP_20260207</h1>
+              <ul>
+                <li><a href="ohlcv/binance/bootstrap.txt">bootstrap.txt</a></li>
+                <li><a href="ohlcv/binance/core5_latest.json">core5_latest.json</a></li>
+                <li><a href="ohlcv/binance/symbols.json">symbols.json</a></li>
+              </ul>
+            </body>
+          </html>
+          """
+          with open("_site/start.html", "w", encoding="utf-8") as f:
+            f.write(start_html)
+          with open("_site/index.html", "w", encoding="utf-8") as f:
+            f.write(start_html)
+          PY
+        env:
+          TAIL_LINES: ${{ github.event.inputs.tail_lines }}
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
