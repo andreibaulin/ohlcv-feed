@@ -1,0 +1,111 @@
+name: Make tail OHLCV + bootstrap (Pages)
+
+on:
+  workflow_dispatch:
+    inputs:
+      tail_lines:
+        description: "How many last lines to keep (e.g. 500 or 1000)"
+        required: true
+        default: "500"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate tail files + bootstrap
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          TAIL="${{ github.event.inputs.tail_lines }}"
+          BASE="ohlcv/binance"
+
+          # Сюда можешь добавить символы, если захочешь расширить
+          SYMBOLS=(BTCUSDT ETHUSDT SOLUSDT)
+          TFS=(H1 H4 D1 W1)
+
+          if [ ! -d "$BASE" ]; then
+            echo "ERROR: folder $BASE not found"
+            exit 1
+          fi
+
+          echo "Making tail files: last $TAIL lines"
+          for S in "${SYMBOLS[@]}"; do
+            for TF in "${TFS[@]}"; do
+              SRC="$BASE/${S}_${TF}.txt"
+              DST="$BASE/${S}_${TF}_tail${TAIL}.txt"
+
+              if [ ! -f "$SRC" ]; then
+                echo "WARN: missing $SRC (skip)"
+                continue
+              fi
+
+              # Берём последние N строк
+              tail -n "$TAIL" "$SRC" > "$DST"
+              echo "OK: $DST"
+            done
+          done
+
+          # Генерим стабильный bootstrap (его URL не меняется)
+          BOOT="$BASE/bootstrap.txt"
+          {
+            echo "OHLCVFEED_BOOTSTRAP_20260207"
+            echo
+            echo "# PACK / manifest"
+            echo "core5_latest:"
+            echo "https://andreibaulin.github.io/ohlcv-feed/ohlcv/binance/core5_latest.json"
+            echo
+            echo "symbols:"
+            echo "https://andreibaulin.github.io/ohlcv-feed/ohlcv/binance/symbols.json"
+            echo
+            for S in "${SYMBOLS[@]}"; do
+              echo "# ${S} (H1/H4/D1/W1) tail${TAIL}"
+              for TF in "${TFS[@]}"; do
+                echo "https://andreibaulin.github.io/ohlcv-feed/ohlcv/binance/${S}_${TF}_tail${TAIL}.txt"
+              done
+              echo
+            done
+          } > "$BOOT"
+
+          # И стартовую HTML-страницу в корне Pages (тоже стабильный URL)
+          cat > start.html <<'HTML'
+          <!doctype html>
+          <html>
+            <head>
+              <meta charset="utf-8">
+              <title>OHLCVFEED_BOOTSTRAP_20260207</title>
+              <meta name="robots" content="index,follow">
+            </head>
+            <body>
+              <h1>OHLCVFEED_BOOTSTRAP_20260207</h1>
+              <ul>
+                <li><a href="ohlcv/binance/bootstrap.txt">bootstrap.txt</a></li>
+                <li><a href="ohlcv/binance/core5_latest.json">core5_latest.json</a></li>
+                <li><a href="ohlcv/binance/symbols.json">symbols.json</a></li>
+              </ul>
+            </body>
+          </html>
+          HTML
+
+      - name: Commit & push generated files
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add ohlcv/binance/*tail*.txt ohlcv/binance/bootstrap.txt start.html || true
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+
+          git commit -m "Generate tail OHLCV + bootstrap for Pages"
+          git push
