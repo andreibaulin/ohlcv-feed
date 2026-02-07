@@ -1,0 +1,415 @@
+name: Update market data feed (Binance primary, Bybit fallback)
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "7 * * * *"   # каждый час в :07 UTC
+
+permissions:
+  contents: write
+
+concurrency:
+  group: feed-update
+  cancel-in-progress: true
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Generate docs feed
+        run: |
+          python - <<'PY'
+          import os, json, time, shutil, math
+          from datetime import datetime, timezone
+          from urllib.request import Request, urlopen
+          from urllib.parse import urlencode
+
+          # ====== CONFIG ======
+          OUT_ROOT = "docs"
+          OHLCV_DIR = os.path.join(OUT_ROOT, "ohlcv", "binance")
+          DERIV_DIR = os.path.join(OUT_ROOT, "deriv", "binance")
+
+          CORE5  = ["BTCUSDT", "ETHUSDT", "SOLUSDT", "BNBUSDT", "LINKUSDT"]
+          CORE10 = ["BTCUSDT", "ETHUSDT", "SOLUSDT", "BNBUSDT", "AVAXUSDT", "LINKUSDT", "AAVEUSDT", "UNIUSDT", "ARBUSDT", "ADAUSDT"]
+
+          TFS = {"H1":"1h","H4":"4h","D1":"1d","W1":"1w"}   # логические ТФ
+          LIMIT_PER_TF = {"H1": 720, "H4": 600, "D1": 520, "W1": 260}
+
+          BINANCE_BASE = "https://fapi.binance.com"   # primary
+          BYBIT_BASE   = "https://api.bybit.com"      # fallback
+
+          # Bybit intervals
+          BYBIT_INTERVAL = {"H1":"60","H4":"240","D1":"D","W1":"W"}
+          BYBIT_OI_INTERVAL = {"H1":"1h","H4":"4h","D1":"1d"}  # Bybit OI supports these (W1 нет)
+          # =====================
+
+          def ensure_dir(p: str):
+            os.makedirs(p, exist_ok=True)
+
+          def write_text(path: str, text: str):
+            ensure_dir(os.path.dirname(path))
+            with open(path, "w", encoding="utf-8", newline="\n") as f:
+              f.write(text)
+
+          def write_json(path: str, obj):
+            ensure_dir(os.path.dirname(path))
+            with open(path, "w", encoding="utf-8", newline="\n") as f:
+              json.dump(obj, f, ensure_ascii=False, separators=(",", ":"))
+
+          def iso_utc(ms: int) -> str:
+            return datetime.fromtimestamp(ms/1000, tz=timezone.utc).isoformat().replace("+00:00", "Z")
+
+          def now_iso() -> str:
+            return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+
+          def http_json(url: str, retries=3, timeout=30):
+            last_err = None
+            for i in range(retries):
+              try:
+                req = Request(url, headers={"User-Agent":"gh-actions-feed/1.1"})
+                with urlopen(req, timeout=timeout) as r:
+                  data = r.read().decode("utf-8")
+                return json.loads(data)
+              except Exception as e:
+                last_err = e
+                time.sleep(1.25 * (2 ** i))
+            raise RuntimeError(f"HTTP failed: {url} ; err={last_err}")
+
+          def b_url(path: str, params=None):
+            url = BINANCE_BASE + path
+            if params:
+              url += "?" + urlencode(params)
+            return url
+
+          def y_url(path: str, params=None):
+            url = BYBIT_BASE + path
+            if params:
+              url += "?" + urlencode(params)
+            return url
+
+          def interval_ms(tfk: str) -> int:
+            if tfk == "H1": return 60*60*1000
+            if tfk == "H4": return 4*60*60*1000
+            if tfk == "D1": return 24*60*60*1000
+            if tfk == "W1": return 7*24*60*60*1000
+            return 0
+
+          # ---------- BINANCE ----------
+          def fetch_klines_binance(symbol: str, tf_key: str, limit: int):
+            interval = TFS[tf_key].lower()  # 1h/4h/1d/1w
+            data = http_json(b_url("/fapi/v1/klines", {"symbol": symbol, "interval": interval, "limit": limit}))
+            if not isinstance(data, list) or len(data) == 0:
+              raise RuntimeError("empty binance klines")
+            return data
+
+          def fetch_deriv_binance(symbol: str):
+            premium = http_json(b_url("/fapi/v1/premiumIndex", {"symbol": symbol}))
+            funding = http_json(b_url("/fapi/v1/fundingRate", {"symbol": symbol, "limit": 200}))
+            oi_now  = http_json(b_url("/fapi/v1/openInterest", {"symbol": symbol}))
+
+            # OI history best-effort
+            oi_hist = []
+            try:
+              raw = http_json(b_url("/futures/data/openInterestHist", {"symbol": symbol, "period":"1h", "limit": 240}))
+              if isinstance(raw, list):
+                for r in raw:
+                  try:
+                    oi_hist.append([int(r["timestamp"]), float(r["sumOpenInterest"]), float(r.get("sumOpenInterestValue", 0.0))])
+                  except Exception:
+                    pass
+            except Exception:
+              pass
+
+            funding_series = []
+            if isinstance(funding, list):
+              for r in funding:
+                try:
+                  funding_series.append([int(r["fundingTime"]), float(r["fundingRate"])])
+                except Exception:
+                  pass
+
+            return {
+              "source": "binance",
+              "premium_index": premium,
+              "funding_8h_series": funding_series,
+              "open_interest_now": oi_now,
+              "open_interest_hist_1h": oi_hist
+            }
+
+          # ---------- BYBIT (fallback) ----------
+          def fetch_klines_bybit(symbol: str, tf_key: str, limit: int):
+            interval = BYBIT_INTERVAL[tf_key]
+            data = http_json(y_url("/v5/market/kline", {"category":"linear", "symbol": symbol, "interval": interval, "limit": min(1000, max(1, limit))}))
+            # format: {"retCode":0,...,"result":{"list":[[startTime,open,high,low,close,volume,turnover], ...]}} ; list sorted reverse by startTime
+            if not isinstance(data, dict) or data.get("retCode") != 0:
+              raise RuntimeError(f"bybit retCode={data.get('retCode')} retMsg={data.get('retMsg')}")
+            rows = (data.get("result") or {}).get("list") or []
+            if not rows:
+              raise RuntimeError("empty bybit klines")
+            # normalize to ascending time, compute closeTime
+            rows = sorted(rows, key=lambda r: int(r[0]))
+            ms = interval_ms(tf_key)
+            now_ms = int(time.time()*1000)
+            out = []
+            for r in rows:
+              ot = int(r[0])
+              ct = ot + ms - 1 if ms else ot
+              # берем только закрытые свечи
+              if now_ms <= ct:
+                continue
+              out.append([ot, r[1], r[2], r[3], r[4], r[5], ct])
+            if not out:
+              raise RuntimeError("no closed bybit klines after filter")
+            return out
+
+          def fetch_deriv_bybit(symbol: str):
+            # tickers (mark/index + current funding + OI now)
+            tick = http_json(y_url("/v5/market/tickers", {"category":"linear", "symbol": symbol}))
+            if not isinstance(tick, dict) or tick.get("retCode") != 0:
+              raise RuntimeError(f"bybit tickers retCode={tick.get('retCode')} retMsg={tick.get('retMsg')}")
+            tlist = (tick.get("result") or {}).get("list") or []
+            t0 = tlist[0] if tlist else {}
+
+            # funding history (best-effort)
+            fund = http_json(y_url("/v5/market/funding/history", {"category":"linear", "symbol": symbol, "limit": 200}))
+            funding_series = []
+            if isinstance(fund, dict) and fund.get("retCode") == 0:
+              flist = (fund.get("result") or {}).get("list") or []
+              for r in flist:
+                try:
+                  funding_series.append([int(r["fundingRateTimestamp"]), float(r["fundingRate"])])
+                except Exception:
+                  pass
+
+            # OI history 1h best-effort
+            oi_hist = []
+            try:
+              oi = http_json(y_url("/v5/market/open-interest", {"category":"linear", "symbol": symbol, "intervalTime":"1h", "limit": 200}))
+              if isinstance(oi, dict) and oi.get("retCode") == 0:
+                olist = (oi.get("result") or {}).get("list") or []
+                # docs: timestamp + openInterest, etc. (оставляем сыро, но нормализуем)
+                for r in olist:
+                  try:
+                    ts = int(r.get("timestamp"))
+                    val = float(r.get("openInterest"))
+                    valv = float(r.get("openInterestValue", 0.0))
+                    oi_hist.append([ts, val, valv])
+                  except Exception:
+                    pass
+            except Exception:
+              pass
+
+            # normalize
+            premium_index = {
+              "markPrice": t0.get("markPrice"),
+              "indexPrice": t0.get("indexPrice"),
+              "fundingRate": t0.get("fundingRate"),
+              "nextFundingTime": t0.get("nextFundingTime"),
+              "basis": t0.get("basis"),
+              "basisRate": t0.get("basisRate"),
+            }
+            oi_now = {
+              "openInterest": t0.get("openInterest"),
+              "openInterestValue": t0.get("openInterestValue"),
+            }
+
+            return {
+              "source": "bybit",
+              "premium_index": premium_index,
+              "funding_8h_series": funding_series,
+              "open_interest_now": oi_now,
+              "open_interest_hist_1h": oi_hist
+            }
+
+          # ---------- ORCHESTRATION ----------
+          def fetch_klines(symbol: str, tfk: str):
+            limit = LIMIT_PER_TF.get(tfk, 500)
+            # Try Binance first, then Bybit
+            try:
+              kl = fetch_klines_binance(symbol, tfk, limit)
+              # Binance already has closeTime and includes current candle; keep as-is but drop last if not closed
+              now_ms = int(time.time()*1000)
+              out = []
+              for row in kl:
+                ot = int(row[0]); ct = int(row[6])
+                if now_ms <= ct:  # not closed
+                  continue
+                o,h,l,c,v = row[1], row[2], row[3], row[4], row[5]
+                out.append([ot, o, h, l, c, v, ct])
+              if not out:
+                raise RuntimeError("no closed binance klines after filter")
+              return "binance", out
+            except Exception as e1:
+              # fallback Bybit
+              kl2 = fetch_klines_bybit(symbol, tfk, limit)
+              return "bybit", kl2
+
+          def fetch_deriv(symbol: str):
+            try:
+              return fetch_deriv_binance(symbol)
+            except Exception:
+              return fetch_deriv_bybit(symbol)
+
+          def build_ohlcv_outputs(symbols):
+            out = {}
+            source_map = {}
+            for sym in symbols:
+              out[sym] = {}
+              source_map[sym] = {}
+              for tfk in TFS.keys():
+                src, rows = fetch_klines(sym, tfk)
+                source_map[sym][tfk] = src
+
+                last = rows[-1]
+                last_close_ms = int(last[6])
+
+                # txt post-line: openTime,open,high,low,close,volume,closeTime
+                lines = []
+                pack_rows = []
+                for r in rows:
+                  ot, o, h, l, c, v, ct = int(r[0]), r[1], r[2], r[3], r[4], r[5], int(r[6])
+                  lines.append(f"{ot},{o},{h},{l},{c},{v},{ct}")
+                  pack_rows.append([ot, float(o), float(h), float(l), float(c), float(v)])
+
+                txt_path = os.path.join(OHLCV_DIR, f"{sym}_{tfk}.txt")
+                write_text(txt_path, "\n".join(lines) + "\n")
+
+                out[sym][tfk] = {
+                  "tf": tfk,
+                  "bars": len(pack_rows),
+                  "last_close_utc": iso_utc(last_close_ms),
+                  "data": pack_rows
+                }
+
+                time.sleep(0.08)  # лёгкий анти-лимит
+            return out, source_map
+
+          def build_deriv_outputs(symbols):
+            out = {}
+            warnings = []
+            for sym in symbols:
+              try:
+                out[sym] = fetch_deriv(sym)
+              except Exception as e:
+                out[sym] = {"source":"none"}
+                warnings.append(f"{sym}: {e}")
+              time.sleep(0.05)
+            return out, warnings
+
+          def build_index_html(gen_utc: str):
+            links = [
+              ("feed.json", "feed.json (one entrypoint)"),
+              ("ohlcv/binance/symbols.json", "ohlcv manifest: symbols.json"),
+              ("ohlcv/binance/core5_latest.json", "OHLCV pack: core5_latest.json"),
+              ("ohlcv/binance/core10_latest.json", "OHLCV pack: core10_latest.json"),
+              ("deriv/binance/core5_latest.json", "DERIV pack: core5_latest.json"),
+              ("deriv/binance/core10_latest.json", "DERIV pack: core10_latest.json"),
+            ]
+            rows = []
+            for sym in CORE10:
+              parts = [f'<a href="ohlcv/binance/{sym}_{tfk}.txt">{tfk}</a>' for tfk in TFS.keys()]
+              rows.append(f"<tr><td>{sym}</td><td>{' | '.join(parts)}</td></tr>")
+            html = f"""<!doctype html>
+<html><head><meta charset="utf-8"><title>OHLCV Feed</title></head>
+<body>
+<h1>OHLCV/DERIV Feed</h1>
+<p>updated_utc: <code>{gen_utc}</code></p>
+<ul>
+{''.join([f'<li><a href="{href}">{label}</a></li>' for href,label in links])}
+</ul>
+<h2>Per-symbol OHLCV files</h2>
+<table border="1" cellpadding="6" cellspacing="0">
+<tr><th>Symbol</th><th>TF files</th></tr>
+{''.join(rows)}
+</table>
+</body></html>"""
+            write_text(os.path.join(OUT_ROOT, "index.html"), html)
+
+          def main():
+            gen = now_iso()
+
+            ensure_dir(OHLCV_DIR)
+            ensure_dir(DERIV_DIR)
+            ensure_dir(OUT_ROOT)
+
+            # manifest
+            symbols_manifest = {
+              "tfs": list(TFS.keys()),
+              "updated_utc": gen,
+              "symbols": CORE10
+            }
+            write_json(os.path.join(OHLCV_DIR, "symbols.json"), symbols_manifest)
+
+            # OHLCV (hard requirement)
+            core10_ohlcv, core10_srcmap = build_ohlcv_outputs(CORE10)
+            core5_ohlcv  = {k: core10_ohlcv[k] for k in CORE5}
+            core5_srcmap = {k: core10_srcmap[k] for k in CORE5}
+
+            meta = {
+              "source_primary": "binance-usdm-public",
+              "source_fallback": "bybit-linear-public",
+              "timezone": "UTC",
+              "generated_utc": gen,
+              "tfs": list(TFS.keys()),
+              "ohlcv_source_map": core10_srcmap
+            }
+            write_json(os.path.join(OHLCV_DIR, "core5_latest.json"),  {"meta": meta | {"ohlcv_source_map": core5_srcmap}, "data": core5_ohlcv})
+            write_json(os.path.join(OHLCV_DIR, "core10_latest.json"), {"meta": meta, "data": core10_ohlcv})
+
+            # Derivatives (best-effort)
+            core10_deriv, warnings = build_deriv_outputs(CORE10)
+            core5_deriv = {k: core10_deriv[k] for k in CORE5}
+            dmeta = {
+              "timezone": "UTC",
+              "generated_utc": gen,
+              "warnings": warnings[:100]
+            }
+            write_json(os.path.join(DERIV_DIR, "core5_latest.json"),  {"meta": dmeta, "data": core5_deriv})
+            write_json(os.path.join(DERIV_DIR, "core10_latest.json"), {"meta": dmeta, "data": core10_deriv})
+
+            # one entrypoint
+            feed = {
+              "updated_utc": gen,
+              "entrypoints": {
+                "manifest": "ohlcv/binance/symbols.json",
+                "core5_ohlcv": "ohlcv/binance/core5_latest.json",
+                "core10_ohlcv": "ohlcv/binance/core10_latest.json",
+                "core5_deriv": "deriv/binance/core5_latest.json",
+                "core10_deriv": "deriv/binance/core10_latest.json"
+              }
+            }
+            write_json(os.path.join(OUT_ROOT, "feed.json"), feed)
+
+            # clickable index
+            build_index_html(gen)
+
+            # .nojekyll
+            write_text(os.path.join(OUT_ROOT, ".nojekyll"), "")
+
+            print("OK. generated_utc =", gen)
+
+          if __name__ == "__main__":
+            main()
+          PY
+
+      - name: Commit & push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs
+          if git diff --cached --quiet; then
+            echo "No changes"
+            exit 0
+          fi
+          git commit -m "update feed: $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+          git push
