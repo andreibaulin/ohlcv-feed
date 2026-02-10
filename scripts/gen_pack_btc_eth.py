@@ -10,7 +10,7 @@ from typing import Any, Dict, List, Tuple
 import requests
 
 
-BINANCE_SPOT_KLINES = "https://api.binance.com/api/v3/klines"
+BINANCE_SPOT_KLINES = "https://data-api.binance.vision/api/v3/klines"
 
 SYMBOLS = ["BTCUSDT", "ETHUSDT"]
 
