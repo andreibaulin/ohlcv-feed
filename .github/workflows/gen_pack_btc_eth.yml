@@ -24,7 +24,6 @@ jobs:
         with:
           python-version: "3.11"
 
-      # если у тебя где-то ещё используется requests/прочие зависимости — ставим мягко
       - name: Install deps (optional)
         run: |
           python -m pip install --upgrade pip
@@ -36,53 +35,18 @@ jobs:
 
       - name: Rewrite pack_btc_eth.txt (multiline, no *.txt links)
         run: |
-          python - <<'PY'
-          import json, pathlib
-
-          base = "https://andreibaulin.github.io/ohlcv-feed/ohlcv/binance/"
-          status_path = pathlib.Path("ohlcv/binance/status_btc_eth.json")
-          status = json.loads(status_path.read_text(encoding="utf-8"))
-          v = status["updated_utc"]
-
-          lines = [
-              f"# updated_utc: {v}",
-              "# cache-bust: все ссылки ниже содержат ?v=updated_utc",
-              "# MAIN",
-              f"{base}core5_latest.json?v={v}",
-              f"{base}symbols.json?v={v}",
-              f"{base}status_btc_eth.json?v={v}",
-              f"{base}pack_btc_eth.json?v={v}",
-              f"{base}pack_btc_eth.txt?v={v}",
-          ]
-
-          for sym in ["BTCUSDT", "ETHUSDT"]:
-              lines.append(f"# {sym}")
-              for tf in ["H1", "H4", "D1", "W1"]:
-                  fns = status["symbols"][sym][tf]["files"]
-                  lines.append(f"{base}{fns['last']}?v={v}")
-                  lines.append(f"{base}{fns['tail']}?v={v}")
-
-          txt = "\n".join(lines) + "\n"
-
-          # пишем в root output
-          out1 = pathlib.Path("ohlcv/binance/pack_btc_eth.txt")
-          out1.write_text(txt, encoding="utf-8")
-
-          # если Pages у тебя настроен на /docs — переписываем и там (если папка существует)
-          out2 = pathlib.Path("docs/ohlcv/binance/pack_btc_eth.txt")
-          if out2.parent.exists():
-              out2.parent.mkdir(parents=True, exist_ok=True)
-              out2.write_text(txt, encoding="utf-8")
-          PY
+          python scripts/rewrite_pack_btc_eth_txt.py
 
       - name: Commit & push if changed
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          # добавляем оба варианта (root + docs) если существуют
-          git add ohlcv/binance/pack_btc_eth.txt ohlcv/binance/status_btc_eth.json ohlcv/binance/pack_btc_eth.json ohlcv/binance/core5_latest.json ohlcv/binance/symbols.json ohlcv/binance/*_last.json ohlcv/binance/*_tail*.json ohlcv/binance/*_H1.txt ohlcv/binance/*_H4.txt ohlcv/binance/*_D1.txt ohlcv/binance/*_W1.txt 2>/dev/null || true
-          git add docs/ohlcv/binance/pack_btc_eth.txt docs/ohlcv/binance/status_btc_eth.json docs/ohlcv/binance/pack_btc_eth.json docs/ohlcv/binance/core5_latest.json docs/ohlcv/binance/symbols.json docs/ohlcv/binance/*_last.json docs/ohlcv/binance/*_tail*.json docs/ohlcv/binance/*_H1.txt docs/ohlcv/binance/*_H4.txt docs/ohlcv/binance/*_D1.txt docs/ohlcv/binance/*_W1.txt 2>/dev/null || true
+          # добавляем артефакты, не усложняясь паттернами
+          if [ -d "ohlcv/binance" ]; then git add ohlcv/binance; fi
+          if [ -d "docs/ohlcv/binance" ]; then git add docs/ohlcv/binance; fi
+          if [ -f "feed.json" ]; then git add feed.json; fi
+          if [ -f "docs/feed.json" ]; then git add docs/feed.json; fi
 
           if git diff --cached --quiet; then
             echo "No changes."
@@ -91,4 +55,3 @@ jobs:
 
           git commit -m "update btc/eth pack"
           git push
-```0
