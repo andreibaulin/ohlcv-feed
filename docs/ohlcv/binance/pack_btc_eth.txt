@@ -1,5 +1,5 @@
-# updated_utc: 2026-02-10T11:34:04.014657Z
-# cache-bust tip: add ?v=2026-02-10T11:34:04.014657Z
+# updated_utc: 2026-02-10T12:06:49.251998Z
+# cache-bust tip: add ?v=2026-02-10T12:06:49.251998Z
 
 # MAIN
 https://andreibaulin.github.io/ohlcv-feed/ohlcv/binance/core5_latest.json
