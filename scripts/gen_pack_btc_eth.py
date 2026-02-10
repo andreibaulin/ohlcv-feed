@@ -13,7 +13,7 @@ from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
 
-# ---- CONFIG (совпадает с тем, что у тебя уже отдаётся в symbols/status)
+# ---- CONFIG
 SYMBOLS_CORE10: List[str] = [
     "BTCUSDT", "ETHUSDT", "SOLUSDT", "BNBUSDT", "AVAXUSDT",
     "LINKUSDT", "AAVEUSDT", "UNIUSDT", "ARBUSDT", "ADAUSDT",
@@ -27,19 +27,21 @@ TF_TO_INTERVAL: Dict[str, str] = {"H1": "1h", "H4": "4h", "D1": "1d", "W1": "1w"
 # Binance max limit = 1000
 FETCH_LIMIT: Dict[str, int] = {"H1": 1000, "H4": 1000, "D1": 1000, "W1": 1000}
 
-# Хвост для “быстрого дерганья”
+# Хвосты для “быстрого дёрганья”
 TAIL_N: Dict[str, int] = {"H1": 240, "H4": 240, "D1": 400, "W1": 260}
 
 # фильтр незакрытого бара
 SAFETY_MS = 60_000
 
-# ВАЖНО: первым — data-api (у тебя уже был 451 на api.binance.com из GitHub Actions)
+# ВАЖНО: data-api первым (чтобы не ловить 451 на раннерах)
 KLINES_ENDPOINTS = [
     "https://data-api.binance.vision/api/v3/klines",
     "https://api.binance.com/api/v3/klines",
 ]
 
-OUT_DIR = Path("ohlcv/binance")
+# Выводим в ОБА места (на случай, что Pages настроен либо на root, либо на /docs)
+OUT_ROOTS = [Path("."), Path("docs")]
+
 PAGES_BASE_URL = "https://andreibaulin.github.io/ohlcv-feed/ohlcv/binance/"
 
 
@@ -92,7 +94,6 @@ def fetch_klines(symbol: str, tf: str, retries_per_endpoint: int = 3) -> List[li
     params = {"symbol": symbol, "interval": interval, "limit": limit}
 
     last_err: Optional[Exception] = None
-
     for base in KLINES_ENDPOINTS:
         for attempt in range(1, retries_per_endpoint + 1):
             try:
@@ -132,7 +133,7 @@ def main() -> None:
     by_symbol_tf: Dict[str, Dict[str, Dict[str, Any]]] = {}
     errors: List[str] = []
 
-    # 1) тянем свечи и пишем файлы (как у тебя сейчас в ohlcv/binance)
+    # 1) тянем свечи и держим в памяти
     for symbol in SYMBOLS_CORE10:
         by_symbol_tf[symbol] = {}
         for tf in TFS:
@@ -145,21 +146,12 @@ def main() -> None:
                 n = TAIL_N[tf]
                 tail_bars = bars[-n:] if len(bars) > n else bars
 
-                txt_name = f"{symbol}_{tf}.txt"
-                last_name = f"{symbol}_{tf}_last.json"
-                tail_name = f"{symbol}_{tf}_tail{n}.json"
-
-                # Пишем все три (txt оставляем, но В PACK больше не даём ссылку на txt)
-                write_json(OUT_DIR / txt_name, bars, compact=True)
-                write_json(OUT_DIR / last_name, bars[-1], compact=True)
-                write_json(OUT_DIR / tail_name, tail_bars, compact=True)
-
                 by_symbol_tf[symbol][tf] = {
                     "bars": bars,
                     "tail": tail_bars,
-                    "txt_name": txt_name,
-                    "last_name": last_name,
-                    "tail_name": tail_name,
+                    "txt_name": f"{symbol}_{tf}.txt",
+                    "last_name": f"{symbol}_{tf}_last.json",
+                    "tail_name": f"{symbol}_{tf}_tail{n}.json",
                 }
 
                 time.sleep(0.12)
@@ -171,16 +163,15 @@ def main() -> None:
                     raise
                 continue
 
-    # 2) symbols.json (как сейчас)
+    # 2) symbols.json
     symbols_json = {
         "tfs": TFS,
         "updated_utc": updated_utc,
         "symbols": SYMBOLS_CORE10,
         "desired_symbols": SYMBOLS_CORE10,
     }
-    write_json(OUT_DIR / "symbols.json", symbols_json, compact=True)
 
-    # 3) status_btc_eth.json (как сейчас; txt остаётся внутри статуса — ок)
+    # 3) status_btc_eth.json
     status_symbols: Dict[str, Any] = {}
     for symbol in ["BTCUSDT", "ETHUSDT"]:
         status_symbols[symbol] = {}
@@ -195,9 +186,8 @@ def main() -> None:
             }
 
     status_btc_eth = {"updated_utc": updated_utc, "base_url": PAGES_BASE_URL, "symbols": status_symbols}
-    write_json(OUT_DIR / "status_btc_eth.json", status_btc_eth, compact=True)
 
-    # 4) pack_btc_eth.json (данные одним файлом — удобно)
+    # 4) pack_btc_eth.json (данные одним файлом)
     pack_btc_eth_json: Dict[str, Any] = {
         "meta": {
             "updated_utc": updated_utc,
@@ -217,9 +207,7 @@ def main() -> None:
                 "tail_n": TAIL_N[tf],
             }
 
-    write_json(OUT_DIR / "pack_btc_eth.json", pack_btc_eth_json, compact=True)
-
-    # 5) core5_latest.json (как витрина, H4/D1/W1)
+    # 5) core5_latest.json (H4/D1/W1)
     core5_latest: Dict[str, Any] = {
         "meta": {"source": "Binance spot /api/v3/klines", "timezone": "UTC", "generated_utc": updated_utc},
         "tfs": ["H4", "D1", "W1"],
@@ -238,11 +226,8 @@ def main() -> None:
                 "last_close_utc": last_close_utc,
                 "data": info["tail"],
             }
-    write_json(OUT_DIR / "core5_latest.json", core5_latest, compact=True)
 
-    # 6) pack_btc_eth.txt — ВАЖНЫЙ ФИКС:
-    #    - многострочный
-    #    - БЕЗ ссылок на тяжёлые *.txt (оставляем только last+tail)
+    # 6) pack_btc_eth.txt — МНОГОСТРОЧНЫЙ, и БЕЗ *.txt ссылок
     v = updated_utc
     lines: List[str] = []
     lines.append(f"# updated_utc: {updated_utc}")
@@ -261,7 +246,29 @@ def main() -> None:
             lines.append(make_url(f"{symbol}_{tf}_last.json", v))
             lines.append(make_url(f"{symbol}_{tf}_tail{n}.json", v))
 
-    atomic_write_text(OUT_DIR / "pack_btc_eth.txt", "\n".join(lines) + "\n")
+    pack_txt = "\n".join(lines) + "\n"
+
+    # 7) Пишем файлы в оба каталога (./ohlcv и ./docs/ohlcv)
+    for root in OUT_ROOTS:
+        out_dir = root / "ohlcv" / "binance"
+        out_dir.mkdir(parents=True, exist_ok=True)
+
+        # per symbol/tf
+        for symbol in SYMBOLS_CORE10:
+            for tf in TFS:
+                info = by_symbol_tf.get(symbol, {}).get(tf)
+                if not info:
+                    continue
+                write_json(out_dir / info["txt_name"], info["bars"], compact=True)          # пусть лежит
+                write_json(out_dir / info["last_name"], info["bars"][-1], compact=True)
+                write_json(out_dir / info["tail_name"], info["tail"], compact=True)
+
+        # manifests
+        write_json(out_dir / "symbols.json", symbols_json, compact=True)
+        write_json(out_dir / "status_btc_eth.json", status_btc_eth, compact=True)
+        write_json(out_dir / "pack_btc_eth.json", pack_btc_eth_json, compact=True)
+        write_json(out_dir / "core5_latest.json", core5_latest, compact=True)
+        atomic_write_text(out_dir / "pack_btc_eth.txt", pack_txt)
 
     if errors:
         print("WARN non-critical errors:")
