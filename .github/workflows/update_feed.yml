@@ -1,46 +1,48 @@
-name: Update feed
+name: OHLCV Feed Update (Binance)
 
 on:
   workflow_dispatch:
   schedule:
-    - cron: "7 * * * *" # раз в час достаточно для H1/H4
+    - cron: "*/15 * * * *"  # раз в 15 минут — достаточно, но не пропускает закрытия
 
 concurrency:
-  group: update-feed
+  group: ohlcv-feed
   cancel-in-progress: true
 
 permissions:
   contents: write
 
 jobs:
-  update:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           fetch-depth: 1
 
-      - name: Set up Python
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      - name: Generate feed
-        env:
-          OHLCV_OUT_DIR: docs
+      - name: Generate OHLCV
         run: |
-          python -u scripts/generate_feed.py
+          python -u scripts/build_ohlcv_binance.py
 
-      - name: Commit and push
+      - name: Commit & push (only if changed)
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          git add docs
+          git add ohlcv docs feed.json 2>/dev/null || true
+          git add ohlcv docs 2>/dev/null || true
+          git add ohlcv 2>/dev/null || true
+
           if git diff --cached --quiet; then
-            echo "No changes to commit"
+            echo "No changes"
             exit 0
           fi
 
-          git commit -m "update feed: $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+          git commit -m "ohlcv: update $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
           git push
