@@ -3,7 +3,7 @@ name: OHLCV Feed Update (Binance)
 on:
   workflow_dispatch:
   schedule:
-    - cron: "*/15 * * * *"  # раз в 15 минут — достаточно, но не пропускает закрытия
+    - cron: "*/15 * * * *" # раз в 15 минут — достаточно, но не пропускает закрытия
 
 concurrency:
   group: ohlcv-feed
@@ -29,6 +29,10 @@ jobs:
       - name: Generate OHLCV
         run: |
           python -u scripts/build_ohlcv_binance.py
+
+      - name: Rewrite pack_btc_eth.txt (multiline, no *.txt links)
+        run: |
+          python -u scripts/rewrite_pack_btc_eth_txt.py
 
       - name: Commit & push (only if changed)
         run: |
