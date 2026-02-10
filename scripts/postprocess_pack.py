@@ -1,153 +1,158 @@
-from __future__ import annotations
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
 import json
 from pathlib import Path
 from datetime import datetime, timezone
 
+SYMBOLS = ["BTCUSDT", "ETHUSDT"]
+TFS = ["H1", "H4", "D1", "W1"]
+
+TAIL_N = {
+    "H1": 240,
+    "H4": 240,
+    "D1": 400,
+    "W1": 260,
+}
+
 BASE_URL = "https://andreibaulin.github.io/ohlcv-feed/ohlcv/binance/"
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
-DOCS_DIR = REPO_ROOT / "docs" / "ohlcv" / "binance"
 
-SYMBOLS = ["BTCUSDT", "ETHUSDT"]
-TFS = ["H1", "H4", "D1", "W1"]  # если H1 не нужен — убери из списка
+def iso_utc_now() -> str:
+    return datetime.now(timezone.utc).isoformat(timespec="microseconds").replace("+00:00", "Z")
 
 
-def utc_now_iso() -> str:
-    return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+def ms_to_iso(ms: int) -> str:
+    return datetime.fromtimestamp(ms / 1000, tz=timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
 
 
-def safe_json_load(path: Path):
+def safe_int(x):
     try:
-        txt = path.read_text(encoding="utf-8").strip()
-        if not txt:
-            return None
-        return json.loads(txt)
+        return int(x)
     except Exception:
         return None
 
 
-def extract_last_close_utc(obj) -> str | None:
-    """
-    Поддержка форматов:
-    - Binance klines: list[list], где closeTime на индексе 6
-    - Обёртки вида {"data":[...]}
-    """
-    if obj is None:
-        return None
-
-    if isinstance(obj, dict) and "data" in obj:
-        obj = obj.get("data")
-
-    if not isinstance(obj, list) or not obj:
-        return None
-
-    last = obj[-1]
-
-    # dict-формат (на всякий)
-    if isinstance(last, dict):
-        close_ms = (
-            last.get("closeTime")
-            or last.get("close_time")
-            or last.get("close_time_ms")
-            or last.get("t_close")
-        )
-        try:
-            close_ms = int(close_ms)
-        except Exception:
-            return None
-        return datetime.fromtimestamp(close_ms / 1000, tz=timezone.utc).isoformat().replace("+00:00", "Z")
-
-    # list-формат Binance
-    if isinstance(last, list):
-        close_ms = None
-        if len(last) >= 7:
-            close_ms = last[6]
-        elif len(last) >= 1:
-            close_ms = last[0]
-
-        try:
-            close_ms = int(close_ms)
-        except Exception:
-            return None
-
-        return datetime.fromtimestamp(close_ms / 1000, tz=timezone.utc).isoformat().replace("+00:00", "Z")
-
-    return None
+def read_json_array(path: Path):
+    # ожидаем JSON массив (как Binance klines: [ [...], [...], ... ])
+    with path.open("r", encoding="utf-8") as f:
+        return json.load(f)
 
 
-def build_status(updated_utc: str) -> dict:
+def write_json(path: Path, obj):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8") as f:
+        json.dump(obj, f, ensure_ascii=False, separators=(",", ":"))
+
+
+def write_jsonl(path: Path, rows):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8") as f:
+        for r in rows:
+            f.write(json.dumps(r, ensure_ascii=False, separators=(",", ":")))
+            f.write("\n")
+
+
+def build_versioned(url: str, v: str) -> str:
+    # кеш-бастинг через query (работает и в браузере, и в любых клиентах)
+    return f"{url}?v={v}"
+
+
+def main():
+    repo_root = Path(__file__).resolve().parents[1]
+    out_dir = repo_root / "docs" / "ohlcv" / "binance"
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    updated_utc = iso_utc_now()
+
     status = {
         "updated_utc": updated_utc,
         "base_url": BASE_URL,
         "symbols": {},
     }
 
+    # Генерим *_last.json и *_tail*.jsonl из существующих *.txt
     for sym in SYMBOLS:
         status["symbols"][sym] = {}
         for tf in TFS:
-            fname = f"{sym}_{tf}.txt"
-            fpath = DOCS_DIR / fname
-            if not fpath.exists():
+            src_txt = out_dir / f"{sym}_{tf}.txt"
+            if not src_txt.exists():
+                # если файла нет — просто пропускаем
                 continue
 
-            obj = safe_json_load(fpath)
-            last_close_utc = extract_last_close_utc(obj)
+            data = read_json_array(src_txt)
+            bars = len(data) if isinstance(data, list) else 0
+
+            last = data[-1] if bars > 0 else None
+            last_open_ms = None
+            last_close_ms = None
+
+            # Binance kline обычно: [open_time, ..., close_time, ...]
+            if isinstance(last, list) and len(last) >= 1:
+                last_open_ms = safe_int(last[0])
+            if isinstance(last, list) and len(last) >= 7:
+                last_close_ms = safe_int(last[6])
+
+            # last.json
+            last_path = out_dir / f"{sym}_{tf}_last.json"
+            write_json(last_path, last if last is not None else [])
+
+            # tail.jsonl
+            n = TAIL_N.get(tf, 240)
+            tail_rows = data[-n:] if (isinstance(data, list) and bars > 0) else []
+            tail_path = out_dir / f"{sym}_{tf}_tail{n}.jsonl"
+            write_jsonl(tail_path, tail_rows)
 
             status["symbols"][sym][tf] = {
-                "url": f"{BASE_URL}{fname}?v={updated_utc}",
-                "file": fname,
-                "last_close_utc": last_close_utc,
+                "bars": bars,
+                "last_open_time_ms": last_open_ms,
+                "last_open_utc": ms_to_iso(last_open_ms) if last_open_ms is not None else None,
+                "last_close_time_ms": last_close_ms,
+                "last_close_utc": ms_to_iso(last_close_ms) if last_close_ms is not None else None,
+                "files": {
+                    "txt": f"{sym}_{tf}.txt",
+                    "last": f"{sym}_{tf}_last.json",
+                    "tail": f"{sym}_{tf}_tail{n}.jsonl",
+                },
             }
 
-    return status
+    # status_btc_eth.json
+    write_json(out_dir / "status_btc_eth.json", status)
 
-
-def build_pack_lines(updated_utc: str) -> list[str]:
-    lines: list[str] = []
+    # pack_btc_eth.txt — пишем только реальные файлы + добавляем ?v=updated_utc
+    lines = []
     lines.append(f"# updated_utc: {updated_utc}")
-    lines.append(f"# cache-bust tip: add ?v={updated_utc} to any URL (already applied below)")
+    lines.append("# cache-bust: все ссылки ниже уже содержат ?v=updated_utc")
+
+    # MAIN
+    main_files = ["core5_latest.json", "symbols.json", "status_btc_eth.json", "pack_btc_eth.txt"]
     lines.append("")
     lines.append("# MAIN")
-
-    main_files = [
-        "core5_latest.json",
-        "symbols.json",
-        "status_btc_eth.json",
-        "pack_btc_eth.txt",
-    ]
-
     for f in main_files:
-        # pack и status мы создаём сами; остальные могут быть или нет — но обычно есть
-        lines.append(f"{BASE_URL}{f}?v={updated_utc}")
+        lines.append(build_versioned(BASE_URL + f, updated_utc))
 
     for sym in SYMBOLS:
         lines.append("")
         lines.append(f"# {sym}")
         for tf in TFS:
-            fname = f"{sym}_{tf}.txt"
-            if (DOCS_DIR / fname).exists():
-                lines.append(f"{BASE_URL}{fname}?v={updated_utc}")
+            # добавляем только если исходный txt существует
+            if not (out_dir / f"{sym}_{tf}.txt").exists():
+                continue
 
-    lines.append("")
-    return lines
+            n = TAIL_N.get(tf, 240)
+            candidates = [
+                f"{sym}_{tf}.txt",
+                f"{sym}_{tf}_last.json",
+                f"{sym}_{tf}_tail{n}.jsonl",
+            ]
+            for f in candidates:
+                p = out_dir / f
+                if p.exists():
+                    lines.append(build_versioned(BASE_URL + f, updated_utc))
 
-
-def main():
-    DOCS_DIR.mkdir(parents=True, exist_ok=True)
-
-    updated_utc = utc_now_iso()
-
-    # 1) status_btc_eth.json
-    status = build_status(updated_utc)
-    (DOCS_DIR / "status_btc_eth.json").write_text(
-        json.dumps(status, ensure_ascii=False, separators=(", ", ": ")),
-        encoding="utf-8",
-    )
-
-    # 2) pack_btc_eth.txt (многострочный, без 404-ссылок на *_last/*_tail)
-    pack_lines = build_pack_lines(updated_utc)
-    (DOCS_DIR / "pack_btc_eth.txt").write_text("\n".join(pack_lines), encoding="utf-8")
+    pack_path = out_dir / "pack_btc_eth.txt"
+    pack_path.parent.mkdir(parents=True, exist_ok=True)
+    pack_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
 if __name__ == "__main__":
