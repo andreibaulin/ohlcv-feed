@@ -1,36 +1,20 @@
-# updated_utc: 2026-02-10T12:54:37.226501Z
-# cache-bust tip: add ?v=2026-02-10T12:54:37.226501Z
+# updated_utc: 2026-02-10T13:11:15.698020Z
+# cache-bust tip: add ?v=2026-02-10T13:11:15.698020Z to any URL (already applied below)
 
 # MAIN
-https://andreibaulin.github.io/ohlcv-feed/ohlcv/binance/core5_latest.json
-https://andreibaulin.github.io/ohlcv-feed/ohlcv/binance/symbols.json
-https://andreibaulin.github.io/ohlcv-feed/ohlcv/binance/status_btc_eth.json
-https://andreibaulin.github.io/ohlcv-feed/ohlcv/binance/pack_btc_eth.txt
+https://andreibaulin.github.io/ohlcv-feed/ohlcv/binance/core5_latest.json?v=2026-02-10T13:11:15.698020Z
+https://andreibaulin.github.io/ohlcv-feed/ohlcv/binance/symbols.json?v=2026-02-10T13:11:15.698020Z
+https://andreibaulin.github.io/ohlcv-feed/ohlcv/binance/status_btc_eth.json?v=2026-02-10T13:11:15.698020Z
+https://andreibaulin.github.io/ohlcv-feed/ohlcv/binance/pack_btc_eth.txt?v=2026-02-10T13:11:15.698020Z
 
 # BTCUSDT
-https://andreibaulin.github.io/ohlcv-feed/ohlcv/binance/BTCUSDT_H1.txt
-https://andreibaulin.github.io/ohlcv-feed/ohlcv/binance/BTCUSDT_H1_last.json
-https://andreibaulin.github.io/ohlcv-feed/ohlcv/binance/BTCUSDT_H1_tail240.jsonl
-https://andreibaulin.github.io/ohlcv-feed/ohlcv/binance/BTCUSDT_H4.txt
-https://andreibaulin.github.io/ohlcv-feed/ohlcv/binance/BTCUSDT_H4_last.json
-https://andreibaulin.github.io/ohlcv-feed/ohlcv/binance/BTCUSDT_H4_tail240.jsonl
-https://andreibaulin.github.io/ohlcv-feed/ohlcv/binance/BTCUSDT_D1.txt
-https://andreibaulin.github.io/ohlcv-feed/ohlcv/binance/BTCUSDT_D1_last.json
-https://andreibaulin.github.io/ohlcv-feed/ohlcv/binance/BTCUSDT_D1_tail400.jsonl
-https://andreibaulin.github.io/ohlcv-feed/ohlcv/binance/BTCUSDT_W1.txt
-https://andreibaulin.github.io/ohlcv-feed/ohlcv/binance/BTCUSDT_W1_last.json
-https://andreibaulin.github.io/ohlcv-feed/ohlcv/binance/BTCUSDT_W1_tail260.jsonl
+https://andreibaulin.github.io/ohlcv-feed/ohlcv/binance/BTCUSDT_H1.txt?v=2026-02-10T13:11:15.698020Z
+https://andreibaulin.github.io/ohlcv-feed/ohlcv/binance/BTCUSDT_H4.txt?v=2026-02-10T13:11:15.698020Z
+https://andreibaulin.github.io/ohlcv-feed/ohlcv/binance/BTCUSDT_D1.txt?v=2026-02-10T13:11:15.698020Z
+https://andreibaulin.github.io/ohlcv-feed/ohlcv/binance/BTCUSDT_W1.txt?v=2026-02-10T13:11:15.698020Z
 
 # ETHUSDT
-https://andreibaulin.github.io/ohlcv-feed/ohlcv/binance/ETHUSDT_H1.txt
-https://andreibaulin.github.io/ohlcv-feed/ohlcv/binance/ETHUSDT_H1_last.json
-https://andreibaulin.github.io/ohlcv-feed/ohlcv/binance/ETHUSDT_H1_tail240.jsonl
-https://andreibaulin.github.io/ohlcv-feed/ohlcv/binance/ETHUSDT_H4.txt
-https://andreibaulin.github.io/ohlcv-feed/ohlcv/binance/ETHUSDT_H4_last.json
-https://andreibaulin.github.io/ohlcv-feed/ohlcv/binance/ETHUSDT_H4_tail240.jsonl
-https://andreibaulin.github.io/ohlcv-feed/ohlcv/binance/ETHUSDT_D1.txt
-https://andreibaulin.github.io/ohlcv-feed/ohlcv/binance/ETHUSDT_D1_last.json
-https://andreibaulin.github.io/ohlcv-feed/ohlcv/binance/ETHUSDT_D1_tail400.jsonl
-https://andreibaulin.github.io/ohlcv-feed/ohlcv/binance/ETHUSDT_W1.txt
-https://andreibaulin.github.io/ohlcv-feed/ohlcv/binance/ETHUSDT_W1_last.json
-https://andreibaulin.github.io/ohlcv-feed/ohlcv/binance/ETHUSDT_W1_tail260.jsonl
+https://andreibaulin.github.io/ohlcv-feed/ohlcv/binance/ETHUSDT_H1.txt?v=2026-02-10T13:11:15.698020Z
+https://andreibaulin.github.io/ohlcv-feed/ohlcv/binance/ETHUSDT_H4.txt?v=2026-02-10T13:11:15.698020Z
+https://andreibaulin.github.io/ohlcv-feed/ohlcv/binance/ETHUSDT_D1.txt?v=2026-02-10T13:11:15.698020Z
+https://andreibaulin.github.io/ohlcv-feed/ohlcv/binance/ETHUSDT_W1.txt?v=2026-02-10T13:11:15.698020Z
