@@ -1,41 +1,46 @@
-name: Update OHLCV feed
+name: Update feed
 
 on:
   workflow_dispatch:
   schedule:
-    - cron: "2 * * * *"   # ловим свежак вскоре после закрытия часа (UTC)
-    - cron: "12 * * * *"  # страховка, если первый запуск задержался/сорвался
+    - cron: "7 * * * *" # раз в час достаточно для H1/H4
+
+concurrency:
+  group: update-feed
+  cancel-in-progress: true
 
 permissions:
   contents: write
 
-concurrency:
-  group: ohlcv-feed
-  cancel-in-progress: true
-
 jobs:
   update:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
-
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
 
-      - uses: actions/setup-python@v5
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
       - name: Generate feed
-        run: python scripts/generate_feed.py
+        env:
+          OHLCV_OUT_DIR: docs
+        run: |
+          python -u scripts/generate_feed.py
 
-      - name: Postprocess pack + status + tails
-        run: python scripts/postprocess_pack.py
-
-      - name: Commit & push if changed
+      - name: Commit and push
         run: |
           git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
           git add docs
-          git diff --cached --quiet && exit 0
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+
           git commit -m "update feed: $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
           git push
