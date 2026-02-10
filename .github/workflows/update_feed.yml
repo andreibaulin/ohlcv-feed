@@ -3,7 +3,7 @@ name: Update OHLCV feed
 on:
   workflow_dispatch:
   schedule:
-    - cron: "7 * * * *" # hourly at :07 UTC
+    - cron: "1-59/5 * * * *" # every 5 minutes (UTC), at :01, :06, :11, ...
 
 permissions:
   contents: write
@@ -25,11 +25,14 @@ jobs:
       - name: Generate feed
         run: python scripts/generate_feed.py
 
+      - name: Postprocess (packs / tails / status / index)
+        run: python scripts/postprocess_feed.py
+
       - name: Commit & push if changed
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add docs scripts
+          git add docs ohlcv scripts
           git diff --cached --quiet && exit 0
           git commit -m "update feed: $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
           git push
