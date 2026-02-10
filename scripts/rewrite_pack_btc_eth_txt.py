@@ -1,75 +1,61 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 import json
-from pathlib import Path
+import pathlib
+
+BASE_URL = "https://andreibaulin.github.io/ohlcv-feed/ohlcv/binance/"
+OUT_REL = pathlib.Path("ohlcv/binance/pack_btc_eth.txt")
+STATUS_REL = pathlib.Path("ohlcv/binance/status_btc_eth.json")
 
 
-BASE_FALLBACK = "https://andreibaulin.github.io/ohlcv-feed/ohlcv/binance/"
-SYMS = ["BTCUSDT", "ETHUSDT"]
-TFS = ["H1", "H4", "D1", "W1"]
+def build_lines(status: dict) -> str:
+    updated = status.get("updated_utc", "")
+    v = updated
 
+    lines = []
+    lines.append(f"# updated_utc: {updated}")
+    lines.append("# cache-bust: все ссылки ниже содержат ?v=updated_utc")
+    lines.append("")
+    lines.append("# MAIN")
+    lines.append(f"{BASE_URL}core5_latest.json?v={v}")
+    lines.append(f"{BASE_URL}symbols.json?v={v}")
+    lines.append(f"{BASE_URL}status_btc_eth.json?v={v}")
+    lines.append(f"{BASE_URL}pack_btc_eth.json?v={v}")
+    lines.append(f"{BASE_URL}pack_btc_eth.txt?v={v}")
+    lines.append("")
 
-def build_pack_text(status: dict) -> str:
-    v = status.get("updated_utc")
-    if not v:
-        raise RuntimeError("status_btc_eth.json missing updated_utc")
-
-    base = status.get("base_url") or BASE_FALLBACK
-    if not base.endswith("/"):
-        base += "/"
-
-    lines = [
-        f"# updated_utc: {v}",
-        "# cache-bust: все ссылки ниже содержат ?v=updated_utc",
-        "# MAIN",
-        f"{base}core5_latest.json?v={v}",
-        f"{base}symbols.json?v={v}",
-        f"{base}status_btc_eth.json?v={v}",
-        f"{base}pack_btc_eth.json?v={v}",
-        f"{base}pack_btc_eth.txt?v={v}",
-    ]
-
-    symbols_block = status.get("symbols", {})
-
-    for sym in SYMS:
+    symbols = status.get("symbols", {})
+    for sym in ["BTCUSDT", "ETHUSDT"]:
         lines.append(f"# {sym}")
-        sym_block = symbols_block.get(sym, {})
-        for tf in TFS:
-            tf_block = sym_block.get(tf, {})
-            files = tf_block.get("files", {})
-            last_fn = files.get("last")
-            tail_fn = files.get("tail")
-            if last_fn:
-                lines.append(f"{base}{last_fn}?v={v}")
-            if tail_fn:
-                lines.append(f"{base}{tail_fn}?v={v}")
+        tfs = symbols.get(sym, {})
+        for tf in ["H1", "H4", "D1", "W1"]:
+            info = tfs.get(tf, {})
+            files = info.get("files", {}) if isinstance(info, dict) else {}
+            # КЛЮЧЕВОЕ: НИКАКИХ *.txt В PACK — только last + tail json
+            last = files.get("last")
+            tail = files.get("tail")
+            if last:
+                lines.append(f"{BASE_URL}{last}?v={v}")
+            if tail:
+                lines.append(f"{BASE_URL}{tail}?v={v}")
+        lines.append("")
 
-    return "\n".join(lines) + "\n"
-
-
-def write_if_dir_exists(path: Path, text: str) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(text, encoding="utf-8")
+    return "\n".join(lines).strip() + "\n"
 
 
-def main() -> None:
-    status_path = Path("ohlcv/binance/status_btc_eth.json")
-    if not status_path.exists():
-        raise RuntimeError("Missing ohlcv/binance/status_btc_eth.json (generate step failed?)")
+def main():
+    if not STATUS_REL.exists():
+        raise RuntimeError(f"status file not found: {STATUS_REL}")
 
-    status = json.loads(status_path.read_text(encoding="utf-8"))
-    txt = build_pack_text(status)
+    status = json.loads(STATUS_REL.read_text(encoding="utf-8"))
+    txt = build_lines(status)
 
-    # root output
-    write_if_dir_exists(Path("ohlcv/binance/pack_btc_eth.txt"), txt)
+    # Пишем в root
+    OUT_REL.parent.mkdir(parents=True, exist_ok=True)
+    OUT_REL.write_text(txt, encoding="utf-8")
 
-    # docs output (если Pages настроен на /docs)
-    docs_dir = Path("docs/ohlcv/binance")
-    if docs_dir.exists():
-        write_if_dir_exists(docs_dir / "pack_btc_eth.txt", txt)
-
-    print("OK: rewrote pack_btc_eth.txt")
+    # Если Pages у тебя из /docs — продублируем
+    out2 = pathlib.Path("docs") / OUT_REL
+    out2.parent.mkdir(parents=True, exist_ok=True)
+    out2.write_text(txt, encoding="utf-8")
 
 
 if __name__ == "__main__":
