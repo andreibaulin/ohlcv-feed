@@ -3,7 +3,7 @@ name: Update OHLCV feed
 on:
   workflow_dispatch:
   schedule:
-    - cron: "2 * * * *"   # ловим свежак вскоре после закрытия часа
+    - cron: "2 * * * *"   # ловим свежак вскоре после закрытия часа (UTC)
     - cron: "12 * * * *"  # страховка, если первый запуск задержался/сорвался
 
 permissions:
@@ -28,7 +28,7 @@ jobs:
       - name: Generate feed
         run: python scripts/generate_feed.py
 
-      - name: Postprocess pack + status
+      - name: Postprocess pack + status + tails
         run: python scripts/postprocess_pack.py
 
       - name: Commit & push if changed
