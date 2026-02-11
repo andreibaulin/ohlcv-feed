@@ -12,11 +12,19 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
-
 # ---- CONFIG
+
 SYMBOLS_CORE10: List[str] = [
-    "BTCUSDT", "ETHUSDT", "SOLUSDT", "BNBUSDT", "AVAXUSDT",
-    "LINKUSDT", "AAVEUSDT", "UNIUSDT", "ARBUSDT", "ADAUSDT",
+    "BTCUSDT",
+    "ETHUSDT",
+    "SOLUSDT",
+    "BNBUSDT",
+    "AVAXUSDT",
+    "LINKUSDT",
+    "AAVEUSDT",
+    "UNIUSDT",
+    "ARBUSDT",
+    "ADAUSDT",
 ]
 SYMBOLS_CORE5: List[str] = SYMBOLS_CORE10[:5]
 CRITICAL = {"BTCUSDT", "ETHUSDT"}
@@ -46,6 +54,7 @@ PAGES_BASE_URL = "https://andreibaulin.github.io/ohlcv-feed/ohlcv/binance/"
 
 
 # ---- helpers
+
 def utc_now_iso(microseconds: bool = True) -> str:
     dt = datetime.now(timezone.utc)
     if not microseconds:
@@ -61,7 +70,8 @@ def ms_to_utc_iso(ms: int) -> str:
 def atomic_write_text(path: Path, text: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_suffix(path.suffix + ".tmp")
-    tmp.write_text(text, encoding="utf-8")
+    with tmp.open("w", encoding="utf-8", newline="\n") as f:
+        f.write(text)
     tmp.replace(path)
 
 
@@ -71,6 +81,20 @@ def write_json(path: Path, obj: Any, compact: bool = True) -> None:
     else:
         s = json.dumps(obj, ensure_ascii=False, indent=2) + "\n"
     atomic_write_text(path, s)
+
+
+def write_json_array_multiline(path: Path, rows: Any) -> None:
+    """Write a JSON array, but with one element per line (still valid JSON)."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    with tmp.open("w", encoding="utf-8", newline="\n") as f:
+        f.write("[\n")
+        for i, row in enumerate(rows):
+            if i:
+                f.write(",\n")
+            f.write(json.dumps(row, ensure_ascii=False, separators=(",", ":")))
+        f.write("\n]\n")
+    tmp.replace(path)
 
 
 def http_get_json(url: str, params: Dict[str, Any], timeout: int = 25) -> Any:
@@ -126,6 +150,7 @@ def make_url(file_name: str, v: str) -> str:
 
 
 # ---- main
+
 def main() -> None:
     updated_utc = utc_now_iso(microseconds=True)
     now_ms = int(time.time() * 1000)
@@ -197,6 +222,7 @@ def main() -> None:
         },
         "symbols": {},
     }
+
     for symbol in ["BTCUSDT", "ETHUSDT"]:
         pack_btc_eth_json["symbols"][symbol] = {}
         for tf in TFS:
@@ -213,6 +239,7 @@ def main() -> None:
         "tfs": ["H4", "D1", "W1"],
         "symbols": {},
     }
+
     for sym in SYMBOLS_CORE5:
         core5_latest["symbols"][sym] = {}
         for tf in ["H4", "D1", "W1"]:
@@ -227,26 +254,30 @@ def main() -> None:
                 "data": info["tail"],
             }
 
-    # 6) pack_btc_eth.txt — МНОГОСТРОЧНЫЙ, и БЕЗ *.txt ссылок
+    # 6) pack_btc_eth.txt — МНОГОСТРОЧНЫЙ МАНИФЕСТ (с *.txt, last, tail)
     v = updated_utc
     lines: List[str] = []
     lines.append(f"# updated_utc: {updated_utc}")
     lines.append("# cache-bust: все ссылки ниже содержат ?v=updated_utc")
+    lines.append("")
     lines.append("# MAIN")
     lines.append(make_url("core5_latest.json", v))
     lines.append(make_url("symbols.json", v))
     lines.append(make_url("status_btc_eth.json", v))
     lines.append(make_url("pack_btc_eth.json", v))
     lines.append(make_url("pack_btc_eth.txt", v))
+    lines.append("")
 
     for symbol in ["BTCUSDT", "ETHUSDT"]:
         lines.append(f"# {symbol}")
         for tf in TFS:
             n = TAIL_N[tf]
+            lines.append(make_url(f"{symbol}_{tf}.txt", v))
             lines.append(make_url(f"{symbol}_{tf}_last.json", v))
             lines.append(make_url(f"{symbol}_{tf}_tail{n}.json", v))
+        lines.append("")
 
-    pack_txt = "\n".join(lines) + "\n"
+    pack_txt = "\n".join(lines).rstrip("\n") + "\n"
 
     # 7) Пишем файлы в оба каталога (./ohlcv и ./docs/ohlcv)
     for root in OUT_ROOTS:
@@ -259,7 +290,7 @@ def main() -> None:
                 info = by_symbol_tf.get(symbol, {}).get(tf)
                 if not info:
                     continue
-                write_json(out_dir / info["txt_name"], info["bars"], compact=True)          # пусть лежит
+                write_json_array_multiline(out_dir / info["txt_name"], info["bars"])        # валидный JSON, но построчно
                 write_json(out_dir / info["last_name"], info["bars"][-1], compact=True)
                 write_json(out_dir / info["tail_name"], info["tail"], compact=True)
 
