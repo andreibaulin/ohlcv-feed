@@ -15,9 +15,12 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -29,64 +32,33 @@ jobs:
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
-      - name: Generate OHLCV (binance)
+      - name: Generate OHLCV (Binance)
         run: |
+          test -f scripts/build_ohlcv_binance.py || (echo "Missing scripts/build_ohlcv_binance.py"; ls -la scripts; exit 1)
           python -u scripts/build_ohlcv_binance.py
 
-      - name: Generate pack (json/status/last/tails)
+      - name: Generate pack/status/last/tails
         run: |
-          python scripts/gen_pack_btc_eth.py
+          test -f scripts/gen_pack_btc_eth.py || (echo "Missing scripts/gen_pack_btc_eth.py"; ls -la scripts; exit 1)
+          python -u scripts/gen_pack_btc_eth.py
 
-      - name: Rewrite pack_btc_eth.txt (multiline + cache-bust)
+      - name: Rewrite pack_btc_eth.txt (multiline, stable)
         run: |
-          python - <<'PY'
-          import json
-          from pathlib import Path
-
-          base = "https://andreibaulin.github.io/ohlcv-feed/ohlcv/binance/"
-          status_path = Path("ohlcv/binance/status_btc_eth.json")
-          status = json.loads(status_path.read_text(encoding="utf-8"))
-
-          v = status.get("updated_utc") or "unknown"
-          lines = [
-            f"# updated_utc: {v}",
-            "# cache-bust: все ссылки ниже содержат ?v=updated_utc",
-            "",
-            "# MAIN",
-            f"{base}core5_latest.json?v={v}",
-            f"{base}symbols.json?v={v}",
-            f"{base}status_btc_eth.json?v={v}",
-            f"{base}pack_btc_eth.json?v={v}",
-            "",
-          ]
-
-          for sym in ["BTCUSDT", "ETHUSDT"]:
-            lines.append(f"# {sym}")
-            for tf in ["H1", "H4", "D1", "W1"]:
-              files = status["symbols"][sym][tf]["files"]
-              lines.append(f"{base}{files['last']}?v={v}")
-              lines.append(f"{base}{files['tail']}?v={v}")
-            lines.append("")
-
-          txt = "\n".join(lines).rstrip() + "\n"
-
-          Path("ohlcv/binance").mkdir(parents=True, exist_ok=True)
-          Path("ohlcv/binance/pack_btc_eth.txt").write_text(txt, encoding="utf-8")
-
-          docs_dir = Path("docs/ohlcv/binance")
-          if docs_dir.parent.parent.exists():
-            docs_dir.mkdir(parents=True, exist_ok=True)
-            (docs_dir / "pack_btc_eth.txt").write_text(txt, encoding="utf-8")
-          PY
+          test -f scripts/rewrite_pack_btc_eth_txt.py || (echo "Missing scripts/rewrite_pack_btc_eth_txt.py"; ls -la scripts; exit 1)
+          python -u scripts/rewrite_pack_btc_eth_txt.py
 
       - name: Commit & push if changed
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add ohlcv docs feed.json docs/feed.json 2>/dev/null || true
+
+          # добавляем только то, что реально может обновляться
+          git add ohlcv docs feed.json docs/feed.json .nojekyll index.html start.html 2>/dev/null || true
+
           if git diff --cached --quiet; then
             echo "No changes."
             exit 0
           fi
+
           git commit -m "binance: update ohlcv + pack"
           git push
