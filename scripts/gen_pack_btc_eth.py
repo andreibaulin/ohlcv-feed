@@ -11,7 +11,8 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
-# ---- CONFIG
+# ---------------- CONFIG ----------------
+
 SYMBOLS_CORE10: List[str] = [
     "BTCUSDT", "ETHUSDT", "SOLUSDT", "BNBUSDT", "AVAXUSDT",
     "LINKUSDT", "AAVEUSDT", "UNIUSDT", "ARBUSDT", "ADAUSDT",
@@ -22,28 +23,28 @@ CRITICAL = {"BTCUSDT", "ETHUSDT"}
 TFS: List[str] = ["H1", "H4", "D1", "W1"]
 TF_TO_INTERVAL: Dict[str, str] = {"H1": "1h", "H4": "4h", "D1": "1d", "W1": "1w"}
 
-# Binance max limit = 1000
 FETCH_LIMIT: Dict[str, int] = {"H1": 1000, "H4": 1000, "D1": 1000, "W1": 1000}
-
-# Хвосты для “быстрого дёрганья”
 TAIL_N: Dict[str, int] = {"H1": 240, "H4": 240, "D1": 400, "W1": 260}
 
-# фильтр незакрытого бара
-SAFETY_MS = 60_000
+# если интерфейс/где-то ещё “схлопывает переносы” — всё равно будут читабельны маленькие чанки
+CHUNK_SIZE: Dict[str, int] = {"H1": 12, "H4": 10, "D1": 10, "W1": 10}
 
-# ВАЖНО: data-api первым (чтобы не ловить 451 на раннерах)
+SAFETY_MS = 60_000  # отсекаем незакрытый бар
+
+# data-api первым (меньше 451)
 KLINES_ENDPOINTS = [
     "https://data-api.binance.vision/api/v3/klines",
     "https://api.binance.com/api/v3/klines",
 ]
 
-# Выводим в ОБА места (на случай, что Pages настроен либо на root, либо на /docs)
+# пишем в ./ohlcv и ./docs/ohlcv
 OUT_ROOTS = [Path("."), Path("docs")]
 
 PAGES_BASE_URL = "https://andreibaulin.github.io/ohlcv-feed/ohlcv/binance/"
 
 
-# ---- helpers
+# ---------------- HELPERS ----------------
+
 def utc_now_iso(microseconds: bool = True) -> str:
     dt = datetime.now(timezone.utc)
     if not microseconds:
@@ -56,43 +57,86 @@ def ms_to_utc_iso(ms: int) -> str:
     return dt.isoformat().replace("+00:00", "Z")
 
 
+def atomic_write_bytes(path: Path, data: bytes) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    tmp.write_bytes(data)
+    tmp.replace(path)
+
+
 def atomic_write_text(path: Path, text: str) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    tmp = path.with_suffix(path.suffix + ".tmp")
-    tmp.write_text(text, encoding="utf-8")
-    tmp.replace(path)
+    # Явно пишем LF
+    atomic_write_bytes(path, text.encode("utf-8"))
 
 
-def write_json(path: Path, obj: Any, compact: bool = True) -> None:
-    if compact:
-        s = json.dumps(obj, ensure_ascii=False, separators=(",", ":")) + "\n"
-    else:
-        # ВНИМАНИЕ: indent добавляет пробелы => меньше строк поместится в лимитах UI.
-        # Для больших массивов используй write_json_array_lines().
-        s = json.dumps(obj, ensure_ascii=False, indent=2) + "\n"
-    atomic_write_text(path, s)
+def json_compact(obj: Any) -> str:
+    return json.dumps(obj, ensure_ascii=False, separators=(",", ":"))
 
 
-def write_json_array_lines(path: Path, arr: List[Any]) -> None:
+def write_json(path: Path, obj: Any) -> None:
+    atomic_write_text(path, json_compact(obj) + "\n")
+
+
+def write_pack_txt(path: Path, lines: List[str]) -> None:
+    # Даже если где-то переносы ломаются — это не критично для работы (ссылки всё равно парсятся),
+    # но в норме будет многострочно.
+    text = "\n".join(lines).rstrip("\n") + "\n"
+    atomic_write_text(path, text)
+
+
+def write_jsonl(path: Path, rows: List[Any]) -> None:
+    # 1 объект = 1 строка (лучший формат для “хвостов”)
+    # Если где-то переносы реально уничтожаются — тогда используем chunks (ниже).
+    out = []
+    for r in rows:
+        out.append(json_compact(r))
+    atomic_write_text(path, "\n".join(out) + "\n")
+
+
+def write_tail_chunks(base_dir: Path, symbol: str, tf: str, n: int, rows: List[Any], updated_utc: str) -> Dict[str, Any]:
     """
-    Пишет JSON-массив МНОГОСТРОЧНО, БЕЗ ПРОБЕЛОВ:
-    [
-    [..],
-    [..],
-    ...
-    ]
-    Это критично, чтобы файлы нормально открывались в чат-интерфейсах.
+    Пишем:
+      - {symbol}_{tf}_tail{n}_chunks.json  (манифест)
+      - {symbol}_{tf}_tail{n}_p000.json ... (маленькие массивы, обычно одна строка и короткая)
+    Это работает даже если переносы не сохраняются.
     """
-    path.parent.mkdir(parents=True, exist_ok=True)
-    tmp = path.with_suffix(path.suffix + ".tmp")
-    with tmp.open("w", encoding="utf-8") as f:
-        f.write("[\n")
-        for i, item in enumerate(arr):
-            if i:
-                f.write(",\n")
-            f.write(json.dumps(item, ensure_ascii=False, separators=(",", ":")))
-        f.write("\n]\n")
-    tmp.replace(path)
+    chunk_size = CHUNK_SIZE[tf]
+    parts: List[Dict[str, Any]] = []
+
+    total = len(rows)
+    idx = 0
+    part_i = 0
+    while idx < total:
+        part = rows[idx: idx + chunk_size]
+        part_name = f"{symbol}_{tf}_tail{n}_p{part_i:03d}.json"
+        write_json(base_dir / part_name, part)
+
+        parts.append({
+            "file": part_name,
+            "count": len(part),
+            "from_open_time_ms": int(part[0][0]) if part else None,
+            "to_close_time_ms": int(part[-1][6]) if part else None,
+            "url": f"{PAGES_BASE_URL}{part_name}?v={updated_utc}",
+        })
+
+        idx += chunk_size
+        part_i += 1
+
+    manifest_name = f"{symbol}_{tf}_tail{n}_chunks.json"
+    manifest = {
+        "updated_utc": updated_utc,
+        "symbol": symbol,
+        "tf": tf,
+        "tail_n": n,
+        "chunk_size": chunk_size,
+        "parts": parts,
+    }
+    write_json(base_dir / manifest_name, manifest)
+    return {
+        "chunks_manifest": manifest_name,
+        "chunks_manifest_url": f"{PAGES_BASE_URL}{manifest_name}?v={updated_utc}",
+        "parts": parts,
+    }
 
 
 def http_get_json(url: str, params: Dict[str, Any], timeout: int = 25) -> Any:
@@ -100,7 +144,7 @@ def http_get_json(url: str, params: Dict[str, Any], timeout: int = 25) -> Any:
     req = Request(
         full_url,
         headers={
-            "User-Agent": "ohlcv-feed/1.1 (GitHub Actions)",
+            "User-Agent": "ohlcv-feed/1.2 (GitHub Actions)",
             "Accept": "application/json,text/plain,*/*",
         },
         method="GET",
@@ -114,8 +158,8 @@ def fetch_klines(symbol: str, tf: str, retries_per_endpoint: int = 3) -> List[li
     interval = TF_TO_INTERVAL[tf]
     limit = FETCH_LIMIT[tf]
     params = {"symbol": symbol, "interval": interval, "limit": limit}
-    last_err: Optional[Exception] = None
 
+    last_err: Optional[Exception] = None
     for base in KLINES_ENDPOINTS:
         for attempt in range(1, retries_per_endpoint + 1):
             try:
@@ -131,8 +175,7 @@ def fetch_klines(symbol: str, tf: str, retries_per_endpoint: int = 3) -> List[li
 
 
 def simplify_klines(raw: List[list]) -> List[list]:
-    # Формат как сейчас в *_last.json:
-    # [t_ms,"o","h","l","c","v",close_t_ms]
+    # [open_time_ms, "o","h","l","c","v", close_time_ms]
     out: List[list] = []
     for k in raw:
         out.append([int(k[0]), str(k[1]), str(k[2]), str(k[3]), str(k[4]), str(k[5]), int(k[6])])
@@ -148,15 +191,17 @@ def make_url(file_name: str, v: str) -> str:
     return f"{PAGES_BASE_URL}{file_name}?v={v}"
 
 
-# ---- main
+# ---------------- MAIN ----------------
+
 def main() -> None:
     updated_utc = utc_now_iso(microseconds=True)
     now_ms = int(time.time() * 1000)
 
+    # данные в памяти
     by_symbol_tf: Dict[str, Dict[str, Dict[str, Any]]] = {}
     errors: List[str] = []
 
-    # 1) тянем свечи и держим в памяти
+    # 1) тянем свечи
     for symbol in SYMBOLS_CORE10:
         by_symbol_tf[symbol] = {}
         for tf in TFS:
@@ -165,16 +210,15 @@ def main() -> None:
                 bars = only_closed(simplify_klines(raw), now_ms)
                 if len(bars) < 50:
                     raise RuntimeError(f"too few closed bars: {len(bars)}")
+
                 n = TAIL_N[tf]
-                tail_bars = bars[-n:] if len(bars) > n else bars
+                tail = bars[-n:] if len(bars) > n else bars
 
                 by_symbol_tf[symbol][tf] = {
                     "bars": bars,
-                    "tail": tail_bars,
-                    "txt_name": f"{symbol}_{tf}.txt",
-                    "last_name": f"{symbol}_{tf}_last.json",
-                    "tail_name": f"{symbol}_{tf}_tail{n}.json",
+                    "tail": tail,
                     "tail_n": n,
+                    "last": bars[-1],
                 }
 
                 time.sleep(0.12)
@@ -186,6 +230,8 @@ def main() -> None:
                     raise
                 continue
 
+    v = updated_utc
+
     # 2) symbols.json
     symbols_json = {
         "tfs": TFS,
@@ -194,32 +240,34 @@ def main() -> None:
         "desired_symbols": SYMBOLS_CORE10,
     }
 
-    # 3) status_btc_eth.json
+    # 3) status_btc_eth.json (ссылки на last + jsonl + chunks)
     status_symbols: Dict[str, Any] = {}
     for symbol in ["BTCUSDT", "ETHUSDT"]:
         status_symbols[symbol] = {}
         for tf in TFS:
             info = by_symbol_tf[symbol][tf]
-            last_bar = info["bars"][-1]
+            last = info["last"]
+            n = info["tail_n"]
+            txt_ptr = f"{symbol}_{tf}.txt"
+            last_name = f"{symbol}_{tf}_last.json"
+            tail_jsonl = f"{symbol}_{tf}_tail{n}.jsonl"
+            tail_chunks = f"{symbol}_{tf}_tail{n}_chunks.json"
+
             status_symbols[symbol][tf] = {
                 "parse_ok": True,
-                "last_open_utc": ms_to_utc_iso(int(last_bar[0])),
-                "last_close_utc": ms_to_utc_iso(int(last_bar[6])),
+                "last_open_utc": ms_to_utc_iso(int(last[0])),
+                "last_close_utc": ms_to_utc_iso(int(last[6])),
                 "files": {
-                    "txt": info["txt_name"],
-                    "last": info["last_name"],
-                    "tail": info["tail_name"],
+                    "txt": txt_ptr,                 # маленький pointer-файл (не массив)
+                    "last": last_name,              # 1 свеча
+                    "tail_jsonl": tail_jsonl,       # NDJSON
+                    "tail_chunks": tail_chunks,     # манифест маленьких JSON-чанков
                 },
             }
 
-    status_btc_eth = {
-        "updated_utc": updated_utc,
-        "base_url": PAGES_BASE_URL,
-        "symbols": status_symbols,
-    }
+    status_btc_eth = {"updated_utc": updated_utc, "base_url": PAGES_BASE_URL, "symbols": status_symbols}
 
-    # 4) pack_btc_eth.json — ЛЁГКИЙ (без встраивания хвостов)
-    v = updated_utc
+    # 4) pack_btc_eth.json (лёгкий манифест)
     pack_btc_eth_json: Dict[str, Any] = {
         "meta": {
             "updated_utc": updated_utc,
@@ -234,16 +282,18 @@ def main() -> None:
         pack_btc_eth_json["symbols"][symbol] = {}
         for tf in TFS:
             info = by_symbol_tf[symbol][tf]
-            last = info["bars"][-1]
+            n = info["tail_n"]
+            last = info["last"]
             pack_btc_eth_json["symbols"][symbol][tf] = {
                 "last": last,
-                "last_url": make_url(info["last_name"], v),
-                "tail_url": make_url(info["tail_name"], v),
-                "tail_n": info["tail_n"],
                 "last_close_utc": ms_to_utc_iso(int(last[6])),
+                "last_url": make_url(f"{symbol}_{tf}_last.json", v),
+                "tail_jsonl_url": make_url(f"{symbol}_{tf}_tail{n}.jsonl", v),
+                "tail_chunks_url": make_url(f"{symbol}_{tf}_tail{n}_chunks.json", v),
+                "tail_n": n,
             }
 
-    # 5) core5_latest.json — ЛЁГКИЙ (без data массива)
+    # 5) core5_latest.json (лёгкий манифест для H4/D1/W1)
     core5_latest: Dict[str, Any] = {
         "meta": {"source": "Binance spot /api/v3/klines", "timezone": "UTC", "generated_utc": updated_utc},
         "tfs": ["H4", "D1", "W1"],
@@ -255,19 +305,20 @@ def main() -> None:
             info = by_symbol_tf.get(sym, {}).get(tf)
             if not info:
                 continue
-            last = info["bars"][-1]
+            n = info["tail_n"]
+            last = info["last"]
             core5_latest["symbols"][sym][tf] = {
                 "tf": tf,
-                "tail_n": info["tail_n"],
+                "tail_n": n,
                 "last_close_utc": ms_to_utc_iso(int(last[6])),
-                "last_url": make_url(info["last_name"], v),
-                "tail_url": make_url(info["tail_name"], v),
+                "last_url": make_url(f"{sym}_{tf}_last.json", v),
+                "tail_jsonl_url": make_url(f"{sym}_{tf}_tail{n}.jsonl", v),
+                "tail_chunks_url": make_url(f"{sym}_{tf}_tail{n}_chunks.json", v),
             }
 
-    # 6) pack_btc_eth.txt — МНОГОСТРОЧНЫЙ
+    # 6) pack_btc_eth.txt (ссылки)
     lines: List[str] = []
     lines.append(f"# updated_utc: {updated_utc}")
-    lines.append("# cache-bust: все ссылки ниже содержат ?v=updated_utc")
     lines.append("# MAIN")
     lines.append(make_url("core5_latest.json", v))
     lines.append(make_url("symbols.json", v))
@@ -279,10 +330,10 @@ def main() -> None:
         for tf in TFS:
             n = TAIL_N[tf]
             lines.append(make_url(f"{symbol}_{tf}_last.json", v))
-            lines.append(make_url(f"{symbol}_{tf}_tail{n}.json", v))
-    pack_txt = "\n".join(lines) + "\n"
+            lines.append(make_url(f"{symbol}_{tf}_tail{n}.jsonl", v))
+            lines.append(make_url(f"{symbol}_{tf}_tail{n}_chunks.json", v))
 
-    # 7) Пишем файлы в оба каталога (./ohlcv и ./docs/ohlcv)
+    # 7) пишем файлы в оба каталога
     for root in OUT_ROOTS:
         out_dir = root / "ohlcv" / "binance"
         out_dir.mkdir(parents=True, exist_ok=True)
@@ -294,17 +345,39 @@ def main() -> None:
                 if not info:
                     continue
 
-                # ВАЖНО: большие массивы — многострочно
-                write_json_array_lines(out_dir / info["txt_name"], info["bars"])
-                write_json(out_dir / info["last_name"], info["bars"][-1], compact=True)
-                write_json_array_lines(out_dir / info["tail_name"], info["tail"])
+                n = info["tail_n"]
+                tail = info["tail"]
+                last = info["last"]
 
-        # manifests (маленькие)
-        write_json(out_dir / "symbols.json", symbols_json, compact=True)
-        write_json(out_dir / "status_btc_eth.json", status_btc_eth, compact=True)
-        write_json(out_dir / "pack_btc_eth.json", pack_btc_eth_json, compact=True)
-        write_json(out_dir / "core5_latest.json", core5_latest, compact=True)
-        atomic_write_text(out_dir / "pack_btc_eth.txt", pack_txt)
+                # 7.1 last.json (маленький)
+                write_json(out_dir / f"{symbol}_{tf}_last.json", last)
+
+                # 7.2 tail.jsonl (NDJSON)
+                write_jsonl(out_dir / f"{symbol}_{tf}_tail{n}.jsonl", tail)
+
+                # 7.3 tail chunks (железный фолбэк)
+                chunks_meta = write_tail_chunks(out_dir, symbol, tf, n, tail, updated_utc)
+
+                # 7.4 pointer-файл под старое имя *.txt (маленький, всегда открывается)
+                # Можно парсить как JSON: указывает, где хвост и чанки.
+                pointer = {
+                    "updated_utc": updated_utc,
+                    "symbol": symbol,
+                    "tf": tf,
+                    "schema": "[open_time_ms, open, high, low, close, volume, close_time_ms]",
+                    "last_url": make_url(f"{symbol}_{tf}_last.json", v),
+                    "tail_jsonl_url": make_url(f"{symbol}_{tf}_tail{n}.jsonl", v),
+                    "tail_chunks_url": chunks_meta["chunks_manifest_url"],
+                    "tail_n": n,
+                }
+                write_json(out_dir / f"{symbol}_{tf}.txt", pointer)
+
+        # manifests
+        write_json(out_dir / "symbols.json", symbols_json)
+        write_json(out_dir / "status_btc_eth.json", status_btc_eth)
+        write_json(out_dir / "pack_btc_eth.json", pack_btc_eth_json)
+        write_json(out_dir / "core5_latest.json", core5_latest)
+        write_pack_txt(out_dir / "pack_btc_eth.txt", lines)
 
     if errors:
         print("WARN non-critical errors:")
