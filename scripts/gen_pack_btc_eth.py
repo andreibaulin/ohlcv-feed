@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
 from __future__ import annotations
 
 import json
@@ -13,18 +12,9 @@ from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
 # ---- CONFIG
-
 SYMBOLS_CORE10: List[str] = [
-    "BTCUSDT",
-    "ETHUSDT",
-    "SOLUSDT",
-    "BNBUSDT",
-    "AVAXUSDT",
-    "LINKUSDT",
-    "AAVEUSDT",
-    "UNIUSDT",
-    "ARBUSDT",
-    "ADAUSDT",
+    "BTCUSDT", "ETHUSDT", "SOLUSDT", "BNBUSDT", "AVAXUSDT",
+    "LINKUSDT", "AAVEUSDT", "UNIUSDT", "ARBUSDT", "ADAUSDT",
 ]
 SYMBOLS_CORE5: List[str] = SYMBOLS_CORE10[:5]
 CRITICAL = {"BTCUSDT", "ETHUSDT"}
@@ -54,7 +44,6 @@ PAGES_BASE_URL = "https://andreibaulin.github.io/ohlcv-feed/ohlcv/binance/"
 
 
 # ---- helpers
-
 def utc_now_iso(microseconds: bool = True) -> str:
     dt = datetime.now(timezone.utc)
     if not microseconds:
@@ -70,8 +59,7 @@ def ms_to_utc_iso(ms: int) -> str:
 def atomic_write_text(path: Path, text: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_suffix(path.suffix + ".tmp")
-    with tmp.open("w", encoding="utf-8", newline="\n") as f:
-        f.write(text)
+    tmp.write_text(text, encoding="utf-8")
     tmp.replace(path)
 
 
@@ -79,20 +67,30 @@ def write_json(path: Path, obj: Any, compact: bool = True) -> None:
     if compact:
         s = json.dumps(obj, ensure_ascii=False, separators=(",", ":")) + "\n"
     else:
+        # ВНИМАНИЕ: indent добавляет пробелы => меньше строк поместится в лимитах UI.
+        # Для больших массивов используй write_json_array_lines().
         s = json.dumps(obj, ensure_ascii=False, indent=2) + "\n"
     atomic_write_text(path, s)
 
 
-def write_json_array_multiline(path: Path, rows: Any) -> None:
-    """Write a JSON array, but with one element per line (still valid JSON)."""
+def write_json_array_lines(path: Path, arr: List[Any]) -> None:
+    """
+    Пишет JSON-массив МНОГОСТРОЧНО, БЕЗ ПРОБЕЛОВ:
+    [
+    [..],
+    [..],
+    ...
+    ]
+    Это критично, чтобы файлы нормально открывались в чат-интерфейсах.
+    """
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_suffix(path.suffix + ".tmp")
-    with tmp.open("w", encoding="utf-8", newline="\n") as f:
+    with tmp.open("w", encoding="utf-8") as f:
         f.write("[\n")
-        for i, row in enumerate(rows):
+        for i, item in enumerate(arr):
             if i:
                 f.write(",\n")
-            f.write(json.dumps(row, ensure_ascii=False, separators=(",", ":")))
+            f.write(json.dumps(item, ensure_ascii=False, separators=(",", ":")))
         f.write("\n]\n")
     tmp.replace(path)
 
@@ -102,7 +100,7 @@ def http_get_json(url: str, params: Dict[str, Any], timeout: int = 25) -> Any:
     req = Request(
         full_url,
         headers={
-            "User-Agent": "ohlcv-feed/1.0 (GitHub Actions)",
+            "User-Agent": "ohlcv-feed/1.1 (GitHub Actions)",
             "Accept": "application/json,text/plain,*/*",
         },
         method="GET",
@@ -116,8 +114,8 @@ def fetch_klines(symbol: str, tf: str, retries_per_endpoint: int = 3) -> List[li
     interval = TF_TO_INTERVAL[tf]
     limit = FETCH_LIMIT[tf]
     params = {"symbol": symbol, "interval": interval, "limit": limit}
-
     last_err: Optional[Exception] = None
+
     for base in KLINES_ENDPOINTS:
         for attempt in range(1, retries_per_endpoint + 1):
             try:
@@ -133,7 +131,8 @@ def fetch_klines(symbol: str, tf: str, retries_per_endpoint: int = 3) -> List[li
 
 
 def simplify_klines(raw: List[list]) -> List[list]:
-    # Формат как сейчас в *_last.json: [t_ms,"o","h","l","c","v",close_t_ms]
+    # Формат как сейчас в *_last.json:
+    # [t_ms,"o","h","l","c","v",close_t_ms]
     out: List[list] = []
     for k in raw:
         out.append([int(k[0]), str(k[1]), str(k[2]), str(k[3]), str(k[4]), str(k[5]), int(k[6])])
@@ -150,7 +149,6 @@ def make_url(file_name: str, v: str) -> str:
 
 
 # ---- main
-
 def main() -> None:
     updated_utc = utc_now_iso(microseconds=True)
     now_ms = int(time.time() * 1000)
@@ -167,7 +165,6 @@ def main() -> None:
                 bars = only_closed(simplify_klines(raw), now_ms)
                 if len(bars) < 50:
                     raise RuntimeError(f"too few closed bars: {len(bars)}")
-
                 n = TAIL_N[tf]
                 tail_bars = bars[-n:] if len(bars) > n else bars
 
@@ -177,6 +174,7 @@ def main() -> None:
                     "txt_name": f"{symbol}_{tf}.txt",
                     "last_name": f"{symbol}_{tf}_last.json",
                     "tail_name": f"{symbol}_{tf}_tail{n}.json",
+                    "tail_n": n,
                 }
 
                 time.sleep(0.12)
@@ -207,12 +205,21 @@ def main() -> None:
                 "parse_ok": True,
                 "last_open_utc": ms_to_utc_iso(int(last_bar[0])),
                 "last_close_utc": ms_to_utc_iso(int(last_bar[6])),
-                "files": {"txt": info["txt_name"], "last": info["last_name"], "tail": info["tail_name"]},
+                "files": {
+                    "txt": info["txt_name"],
+                    "last": info["last_name"],
+                    "tail": info["tail_name"],
+                },
             }
 
-    status_btc_eth = {"updated_utc": updated_utc, "base_url": PAGES_BASE_URL, "symbols": status_symbols}
+    status_btc_eth = {
+        "updated_utc": updated_utc,
+        "base_url": PAGES_BASE_URL,
+        "symbols": status_symbols,
+    }
 
-    # 4) pack_btc_eth.json (данные одним файлом)
+    # 4) pack_btc_eth.json — ЛЁГКИЙ (без встраивания хвостов)
+    v = updated_utc
     pack_btc_eth_json: Dict[str, Any] = {
         "meta": {
             "updated_utc": updated_utc,
@@ -227,57 +234,53 @@ def main() -> None:
         pack_btc_eth_json["symbols"][symbol] = {}
         for tf in TFS:
             info = by_symbol_tf[symbol][tf]
+            last = info["bars"][-1]
             pack_btc_eth_json["symbols"][symbol][tf] = {
-                "last": info["bars"][-1],
-                "tail": info["tail"],
-                "tail_n": TAIL_N[tf],
+                "last": last,
+                "last_url": make_url(info["last_name"], v),
+                "tail_url": make_url(info["tail_name"], v),
+                "tail_n": info["tail_n"],
+                "last_close_utc": ms_to_utc_iso(int(last[6])),
             }
 
-    # 5) core5_latest.json (H4/D1/W1)
+    # 5) core5_latest.json — ЛЁГКИЙ (без data массива)
     core5_latest: Dict[str, Any] = {
         "meta": {"source": "Binance spot /api/v3/klines", "timezone": "UTC", "generated_utc": updated_utc},
         "tfs": ["H4", "D1", "W1"],
         "symbols": {},
     }
-
     for sym in SYMBOLS_CORE5:
         core5_latest["symbols"][sym] = {}
         for tf in ["H4", "D1", "W1"]:
             info = by_symbol_tf.get(sym, {}).get(tf)
             if not info:
                 continue
-            last_close_utc = ms_to_utc_iso(int(info["bars"][-1][6]))
+            last = info["bars"][-1]
             core5_latest["symbols"][sym][tf] = {
                 "tf": tf,
-                "bars": len(info["tail"]),
-                "last_close_utc": last_close_utc,
-                "data": info["tail"],
+                "tail_n": info["tail_n"],
+                "last_close_utc": ms_to_utc_iso(int(last[6])),
+                "last_url": make_url(info["last_name"], v),
+                "tail_url": make_url(info["tail_name"], v),
             }
 
-    # 6) pack_btc_eth.txt — МНОГОСТРОЧНЫЙ МАНИФЕСТ (с *.txt, last, tail)
-    v = updated_utc
+    # 6) pack_btc_eth.txt — МНОГОСТРОЧНЫЙ
     lines: List[str] = []
     lines.append(f"# updated_utc: {updated_utc}")
     lines.append("# cache-bust: все ссылки ниже содержат ?v=updated_utc")
-    lines.append("")
     lines.append("# MAIN")
     lines.append(make_url("core5_latest.json", v))
     lines.append(make_url("symbols.json", v))
     lines.append(make_url("status_btc_eth.json", v))
     lines.append(make_url("pack_btc_eth.json", v))
     lines.append(make_url("pack_btc_eth.txt", v))
-    lines.append("")
-
     for symbol in ["BTCUSDT", "ETHUSDT"]:
         lines.append(f"# {symbol}")
         for tf in TFS:
             n = TAIL_N[tf]
-            lines.append(make_url(f"{symbol}_{tf}.txt", v))
             lines.append(make_url(f"{symbol}_{tf}_last.json", v))
             lines.append(make_url(f"{symbol}_{tf}_tail{n}.json", v))
-        lines.append("")
-
-    pack_txt = "\n".join(lines).rstrip("\n") + "\n"
+    pack_txt = "\n".join(lines) + "\n"
 
     # 7) Пишем файлы в оба каталога (./ohlcv и ./docs/ohlcv)
     for root in OUT_ROOTS:
@@ -290,11 +293,13 @@ def main() -> None:
                 info = by_symbol_tf.get(symbol, {}).get(tf)
                 if not info:
                     continue
-                write_json_array_multiline(out_dir / info["txt_name"], info["bars"])        # валидный JSON, но построчно
-                write_json(out_dir / info["last_name"], info["bars"][-1], compact=True)
-                write_json(out_dir / info["tail_name"], info["tail"], compact=True)
 
-        # manifests
+                # ВАЖНО: большие массивы — многострочно
+                write_json_array_lines(out_dir / info["txt_name"], info["bars"])
+                write_json(out_dir / info["last_name"], info["bars"][-1], compact=True)
+                write_json_array_lines(out_dir / info["tail_name"], info["tail"])
+
+        # manifests (маленькие)
         write_json(out_dir / "symbols.json", symbols_json, compact=True)
         write_json(out_dir / "status_btc_eth.json", status_btc_eth, compact=True)
         write_json(out_dir / "pack_btc_eth.json", pack_btc_eth_json, compact=True)
