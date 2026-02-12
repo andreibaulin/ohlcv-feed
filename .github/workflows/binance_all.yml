@@ -1,9 +1,9 @@
-name: binance-all (ohlcv + pack)
+name: binance-all (ohlcv + ta + deriv)
 
 on:
   workflow_dispatch:
   schedule:
-    - cron: "*/15 * * * *"
+    - cron: "*/30 * * * *"
 
 concurrency:
   group: ohlcv-feed
@@ -15,7 +15,7 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
 
     steps:
       - name: Checkout
@@ -33,12 +33,7 @@ jobs:
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
-      - name: Generate OHLCV (Binance)
-        run: |
-          test -f scripts/build_ohlcv_binance.py || (echo "Missing scripts/build_ohlcv_binance.py"; ls -la scripts; exit 1)
-          python -u scripts/build_ohlcv_binance.py
-
-      - name: Generate pack/status/last/tails
+      - name: Generate OHLCV pack (BTC/ETH)
         run: |
           test -f scripts/gen_pack_btc_eth.py || (echo "Missing scripts/gen_pack_btc_eth.py"; ls -la scripts; exit 1)
           python -u scripts/gen_pack_btc_eth.py
@@ -48,35 +43,49 @@ jobs:
           test -f scripts/build_deriv_binance.py || (echo "Missing scripts/build_deriv_binance.py"; ls -la scripts; exit 1)
           python -u scripts/build_deriv_binance.py
 
+      - name: Generate TA state (levels/zones)
+        run: |
+          test -f scripts/build_ta_state.py || (echo "Missing scripts/build_ta_state.py"; ls -la scripts; exit 1)
+          python -u scripts/build_ta_state.py
+
       - name: Commit & push if changed
         run: |
           set -euo pipefail
-
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          # ВАЖНО: -A чтобы в коммит попадали УДАЛЕНИЯ старых чанков
-          git add -A ohlcv docs feed.json docs/feed.json .nojekyll index.html start.html 2>/dev/null || true
+          # Стаджим ВСЁ (ohlcv/docs/ta/deriv и т.д.), иначе остаются unstaged changes и rebase падает.
+          git add -A
 
           if git diff --cached --quiet; then
             echo "No changes."
             exit 0
           fi
 
-          git commit -m "binance: update ohlcv + pack"
+          git commit -m "binance: update ohlcv/ta/deriv"
 
-          # Если в main заехал новый коммит (ты пушнул руками или другой ран), делаем rebase и пробуем ещё раз.
-          # Без force: если возникнет конфликт — лучше упасть и решить руками.
+          # Safety: если что-то изменилось после коммита (редко, но бывает) — включаем в тот же коммит.
+          git add -A
+          if ! git diff --cached --quiet; then
+            git commit --amend --no-edit
+          fi
+
+          # Если main успел обновиться — rebase + retry (без force).
           for attempt in 1 2 3; do
             echo "Push attempt ${attempt}/3..."
-            if git pull --rebase origin main; then
+            git fetch origin main
+            if git rebase origin/main; then
               if git push; then
                 exit 0
               fi
+            else
+              echo "Rebase failed; aborting..."
+              git rebase --abort || true
             fi
             echo "Push rejected; retrying in 5s..."
             sleep 5
           done
 
-          echo "ERROR: push failed after retries (remote advanced too fast or rebase conflict)."
+          echo "ERROR: push failed after retries."
+          git status --porcelain || true
           exit 1
