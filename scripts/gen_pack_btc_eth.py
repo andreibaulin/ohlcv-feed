@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -54,6 +55,14 @@ OUT_ROOTS = [Path("."), Path("docs")]
 
 PAGES_BASE_URL = "https://andreibaulin.github.io/ohlcv-feed/ohlcv/binance/"
 
+# 0 (default) = базовая схема (7 полей)
+# 1 = расширенная схема (добавляет quote volume, trades, taker buy base/quote)
+EXTRA_FIELDS = os.getenv("OHLCV_EXTRA_FIELDS", "0").strip() in {"1", "true", "True", "yes", "YES"}
+
+SCHEMA_BASIC = "[open_time_ms, open, high, low, close, volume, close_time_ms]"
+SCHEMA_EXTRA = "[open_time_ms, open, high, low, close, volume, close_time_ms, quote_asset_volume, number_of_trades, taker_buy_base_volume, taker_buy_quote_volume]"
+SCHEMA = SCHEMA_EXTRA if EXTRA_FIELDS else SCHEMA_BASIC
+
 # ---------------- HELPERS ----------------
 
 
@@ -80,6 +89,20 @@ def write_json(path: Path, obj: Any) -> None:
     # компактно (в одну строку) чтобы не раздувать репо
     s = json.dumps(obj, ensure_ascii=False, separators=(",", ":")) + "\n"
     atomic_write_bytes(path, s.encode("utf-8"))
+
+
+def write_json_array_multiline(path: Path, rows: List[Any]) -> None:
+    """JSON-массив, но каждая строка = 1 элемент массива (чтобы клиенты не падали на одной гигантской строке)."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    with tmp.open("w", encoding="utf-8") as f:
+        f.write("[\n")
+        for i, r in enumerate(rows):
+            if i:
+                f.write(",\n")
+            f.write(json.dumps(r, ensure_ascii=False, separators=(",", ":")))
+        f.write("\n]\n")
+    tmp.replace(path)
 
 
 def http_get_json(base_url: str, params: Dict[str, Any], timeout: int = 25) -> Any:
@@ -144,7 +167,8 @@ def write_tail_chunks(
     while idx < total:
         part = rows[idx : idx + chunk_size]
         part_name = f"{symbol}_{tf}_tail{n}_p{part_i:03d}.json"
-        write_json(base_dir / part_name, part)
+        # ВАЖНО: part-файлы пишем многострочно (иначе некоторые клиенты не читают одну длинную строку)
+        write_json_array_multiline(base_dir / part_name, part)
 
         parts.append(
             {
@@ -168,7 +192,7 @@ def write_tail_chunks(
         "chunk_size": chunk_size,
         "parts": parts,
         "total": total,
-        "schema": "[open_time_ms, open, high, low, close, volume, close_time_ms]",
+        "schema": SCHEMA,
     }
     write_json(base_dir / manifest_name, manifest)
 
@@ -260,12 +284,14 @@ def fetch_klines(symbol: str, tf: str, desired: Optional[int] = None, retries_pe
 
 
 def simplify_klines(raw: List[list]) -> List[list]:
-    # [open_time_ms, "o","h","l","c","v", close_time_ms]
+    # База: [open_time_ms, "o","h","l","c","v", close_time_ms]
+    # Extra (если OHLCV_EXTRA_FIELDS=1): +[quote_volume, trades, taker_buy_base, taker_buy_quote]
     out: List[list] = []
     for k in raw:
-        out.append(
-            [int(k[0]), str(k[1]), str(k[2]), str(k[3]), str(k[4]), str(k[5]), int(k[6])]
-        )
+        base = [int(k[0]), str(k[1]), str(k[2]), str(k[3]), str(k[4]), str(k[5]), int(k[6])]
+        if EXTRA_FIELDS and len(k) >= 11:
+            base += [str(k[7]), int(k[8]), str(k[9]), str(k[10])]
+        out.append(base)
     return out
 
 
@@ -315,7 +341,7 @@ def main() -> None:
                     "symbol": symbol,
                     "tf": tf,
                     "updated_utc": updated_utc,
-                    "schema": "[open_time_ms, open, high, low, close, volume, close_time_ms]",
+                    "schema": SCHEMA,
                     "last": last_name,
                     "last_url": make_url(last_name, updated_utc),
                     "tail_n": n,
@@ -369,7 +395,7 @@ def main() -> None:
     # 4) core5_latest.json (пointers для core5)
     core5_latest = {
         "updated_utc": updated_utc,
-        "schema": "[open_time_ms, open, high, low, close, volume, close_time_ms]",
+        "schema": SCHEMA,
         "symbols": {},
     }
     for sym in SYMBOLS_CORE5:
@@ -387,7 +413,7 @@ def main() -> None:
     # 5) pack_btc_eth.json (BTC/ETH одним файлом: только мета+ссылки)
     pack_btc_eth_json = {
         "updated_utc": updated_utc,
-        "schema": "[open_time_ms, open, high, low, close, volume, close_time_ms]",
+        "schema": SCHEMA,
         "symbols": {},
     }
     for sym in ["BTCUSDT", "ETHUSDT"]:

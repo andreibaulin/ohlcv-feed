@@ -21,6 +21,7 @@
 from __future__ import annotations
 
 import json
+import os
 import time
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -56,6 +57,14 @@ BINANCE_ENDPOINTS = [
 
 PAGES_BASE_URL = "https://andreibaulin.github.io/ohlcv-feed/ohlcv/binance/"
 
+# 0 (default) = базовая схема (7 полей)
+# 1 = расширенная схема (добавляет quote volume, trades, taker buy base/quote)
+EXTRA_FIELDS = os.getenv("OHLCV_EXTRA_FIELDS", "0").strip() in {"1", "true", "True", "yes", "YES"}
+
+SCHEMA_BASIC = "[open_time_ms, open, high, low, close, volume, close_time_ms]"
+SCHEMA_EXTRA = "[open_time_ms, open, high, low, close, volume, close_time_ms, quote_asset_volume, number_of_trades, taker_buy_base_volume, taker_buy_quote_volume]"
+SCHEMA = SCHEMA_EXTRA if EXTRA_FIELDS else SCHEMA_BASIC
+
 
 # ---------------- HELPERS ----------------
 
@@ -72,7 +81,26 @@ def atomic_write_text(path: Path, text: str) -> None:
     tmp.write_text(text, encoding="utf-8")
     tmp.replace(path)
 
+def write_json_array_multiline(path: Path, rows: List[Any]) -> None:
+    """JSON-массив, но каждая строка = 1 элемент массива (чтобы клиенты не падали на одной гигантской строке)."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    with tmp.open("w", encoding="utf-8") as f:
+        f.write("[\n")
+        for i, r in enumerate(rows):
+            if i:
+                f.write(",\n")
+            f.write(json.dumps(r, ensure_ascii=False, separators=(",", ":")))
+        f.write("\n]\n")
+    tmp.replace(path)
+
 def write_json(path: Path, obj: Any, compact: bool = True) -> None:
+    # ВАЖНО: массивы свечей (list[list]) пишем многострочно, иначе некоторые клиенты/просмотрщики
+    # не умеют открывать один огромный JSON в одной строке.
+    if compact and isinstance(obj, list) and obj and isinstance(obj[0], (list, dict)):
+        write_json_array_multiline(path, obj)
+        return
+
     if compact:
         s = json.dumps(obj, ensure_ascii=False, separators=(",", ":")) + "\n"
     else:
@@ -160,10 +188,14 @@ def fetch_klines(symbol: str, tf: str, desired: Optional[int] = None, retries: i
     return out
 
 def simplify(raw: List[list]) -> List[list]:
-    # [open_time, open, high, low, close, volume, close_time]
+    # База: [open_time_ms, open, high, low, close, volume, close_time_ms]
+    # Extra (если OHLCV_EXTRA_FIELDS=1): +[quote_volume, trades, taker_buy_base, taker_buy_quote]
     out: List[list] = []
     for k in raw:
-        out.append([int(k[0]), str(k[1]), str(k[2]), str(k[3]), str(k[4]), str(k[5]), int(k[6])])
+        base = [int(k[0]), str(k[1]), str(k[2]), str(k[3]), str(k[4]), str(k[5]), int(k[6])]
+        if EXTRA_FIELDS and len(k) >= 11:
+            base += [str(k[7]), int(k[8]), str(k[9]), str(k[10])]
+        out.append(base)
     return out
 
 def only_closed(bars: List[list], now_ms: int) -> List[list]:
