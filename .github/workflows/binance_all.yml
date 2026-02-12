@@ -43,6 +43,11 @@ jobs:
           test -f scripts/gen_pack_btc_eth.py || (echo "Missing scripts/gen_pack_btc_eth.py"; ls -la scripts; exit 1)
           python -u scripts/gen_pack_btc_eth.py
 
+      - name: Generate derivatives (funding/OI/long-short)
+        run: |
+          test -f scripts/build_deriv_binance.py || (echo "Missing scripts/build_deriv_binance.py"; ls -la scripts; exit 1)
+          python -u scripts/build_deriv_binance.py
+
       - name: Commit & push if changed
         run: |
           git config user.name "github-actions[bot]"
