@@ -21,7 +21,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 1
+          fetch-depth: 0
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -50,6 +50,8 @@ jobs:
 
       - name: Commit & push if changed
         run: |
+          set -euo pipefail
+
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
@@ -62,4 +64,19 @@ jobs:
           fi
 
           git commit -m "binance: update ohlcv + pack"
-          git push
+
+          # Если в main заехал новый коммит (ты пушнул руками или другой ран), делаем rebase и пробуем ещё раз.
+          # Без force: если возникнет конфликт — лучше упасть и решить руками.
+          for attempt in 1 2 3; do
+            echo "Push attempt ${attempt}/3..."
+            if git pull --rebase origin main; then
+              if git push; then
+                exit 0
+              fi
+            fi
+            echo "Push rejected; retrying in 5s..."
+            sleep 5
+          done
+
+          echo "ERROR: push failed after retries (remote advanced too fast or rebase conflict)."
+          exit 1
