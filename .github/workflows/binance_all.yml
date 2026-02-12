@@ -16,6 +16,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -47,8 +48,8 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          # добавляем только то, что реально может обновляться
-          git add ohlcv docs feed.json docs/feed.json .nojekyll index.html start.html 2>/dev/null || true
+          # ВАЖНО: -A чтобы в коммит попадали УДАЛЕНИЯ старых чанков
+          git add -A ohlcv docs feed.json docs/feed.json .nojekyll index.html start.html 2>/dev/null || true
 
           if git diff --cached --quiet; then
             echo "No changes."
