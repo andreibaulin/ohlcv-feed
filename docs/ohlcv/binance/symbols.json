@@ -1,1 +1,1 @@
-{"updated_utc":"2026-02-12T21:43:45.025759Z","tfs":["H1","H4","D1","W1"],"symbols":["BTCUSDT","ETHUSDT","SOLUSDT","BNBUSDT","AVAXUSDT","LINKUSDT","AAVEUSDT","UNIUSDT","ARBUSDT","ADAUSDT"],"desired_symbols":["BTCUSDT","ETHUSDT","SOLUSDT","BNBUSDT","AVAXUSDT","LINKUSDT","AAVEUSDT","UNIUSDT","ARBUSDT","ADAUSDT"]}
+{"updated_utc":"2026-02-12T22:45:32.906933Z","tfs":["H1","H4","D1","W1"],"symbols":["BTCUSDT","ETHUSDT"],"schema":"[open_time_ms, open, high, low, close, volume, close_time_ms]"}
