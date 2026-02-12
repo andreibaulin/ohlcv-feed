@@ -43,8 +43,8 @@ TF_TO_INTERVAL = {"H1":"1h","H4":"4h","D1":"1d","W1":"1w"}
 # Binance max limit = 1000
 FETCH_LIMIT = {"H1": 1000, "H4": 1000, "D1": 1000, "W1": 1000}
 
-# Хвост для анализа (быстро/стабильно)
-TAIL_N = {"H1": 240, "H4": 240, "D1": 400, "W1": 260}
+# Хвост под свинг/структуру
+TAIL_N = {"H1": 240, "H4": 1500, "D1": 2000, "W1": 520}
 
 # фильтруем незакрытый бар (страховка)
 SAFETY_MS = 60_000
@@ -86,23 +86,78 @@ def http_get_json(url: str, params: Dict[str, Any], timeout: int = 25) -> Any:
         raw = r.read()
     return json.loads(raw.decode("utf-8"))
 
-def fetch_klines(symbol: str, tf: str, retries: int = 3) -> List[list]:
-    interval = TF_TO_INTERVAL[tf]
-    limit = FETCH_LIMIT[tf]
+def _try_fetch_one(base: str, params: Dict[str, Any], retries: int) -> List[list]:
     last_err: Optional[Exception] = None
+    for attempt in range(1, retries + 1):
+        try:
+            data = http_get_json(base, params)
+            if not isinstance(data, list):
+                raise RuntimeError(f"unexpected response type: {type(data)}")
+            return data
+        except (HTTPError, URLError, TimeoutError, ValueError, RuntimeError) as e:
+            last_err = e
+            time.sleep(0.7 * attempt)
+    raise RuntimeError(f"fetch failed: {last_err}")
 
-    for base in BINANCE_ENDPOINTS:
-        for attempt in range(1, retries + 1):
+def fetch_klines(symbol: str, tf: str, desired: Optional[int] = None, retries: int = 3) -> List[list]:
+    """
+    Тянем >= desired свечей. Binance лимит 1000/запрос -> пейджинг назад через endTime.
+    """
+    interval = TF_TO_INTERVAL[tf]
+    limit_max = FETCH_LIMIT[tf]
+    want = int(desired or max(limit_max, TAIL_N[tf]))
+    if want <= 0:
+        return []
+
+    seen: Dict[int, list] = {}
+    end_time: Optional[int] = None
+    loops = 0
+
+    while len(seen) < want and loops < 20:
+        remaining = want - len(seen)
+        req_limit = min(limit_max, remaining) if end_time is not None else min(limit_max, want)
+
+        params: Dict[str, Any] = {"symbol": symbol, "interval": interval, "limit": req_limit}
+        if end_time is not None:
+            params["endTime"] = end_time
+
+        data: Optional[List[list]] = None
+        last_err: Optional[Exception] = None
+        for base in BINANCE_ENDPOINTS:
             try:
-                data = http_get_json(base, {"symbol": symbol, "interval": interval, "limit": limit})
-                if not isinstance(data, list):
-                    raise RuntimeError(f"unexpected response type: {type(data)}")
-                return data
-            except (HTTPError, URLError, TimeoutError, ValueError, RuntimeError) as e:
+                data = _try_fetch_one(base, params, retries)
+                break
+            except Exception as e:
                 last_err = e
-                time.sleep(0.7 * attempt)
+                data = None
 
-    raise RuntimeError(f"fetch failed {symbol} {tf}: {last_err}")
+        if data is None:
+            raise RuntimeError(f"fetch failed {symbol} {tf}: {last_err}")
+        if not data:
+            break
+
+        for k in data:
+            try:
+                seen[int(k[0])] = k
+            except Exception:
+                pass
+
+        first_open = int(data[0][0])
+        new_end = first_open - 1
+        if end_time is not None and new_end >= end_time:
+            break
+        end_time = new_end
+
+        if len(data) < req_limit:
+            break
+
+        loops += 1
+        time.sleep(0.12)
+
+    out = [seen[k] for k in sorted(seen.keys())]
+    if len(out) > want:
+        out = out[-want:]
+    return out
 
 def simplify(raw: List[list]) -> List[list]:
     # [open_time, open, high, low, close, volume, close_time]
@@ -141,6 +196,14 @@ def build_into(root: Path, payload: Dict[str, Any]) -> None:
             bars = info["bars"]
             write_json(ohlcv_dir / info["txt_name"], bars, compact=True)
             write_json(ohlcv_dir / info["last_name"], bars[-1], compact=True)
+
+            # чистим старые хвосты, если поменялся tail_n
+            for old in ohlcv_dir.glob(f"{sym}_{tf}_tail*.json"):
+                try:
+                    old.unlink()
+                except FileNotFoundError:
+                    pass
+
             write_json(ohlcv_dir / info["tail_name"], info["tail_bars"], compact=True)
 
     # symbols.json
@@ -218,107 +281,77 @@ def main() -> None:
     }
 
     # status_btc_eth.json
-    status_symbols: Dict[str, Any] = {}
+    status_btc_eth = {
+        "updated_utc": updated_utc,
+        "parse_ok": True,
+        "errors": noncritical_errors,
+        "symbols": {},
+    }
     for sym in ["BTCUSDT", "ETHUSDT"]:
-        status_symbols[sym] = {}
+        status_btc_eth["symbols"][sym] = {}
         for tf in TFS:
-            info = by_symbol_tf[sym][tf]
-            last_bar = info["bars"][-1]
-            status_symbols[sym][tf] = {
-                "parse_ok": True,
-                "last_open_utc": ms_to_iso(int(last_bar[0])),
-                "last_close_utc": ms_to_iso(int(last_bar[6])),
+            n = TAIL_N[tf]
+            status_btc_eth["symbols"][sym][tf] = {
+                "tf": tf,
+                "tail_n": n,
+                "last_close_utc": ms_to_iso(int(by_symbol_tf[sym][tf]["tail_bars"][-1][6])),
                 "files": {
-                    "txt": info["txt_name"],
-                    "last": info["last_name"],
-                    "tail": info["tail_name"],
+                    "txt": by_symbol_tf[sym][tf]["txt_name"],
+                    "last": by_symbol_tf[sym][tf]["last_name"],
+                    "tail": by_symbol_tf[sym][tf]["tail_name"],
+                },
+                "urls": {
+                    "txt": url(by_symbol_tf[sym][tf]["txt_name"], updated_utc),
+                    "last": url(by_symbol_tf[sym][tf]["last_name"], updated_utc),
+                    "tail": url(by_symbol_tf[sym][tf]["tail_name"], updated_utc),
                 },
             }
 
-    status_btc_eth = {
-        "updated_utc": updated_utc,
-        "base_url": PAGES_BASE_URL,
-        "symbols": status_symbols,
-    }
+    # core5_latest.json
+    core5_latest = {"updated_utc": updated_utc, "symbols": {}}
+    for sym in SYMBOLS_CORE5:
+        core5_latest["symbols"][sym] = {}
+        for tf in TFS:
+            n = TAIL_N[tf]
+            core5_latest["symbols"][sym][tf] = {
+                "tf": tf,
+                "tail_n": n,
+                "last_close_utc": ms_to_iso(int(by_symbol_tf[sym][tf]["tail_bars"][-1][6])),
+                "last_url": url(by_symbol_tf[sym][tf]["last_name"], updated_utc),
+                "tail_url": url(by_symbol_tf[sym][tf]["tail_name"], updated_utc),
+            }
 
-    # pack_btc_eth.json (всё нужное одним запросом)
-    pack_btc_eth_json: Dict[str, Any] = {
-        "meta": {
-            "updated_utc": updated_utc,
-            "source": "Binance spot /api/v3/klines",
-            "timezone": "UTC",
-            "schema": "[open_time_ms, open, high, low, close, volume, close_time_ms]",
-        },
-        "symbols": {},
-    }
+    # pack_btc_eth.json
+    pack_btc_eth_json = {"updated_utc": updated_utc, "symbols": {}}
     for sym in ["BTCUSDT", "ETHUSDT"]:
         pack_btc_eth_json["symbols"][sym] = {}
         for tf in TFS:
-            info = by_symbol_tf[sym][tf]
+            n = TAIL_N[tf]
             pack_btc_eth_json["symbols"][sym][tf] = {
-                "last": info["bars"][-1],
-                "tail": info["tail_bars"],
-                "tail_n": TAIL_N[tf],
+                "tf": tf,
+                "tail_n": n,
+                "last_close_utc": ms_to_iso(int(by_symbol_tf[sym][tf]["tail_bars"][-1][6])),
+                "last_url": url(by_symbol_tf[sym][tf]["last_name"], updated_utc),
+                "tail_url": url(by_symbol_tf[sym][tf]["tail_name"], updated_utc),
             }
 
-    # pack_btc_eth.txt (многострочный + cache-bust)
-    v = updated_utc
-    lines: List[str] = []
-    lines.append(f"# updated_utc: {updated_utc}")
-    lines.append("# cache-bust: все ссылки ниже содержат ?v=updated_utc")
-    lines.append("# MAIN")
-    lines.append(url("core5_latest.json", v))
-    lines.append(url("symbols.json", v))
-    lines.append(url("status_btc_eth.json", v))
-    lines.append(url("pack_btc_eth.json", v))
-    lines.append(url("pack_btc_eth.txt", v))
+    # pack_btc_eth.txt (многострочный)
+    pack_lines: List[str] = []
+    pack_lines.append(url("status_btc_eth.json", updated_utc))
     for sym in ["BTCUSDT", "ETHUSDT"]:
-        lines.append(f"# {sym}")
         for tf in TFS:
             n = TAIL_N[tf]
-            lines.append(url(f"{sym}_{tf}.txt", v))
-            lines.append(url(f"{sym}_{tf}_last.json", v))
-            lines.append(url(f"{sym}_{tf}_tail{n}.json", v))
-    pack_btc_eth_txt = "\n".join(lines) + "\n"
+            pack_lines.append(url(f"{sym}_{tf}_last.json", updated_utc))
+            pack_lines.append(url(f"{sym}_{tf}_tail{n}.json", updated_utc))
+    pack_lines.append(url("pack_btc_eth.json", updated_utc))
+    pack_btc_eth_txt = "\n".join(pack_lines) + "\n"
 
-    # core5_latest.json (удобный пакет, как у тебя уже есть)
-    core5_latest: Dict[str, Any] = {
-        "meta": {
-            "source": "Binance spot /api/v3/klines",
-            "timezone": "UTC",
-            "generated_utc": updated_utc,
-        },
-        "tfs": ["H4", "D1", "W1"],
-        "symbols": {},
-    }
-    for sym in SYMBOLS_CORE5:
-        core5_latest["symbols"][sym] = {}
-        for tf in ["H4", "D1", "W1"]:
-            info = by_symbol_tf[sym][tf]
-            last_close_utc = ms_to_iso(int(info["bars"][-1][6]))
-            core5_latest["symbols"][sym][tf] = {
-                "tf": tf,
-                "bars": len(info["tail_bars"]),
-                "last_close_utc": last_close_utc,
-                "data": info["tail_bars"],
-            }
-
-    # deriv stubs
-    deriv_stub_core5 = {"meta":{"generated_utc":updated_utc,"timezone":"UTC"},"data":{s:{"source":"none"} for s in SYMBOLS_CORE5}}
-    deriv_stub_core10 = {"meta":{"generated_utc":updated_utc,"timezone":"UTC"},"data":{s:{"source":"none"} for s in SYMBOLS_CORE10}}
-
-    # feed.json
+    # feed.json (минимальный)
     feed_json = {
         "updated_utc": updated_utc,
-        "ohlcv": {
-            "binance": {
-                "base_url": PAGES_BASE_URL,
-                "pack_btc_eth_txt": url("pack_btc_eth.txt", v),
-                "pack_btc_eth_json": url("pack_btc_eth.json", v),
-                "symbols": url("symbols.json", v),
-                "status_btc_eth": url("status_btc_eth.json", v),
-            }
-        },
+        "source": "binance",
+        "symbols": SYMBOLS_CORE10,
+        "tfs": TFS,
     }
 
     payload = {
@@ -329,27 +362,20 @@ def main() -> None:
         "pack_btc_eth_json": pack_btc_eth_json,
         "pack_btc_eth_txt": pack_btc_eth_txt,
         "feed_json": feed_json,
-        "deriv_stub_core5": deriv_stub_core5,
-        "deriv_stub_core10": deriv_stub_core10,
-        "ohlcv_dir_map": {},
-        "deriv_dir_map": {},
+        "ohlcv_dir_map": {
+            out_roots[0]: out_roots[0] / "ohlcv" / "binance",
+            out_roots[1]: out_roots[1] / "ohlcv" / "binance",
+        },
+        "deriv_dir_map": {
+            out_roots[0]: out_roots[0] / "deriv" / "binance",
+            out_roots[1]: out_roots[1] / "deriv" / "binance",
+        },
+        "deriv_stub_core5": {"updated_utc": updated_utc, "note": "stub"},
+        "deriv_stub_core10": {"updated_utc": updated_utc, "note": "stub"},
     }
 
-    # карты директорий для каждого root
-    for root in out_roots:
-        payload["ohlcv_dir_map"][root] = root / "ohlcv" / "binance"
-        payload["deriv_dir_map"][root] = root / "deriv" / "binance"
-
-    # пишем в оба места
     for root in out_roots:
         build_into(root, payload)
-
-    if noncritical_errors:
-        print("WARN non-critical fetch errors:")
-        for e in noncritical_errors:
-            print(" -", e)
-
-    print("OK updated_utc:", updated_utc)
 
 
 if __name__ == "__main__":
