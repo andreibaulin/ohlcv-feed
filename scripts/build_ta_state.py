@@ -48,6 +48,26 @@ WORK_K = 0.75                           # полу-ширина рабочей �
 # Сколько зон отдаём (минимум шума)
 MAX_STRUCT_ZONES_PER_SIDE = 3
 
+# ---------------- LOCAL (H4) ZONES ----------------
+# Локальные уровни: ближайшие H4 зоны для входов/частичных; не обязаны совпадать со структурой.
+PIVOT_W_LOCAL_H4 = 2
+LOCAL_PIVOTS_LIMIT = 220   # сколько последних пивотов учитывать (сдерживаем шум)
+LOCAL_RANGE_LOOKBACK = 60  # границы локального диапазона (H4)
+
+# Толеранс слияния локальных уровней: max(% от цены, k*ATR)
+LOCAL_MERGE_PCT = 0.0035     # 0.35%
+LOCAL_MERGE_ATR_K = 0.60
+
+# Полу-ширина локальной зоны: max(% от цены, k*ATR)
+LOCAL_ZONE_PCT = 0.0020      # 0.20%
+LOCAL_ZONE_ATR_K = 0.45
+
+# Мягкий «зазор», чтобы локальная зона не совпала со структурной (если есть место)
+LOCAL_AVOID_STRUCT_ATR_K = 0.15
+
+# Локальную зону оцениваем на этом окне (H4)
+LOCAL_STATS_LOOKBACK = 420
+
 
 def utc_now_iso() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="microseconds").replace("+00:00", "Z")
@@ -233,6 +253,240 @@ def cluster_levels(levels: List[Tuple[int, float]], merge_tol: float) -> List[Di
     return out
 
 
+def cluster_levels_span(levels: List[Tuple[int, float]], merge_tol: float) -> List[Dict[str, Any]]:
+    """Cluster levels by price distance, keep min/max span too (useful for local H4 zones)."""
+    if not levels:
+        return []
+    lv = sorted(levels, key=lambda x: x[1])
+    clusters: List[List[Tuple[int, float]]] = []
+    for idx, price in lv:
+        if not clusters:
+            clusters.append([(idx, price)])
+            continue
+        cur = clusters[-1]
+        center = median([p for _, p in cur])
+        if abs(price - center) <= merge_tol:
+            cur.append((idx, price))
+        else:
+            clusters.append([(idx, price)])
+
+    out: List[Dict[str, Any]] = []
+    for c in clusters:
+        prices = [p for _, p in c]
+        center = float(median(prices))
+        last_idx = max(i for i, _ in c)
+        out.append(
+            {
+                "center": center,
+                "count": len(c),
+                "last_idx": last_idx,
+                "min": float(min(prices)),
+                "max": float(max(prices)),
+            }
+        )
+    return out
+
+
+def zones_overlap(a: List[float], b: List[float]) -> bool:
+    return not (a[1] < b[0] or b[1] < a[0])
+
+
+def pick_best_by_strength(zones: List[Dict[str, Any]], price: float, side: str) -> Optional[Dict[str, Any]]:
+    """Pick ONE zone on the correct side of price, prefer strength then distance."""
+    cand: List[Tuple[int, float, int, Dict[str, Any]]] = []
+    for z in zones:
+        lo, hi = float(z["zone"][0]), float(z["zone"][1])
+        if side == "S":
+            if hi > price:
+                continue
+            dist = price - hi
+        else:
+            if lo < price:
+                continue
+            dist = lo - price
+        tf = z.get("tf") or ""
+        tf_rank = 0 if tf == "D1" else 1  # при равных — D1 чуть практичнее, W1 как 2-й приоритет
+        cand.append((-int(z.get("strength", 1)), float(dist), tf_rank, z))
+    cand.sort(key=lambda x: (x[0], x[1], x[2]))
+    return cand[0][3] if cand else None
+
+
+def build_local_h4_candidates(s_h4: Series, price: float, atr_h4: float) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+    """Return (supports, resistances) candidates on H4."""
+    if atr_h4 <= 0:
+        return [], []
+
+    merge_tol = max(LOCAL_MERGE_PCT * price, LOCAL_MERGE_ATR_K * atr_h4)
+    zone_half = max(LOCAL_ZONE_PCT * price, LOCAL_ZONE_ATR_K * atr_h4)
+
+    # pivots
+    ph, pl = pivots(s_h4, PIVOT_W_LOCAL_H4)
+    ph_use = ph[-LOCAL_PIVOTS_LIMIT:]
+    pl_use = pl[-LOCAL_PIVOTS_LIMIT:]
+
+    # range bounds
+    lb = max(10, min(LOCAL_RANGE_LOOKBACK, len(s_h4.c)))
+    rh = max(s_h4.h[-lb:])
+    rl = min(s_h4.l[-lb:])
+    last_i = len(s_h4.c) - 1
+
+    r_lvls = list(ph_use) + [(last_i, float(rh))]
+    s_lvls = list(pl_use) + [(last_i, float(rl))]
+
+    def mk(side: str, levels: List[Tuple[int, float]]) -> List[Dict[str, Any]]:
+        clusters = cluster_levels_span(levels, merge_tol)
+        out: List[Dict[str, Any]] = []
+        for cl in clusters:
+            center = float(cl["center"])
+            # span-aware zone: min/max +/- half
+            lo = float(cl["min"]) - zone_half
+            hi = float(cl["max"]) + zone_half
+            if lo > hi:
+                lo, hi = hi, lo
+            z = [round(lo, 2), round(hi, 2)]
+            st = zone_stats(s_h4, (lo, hi), side, lookback=min(len(s_h4.c), LOCAL_STATS_LOOKBACK))
+
+            basis: List[str] = ["pivot"]
+            if side == "R" and abs(rh - center) <= merge_tol:
+                basis.append("range")
+            if side == "S" and abs(rl - center) <= merge_tol:
+                basis.append("range")
+
+            out.append(
+                {
+                    "tf": "H4",
+                    "side": side,
+                    "center": round(center, 2),
+                    "zone": z,
+                    "cluster_count": int(cl["count"]),
+                    "touches": st["touches"],
+                    "rejections": st["rejections"],
+                    "last_touch_utc": st["last_touch_utc"],
+                    "age_bars": st["age_bars"],
+                    "strength": st["strength"],
+                    "score": st["score"],
+                    "basis": basis,
+                }
+            )
+
+        # sort: nearest-to-price on the correct side first, then strength/score
+        def _dist(z: Dict[str, Any]) -> float:
+            lo_, hi_ = float(z["zone"][0]), float(z["zone"][1])
+            if side == "S":
+                return (price - hi_) if hi_ <= price else 1e18
+            return (lo_ - price) if lo_ >= price else 1e18
+
+        out.sort(key=lambda x: (_dist(x), -int(x.get("strength", 1)), -int(x.get("score", 0))))
+        return out
+
+    supports = mk("S", s_lvls)
+    resistances = mk("R", r_lvls)
+    return supports, resistances
+
+
+def select_local_zone(
+    cands: List[Dict[str, Any]],
+    price: float,
+    side: str,
+    structural_zone: Optional[List[float]],
+    atr_h4: float,
+) -> Tuple[Optional[Dict[str, Any]], bool]:
+    """Select one local zone below/above price; try to avoid overlapping structural zone."""
+    if not cands:
+        return None, False
+
+    gap = max(0.0, LOCAL_AVOID_STRUCT_ATR_K * atr_h4)
+
+    def ok_side(z: Dict[str, Any]) -> bool:
+        lo, hi = float(z["zone"][0]), float(z["zone"][1])
+        if side == "S":
+            return hi <= price
+        return lo >= price
+
+    def ok_avoid(z: Dict[str, Any]) -> bool:
+        if structural_zone is None:
+            return True
+        slo, shi = float(structural_zone[0]), float(structural_zone[1])
+        lo, hi = float(z["zone"][0]), float(z["zone"][1])
+        if side == "S":
+            # хотим локальную поддержку ВЫШЕ структурной (если есть место)
+            return hi > (shi + gap)
+        # хотим локальное сопротивление НИЖЕ структурного
+        return lo < (slo - gap)
+
+    # 1) строгий вариант: правильная сторона + избегаем структурной
+    for z in cands:
+        if ok_side(z) and ok_avoid(z):
+            confl = structural_zone is not None and zones_overlap(list(z["zone"]), structural_zone)
+            return z, confl
+
+    # 2) если не нашли — берём лучшее по силе на правильной стороне, даже если совпадает
+    for z in cands:
+        if ok_side(z):
+            confl = structural_zone is not None and zones_overlap(list(z["zone"]), structural_zone)
+            return z, confl
+
+    return None, False
+
+
+def pick_local_selected(
+    cands: List[Dict[str, Any]],
+    price: float,
+    side: str,
+    atr_h4: float,
+    structural_zone: Optional[List[float]],
+) -> Tuple[Optional[Dict[str, Any]], bool]:
+    """Pick one local zone; try to avoid overlapping/near-equal with structural if possible.
+
+    Returns (selected, confluence_with_structural).
+    """
+    if not cands:
+        return None, False
+
+    gap = max(0.0, LOCAL_AVOID_STRUCT_ATR_K * atr_h4)
+
+    def ok_side(z: Dict[str, Any]) -> bool:
+        lo, hi = float(z["zone"][0]), float(z["zone"][1])
+        return (hi <= price) if side == "S" else (lo >= price)
+
+    def ok_avoid(z: Dict[str, Any]) -> bool:
+        if not structural_zone:
+            return True
+        lo, hi = float(z["zone"][0]), float(z["zone"][1])
+        slo, shi = float(structural_zone[0]), float(structural_zone[1])
+        if side == "S":
+            # хотим локальную поддержку ВЫШЕ структурной поддержки
+            return hi > (shi + gap)
+        else:
+            # хотим локальное сопротивление НИЖЕ структурного сопротивления
+            return lo < (slo - gap)
+
+    # 1) строгий выбор (правильная сторона + избегаем структуры)
+    best: Optional[Dict[str, Any]] = None
+    for z in cands:
+        if not ok_side(z):
+            continue
+        if not ok_avoid(z):
+            continue
+        best = z
+        break
+
+    # 2) fallback: правильная сторона без avoid
+    if best is None:
+        for z in cands:
+            if ok_side(z):
+                best = z
+                break
+
+    if best is None:
+        return None, False
+
+    confl = False
+    if structural_zone and zones_overlap(best["zone"], structural_zone):
+        confl = True
+    return best, confl
+
+
 def zone_stats(s: Series, zone: Tuple[float, float], side: str, lookback: int) -> Dict[str, Any]:
     lo, hi = zone
     start = max(0, len(s.c) - lookback)
@@ -372,6 +626,18 @@ def build_symbol_state(base_dir: Path, symbol: str) -> Dict[str, Any]:
     nearest_r = pick_nearest_zones(zones_r, price, "R", MAX_STRUCT_ZONES_PER_SIDE)
     nearest_s = pick_nearest_zones(zones_s, price, "S", MAX_STRUCT_ZONES_PER_SIDE)
 
+    # Selected structural zones: 1 support + 1 resistance (сильные, на своей стороне)
+    sel_struct_s = pick_best_by_strength(zones_s, price, "S")
+    sel_struct_r = pick_best_by_strength(zones_r, price, "R")
+
+    struct_s_zone = list(sel_struct_s["zone"]) if isinstance(sel_struct_s, dict) and sel_struct_s.get("zone") else None
+    struct_r_zone = list(sel_struct_r["zone"]) if isinstance(sel_struct_r, dict) and sel_struct_r.get("zone") else None
+
+    # Local H4 zones (for entries/partials)
+    local_s_cands, local_r_cands = build_local_h4_candidates(s_h4, price, atr_h4)
+    sel_local_s, local_s_confl = select_local_zone(local_s_cands, price, "S", struct_s_zone, atr_h4)
+    sel_local_r, local_r_confl = select_local_zone(local_r_cands, price, "R", struct_r_zone, atr_h4)
+
     # Build working zones (H4 buffer) from nearest structural zones
     work_half = max(0.0, WORK_K * atr_h4)
     working: List[Dict[str, Any]] = []
@@ -395,6 +661,18 @@ def build_symbol_state(base_dir: Path, symbol: str) -> Dict[str, Any]:
     last_close_utc_h4 = datetime.fromtimestamp(s_h4.ct[-1] / 1000, tz=timezone.utc).isoformat(timespec="seconds").replace(
         "+00:00", "Z"
     )
+
+    # Forecast-4 zones mapping (compatible with "S1/S2/R1/R2")
+    forecast_4 = {
+        "S1_local_h4": sel_local_s,
+        "S2_structural": sel_struct_s,
+        "R1_local_h4": sel_local_r,
+        "R2_structural": sel_struct_r,
+        "confluence": {
+            "S1_with_S2": bool(local_s_confl),
+            "R1_with_R2": bool(local_r_confl),
+        },
+    }
 
     return {
         "data": {
@@ -431,8 +709,21 @@ def build_symbol_state(base_dir: Path, symbol: str) -> Dict[str, Any]:
             "structural": {
                 "supports": nearest_s,
                 "resistances": nearest_r,
+                "selected": {
+                    "support": sel_struct_s,
+                    "resistance": sel_struct_r,
+                },
             },
             "working_h4": working,
+            "local_h4": {
+                "supports": local_s_cands[:6],
+                "resistances": local_r_cands[:6],
+                "selected": {
+                    "support": sel_local_s,
+                    "resistance": sel_local_r,
+                },
+            },
+            "forecast_4": forecast_4,
         },
     }
 
