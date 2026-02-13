@@ -18,10 +18,17 @@ OUT_ROOTS = [Path("."), Path("docs")]
 DEFAULT_SYMBOLS = ["BTCUSDT", "ETHUSDT"]
 
 FAPI_BASES = [
+    # USDT-M Futures REST base endpoints (primary + официальные/де-факто зеркала).
+    # Важно: НЕ используем data-api.binance.vision здесь — это "market data only" для spot и часто отдаёт 404 на /fapi/*.
     "https://fapi.binance.com",
-    # иногда в некоторых сетапах data-api проксирует и фьючи; если нет — просто фейлнется, но мы поймаем.
-    "https://data-api.binance.vision",
+    "https://fapi1.binance.com",
+    "https://fapi2.binance.com",
+    "https://fapi3.binance.com",
 ]
+
+# Можно переопределить список баз через env:
+# DERIV_FAPI_BASES="https://fapi.binance.com,https://fapi1.binance.com"
+DERIV_FAPI_BASES_ENV = "DERIV_FAPI_BASES"
 
 
 def utc_now_iso() -> str:
@@ -49,16 +56,42 @@ def http_get_json(url: str, params: Dict[str, Any], timeout: int = 25) -> Any:
 
 
 def try_get(path: str, params: Dict[str, Any], retries: int = 3) -> Any:
-    last_err: Exception | None = None
-    for base in FAPI_BASES:
+    """
+    Robust fetch with failover across Binance USD-M futures REST bases.
+
+    Notes:
+      - Binance futures endpoints live under /fapi/* and /futures/data/* on fapi.* hosts.
+      - We keep a short per-base error trace in the exception message for easier debugging in CI.
+    """
+    # env override
+    raw_bases = os.environ.get(DERIV_FAPI_BASES_ENV, "").strip()
+    if raw_bases:
+        bases = [b.strip() for b in raw_bases.split(",") if b.strip()]
+    else:
+        bases = list(FAPI_BASES)
+
+    errors: List[str] = []
+
+    for base in bases:
         url = base.rstrip("/") + path
         for attempt in range(1, retries + 1):
             try:
                 return http_get_json(url, params)
-            except (HTTPError, URLError, TimeoutError, ValueError) as e:
-                last_err = e
+            except HTTPError as e:
+                # rate limit / temporary bans can happen; backoff a bit.
+                code = getattr(e, "code", None)
+                errors.append(f"{base}{path}#{attempt}: HTTP {code}")
+                sleep_s = 0.6 * attempt
+                if code in (418, 429):
+                    sleep_s = 2.0 * attempt
+                time.sleep(sleep_s)
+            except (URLError, TimeoutError, ValueError) as e:
+                errors.append(f"{base}{path}#{attempt}: {type(e).__name__}")
                 time.sleep(0.6 * attempt)
-    raise RuntimeError(f"fetch failed for {path}: {last_err}")
+
+    # keep last few errors only (don't bloat output)
+    tail = " | ".join(errors[-6:]) if errors else "unknown"
+    raise RuntimeError(f"fetch failed for {path}: {tail}")
 
 
 def parse_symbols_env() -> List[str]:
