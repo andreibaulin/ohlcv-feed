@@ -47,7 +47,7 @@ def write_json_compact(path: Path, obj: Any) -> None:
     atomic_write_bytes(path, s.encode("utf-8"))
 
 
-def http_get_json(url: str, params: Dict[str, Any], timeout: int = 25) -> Any:
+def http_get_json(url: str, params: Dict[str, Any], timeout: int = 12) -> Any:
     full = url + ("?" + urlencode(params) if params else "")
     req = Request(full, headers={"User-Agent": "ohlcv-feed (GitHub Actions)", "Accept": "application/json"})
     with urlopen(req, timeout=timeout) as r:
@@ -55,7 +55,7 @@ def http_get_json(url: str, params: Dict[str, Any], timeout: int = 25) -> Any:
     return json.loads(raw.decode("utf-8"))
 
 
-def try_get(path: str, params: Dict[str, Any], retries: int = 3) -> Any:
+def try_get(path: str, params: Dict[str, Any], retries: int = 2) -> Any:
     """
     Robust fetch with failover across Binance USD-M futures REST bases.
 
