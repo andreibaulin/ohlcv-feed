@@ -14,8 +14,10 @@
   ohlcv/binance/{SYMBOL}_{TF}_tail{N}_chunks.json + parts p###.json
 
 Выход:
-  ta/binance/state_btc_eth_latest.json
+  ta/binance/state_btc_eth_latest.json          (SWING profile, default)
+  ta/binance/state_btc_eth_full_latest.json     (FULL profile: includes H4 local zones)
   docs/ta/binance/state_btc_eth_latest.json
+  docs/ta/binance/state_btc_eth_full_latest.json
 """
 
 from __future__ import annotations
@@ -47,6 +49,17 @@ WORK_K = 0.75                           # полу-ширина рабочей �
 
 # Сколько зон отдаём (минимум шума)
 MAX_STRUCT_ZONES_PER_SIDE = 3
+
+# ---------------- SWING (D1) PROFILE ----------------
+# Цель: разреженные, действительно "свинговые" зоны (без H4-шума).
+# Дистанция между центрами зон задаётся через ATR(D1).
+SWING_MAX_ZONES_PER_SIDE = 2
+SWING_MIN_GAP_ATR_D1 = 1.8
+SWING_MIN_STRENGTH = 2
+
+# ---------------- MOVING AVERAGES ----------------
+# Минимум "зоопарка": EMA200 на D1 и W1 как режимный фильтр.
+EMA_PERIOD = 200
 
 # ---------------- LOCAL (H4) ZONES ----------------
 # Локальные уровни: ближайшие H4 зоны для входов/частичных; не обязаны совпадать со структурой.
@@ -170,6 +183,22 @@ def atr14(s: Series, period: int = ATR_PERIOD) -> float:
         window = trs[-period:]
         return sum(window) / float(period)
     return sum(trs) / float(len(trs))
+
+
+def ema(values: List[float], period: int) -> List[float]:
+    """Return EMA series (same length as input). Uses standard alpha=2/(n+1)."""
+    if not values:
+        return []
+    if period <= 1:
+        return [float(x) for x in values]
+    alpha = 2.0 / float(period + 1)
+    out: List[float] = []
+    e = float(values[0])
+    out.append(e)
+    for x in values[1:]:
+        e = alpha * float(x) + (1.0 - alpha) * e
+        out.append(e)
+    return out
 
 
 def pivots(s: Series, w: int) -> Tuple[List[Tuple[int, float]], List[Tuple[int, float]]]:
@@ -547,6 +576,75 @@ def pick_nearest_zones(zones: List[Dict[str, Any]], price: float, side: str, max
     return [z for _, z in filt[:max_n]]
 
 
+def pick_w1_bracket(zones_w1: List[Dict[str, Any]], price: float) -> Tuple[Optional[Dict[str, Any]], Optional[Dict[str, Any]]]:
+    """Pick nearest/strong W1 support below and resistance above to form a macro range bracket."""
+    z_s = [z for z in zones_w1 if z.get("side") == "S"]
+    z_r = [z for z in zones_w1 if z.get("side") == "R"]
+    sup = pick_best_by_strength(z_s, price, "S")
+    res = pick_best_by_strength(z_r, price, "R")
+    return sup, res
+
+
+def nms_swing_zones(
+    zones: List[Dict[str, Any]],
+    price: float,
+    side: str,
+    atr_d1: float,
+    max_n: int = SWING_MAX_ZONES_PER_SIDE,
+    min_strength: int = SWING_MIN_STRENGTH,
+    min_gap_atr: float = SWING_MIN_GAP_ATR_D1,
+) -> List[Dict[str, Any]]:
+    """Non-max suppression for swing zones: keep only strong zones, spaced by k*ATR(D1)."""
+    if atr_d1 <= 0:
+        return []
+
+    min_gap = float(min_gap_atr) * float(atr_d1)
+
+    def _dist(z: Dict[str, Any]) -> float:
+        lo, hi = float(z["zone"][0]), float(z["zone"][1])
+        if side == "S":
+            return (price - hi) if hi <= price else 1e18
+        return (lo - price) if lo >= price else 1e18
+
+    cands: List[Dict[str, Any]] = []
+    for z in zones:
+        if int(z.get("strength", 1)) < int(min_strength):
+            continue
+        if _dist(z) >= 1e18:
+            continue
+        cands.append(z)
+
+    # rank: strength, score, then closeness
+    cands.sort(key=lambda z: (-int(z.get("strength", 1)), -int(z.get("score", 0)), _dist(z)))
+
+    picked: List[Dict[str, Any]] = []
+    for z in cands:
+        if len(picked) >= int(max_n):
+            break
+        cz = float(z.get("center", 0.0))
+        ok = True
+        for p in picked:
+            cp = float(p.get("center", 0.0))
+            if abs(cz - cp) < min_gap:
+                ok = False
+                break
+        if ok:
+            picked.append(z)
+
+    # If we picked nothing (rare), relax strength filter
+    if not picked and zones:
+        cands2 = [z for z in zones if _dist(z) < 1e18]
+        cands2.sort(key=lambda z: (-int(z.get("strength", 1)), -int(z.get("score", 0)), _dist(z)))
+        for z in cands2:
+            if len(picked) >= int(max_n):
+                break
+            picked.append(z)
+
+    # final order: nearest to price
+    picked.sort(key=lambda z: _dist(z))
+    return picked
+
+
 def build_symbol_state(base_dir: Path, symbol: str) -> Dict[str, Any]:
     # Load series
     s_h4 = to_series(load_rows_from_chunks(base_dir, symbol, "H4", TAIL_N["H4"]))
@@ -557,6 +655,34 @@ def build_symbol_state(base_dir: Path, symbol: str) -> Dict[str, Any]:
     atr_h4 = atr14(s_h4)
     atr_d1 = atr14(s_d1)
     atr_w1 = atr14(s_w1)
+
+    # Moving averages (EMA200) as a regime filter (no indicator zoo)
+    ema_d1 = None
+    ema_w1 = None
+    ema_d1_dir = None
+    ema_w1_dir = None
+    ema_d1_pos = None
+    ema_w1_pos = None
+
+    e_d1 = ema([float(x) for x in s_d1.c], EMA_PERIOD)
+    if e_d1:
+        ema_d1 = float(e_d1[-1])
+        back = e_d1[-6] if len(e_d1) >= 6 else e_d1[0]
+        slope = ema_d1 - float(back)
+        flat_eps = max(1e-9, 0.0010 * ema_d1)  # 0.10%
+        ema_d1_dir = "flat" if abs(slope) <= flat_eps else ("up" if slope > 0 else "down")
+        rel = abs(price - ema_d1) / ema_d1 if ema_d1 > 0 else 0.0
+        ema_d1_pos = "near" if rel <= 0.0020 else ("above" if price > ema_d1 else "below")
+
+    e_w1 = ema([float(x) for x in s_w1.c], EMA_PERIOD)
+    if e_w1:
+        ema_w1 = float(e_w1[-1])
+        back = e_w1[-3] if len(e_w1) >= 3 else e_w1[0]
+        slope = ema_w1 - float(back)
+        flat_eps = max(1e-9, 0.0010 * ema_w1)
+        ema_w1_dir = "flat" if abs(slope) <= flat_eps else ("up" if slope > 0 else "down")
+        rel = abs(price - ema_w1) / ema_w1 if ema_w1 > 0 else 0.0
+        ema_w1_pos = "near" if rel <= 0.0020 else ("above" if price > ema_w1 else "below")
 
     # Pivots
     ph_w1, pl_w1 = pivots(s_w1, PIVOT_W["W1"])
@@ -606,6 +732,7 @@ def build_symbol_state(base_dir: Path, symbol: str) -> Dict[str, Any]:
                         "zone": [round(zone[0], 2), round(zone[1], 2)],
                         "cluster_count": int(cl["count"]),
                         "strength": st["strength"],
+                        "score": st["score"],
                         "touches": st["touches"],
                         "rejections": st["rejections"],
                         "last_touch_utc": st["last_touch_utc"],
@@ -629,6 +756,53 @@ def build_symbol_state(base_dir: Path, symbol: str) -> Dict[str, Any]:
     # Selected structural zones: 1 support + 1 resistance (сильные, на своей стороне)
     sel_struct_s = pick_best_by_strength(zones_s, price, "S")
     sel_struct_r = pick_best_by_strength(zones_r, price, "R")
+
+    # -------- SWING (D1) zones (default profile) --------
+    zones_d1 = [z for z in zones_all if z.get("tf") == "D1"]
+    d1_s = [z for z in zones_d1 if z.get("side") == "S"]
+    d1_r = [z for z in zones_d1 if z.get("side") == "R"]
+
+    swing_s = nms_swing_zones(d1_s, price, "S", atr_d1, max_n=SWING_MAX_ZONES_PER_SIDE)
+    swing_r = nms_swing_zones(d1_r, price, "R", atr_d1, max_n=SWING_MAX_ZONES_PER_SIDE)
+    swing_sel_s = swing_s[0] if swing_s else None
+    swing_sel_r = swing_r[0] if swing_r else None
+
+    # -------- RANGE bracket from W1 zones --------
+    zones_w1 = [z for z in zones_all if z.get("tf") == "W1"]
+    w1_sup, w1_res = pick_w1_bracket(zones_w1, price)
+    range_obj: Dict[str, Any] = {
+        "tf": "W1",
+        "support": w1_sup,
+        "resistance": w1_res,
+        "discount_edge": None,
+        "premium_edge": None,
+        "mid": None,
+        "corridor": None,
+        "price_location": None,
+    }
+    if isinstance(w1_sup, dict) and w1_sup.get("zone"):
+        range_obj["discount_edge"] = float(w1_sup["zone"][1])
+    if isinstance(w1_res, dict) and w1_res.get("zone"):
+        range_obj["premium_edge"] = float(w1_res["zone"][0])
+    de = range_obj.get("discount_edge")
+    pe = range_obj.get("premium_edge")
+    if isinstance(de, (int, float)) and isinstance(pe, (int, float)) and float(de) < float(pe):
+        range_obj["mid"] = round((float(de) + float(pe)) / 2.0, 2)
+        range_obj["corridor"] = [round(float(de), 2), round(float(pe), 2)]
+        # Where price is relative to corridor
+        if price < float(de):
+            range_obj["price_location"] = "below_discount"
+        elif price > float(pe):
+            range_obj["price_location"] = "above_premium"
+        else:
+            # inside
+            pct = (price - float(de)) / (float(pe) - float(de))
+            if pct <= 0.35:
+                range_obj["price_location"] = "discount"
+            elif pct >= 0.65:
+                range_obj["price_location"] = "premium"
+            else:
+                range_obj["price_location"] = "mid"
 
     struct_s_zone = list(sel_struct_s["zone"]) if isinstance(sel_struct_s, dict) and sel_struct_s.get("zone") else None
     struct_r_zone = list(sel_struct_r["zone"]) if isinstance(sel_struct_r, dict) and sel_struct_r.get("zone") else None
@@ -680,6 +854,14 @@ def build_symbol_state(base_dir: Path, symbol: str) -> Dict[str, Any]:
             "price": round(price, 2),
             "last_close_utc_h4": last_close_utc_h4,
         },
+        "ma": {
+            "ema200": {
+                "D1": round(float(ema_d1), 2) if ema_d1 is not None else None,
+                "W1": round(float(ema_w1), 2) if ema_w1 is not None else None,
+            },
+            "ema200_dir": {"D1": ema_d1_dir, "W1": ema_w1_dir},
+            "price_vs_ema200": {"D1": ema_d1_pos, "W1": ema_w1_pos},
+        },
         "vol": {
             "atr14": {
                 "H4": round(atr_h4, 2),
@@ -714,6 +896,17 @@ def build_symbol_state(base_dir: Path, symbol: str) -> Dict[str, Any]:
                     "resistance": sel_struct_r,
                 },
             },
+            "range_w1": range_obj,
+            "swing_d1": {
+                "supports": swing_s,
+                "resistances": swing_r,
+                "selected": {"support": swing_sel_s, "resistance": swing_sel_r},
+                "params": {
+                    "max_zones_per_side": SWING_MAX_ZONES_PER_SIDE,
+                    "min_gap_atr_d1": SWING_MIN_GAP_ATR_D1,
+                    "min_strength": SWING_MIN_STRENGTH,
+                },
+            },
             "working_h4": working,
             "local_h4": {
                 "supports": local_s_cands[:6],
@@ -737,11 +930,16 @@ def main() -> None:
     base_dir_docs = Path("docs") / "ohlcv" / "binance"
     base_dir = base_dir_root if base_dir_root.exists() else base_dir_docs
 
-    out: Dict[str, Any] = {
+    out_full: Dict[str, Any] = {
         "updated_utc": updated_utc,
+        "profile": "full",
         "source": "ta_state_pivots_atr",
         "notes": {
             "what": "Conservative zones from W1/D1 pivots clustered and expanded by ATR; NOT a forecast.",
+            "profiles": {
+                "swing": "Default. D1 swing zones (spaced by k*ATR(D1)) + W1 range bracket + EMA200 filter.",
+                "full": "Includes everything from swing + local H4 zones and working H4 buffer.",
+            },
             "regime": "trend/range/chop is a risk filter; chop/high-vol => prefer WAIT.",
         },
         "symbols": {},
@@ -749,14 +947,54 @@ def main() -> None:
 
     for sym in symbols:
         try:
-            out["symbols"][sym] = build_symbol_state(base_dir, sym)
+            out_full["symbols"][sym] = build_symbol_state(base_dir, sym)
         except Exception as e:
-            out["symbols"][sym] = {"error": str(e)}
+            out_full["symbols"][sym] = {"error": str(e)}
+
+    # Derive SWING output from FULL
+    out_swing: Dict[str, Any] = {
+        "updated_utc": updated_utc,
+        "profile": "swing",
+        "source": "ta_state_pivots_atr",
+        "notes": out_full.get("notes"),
+        "symbols": {},
+    }
+
+    for sym, payload in out_full.get("symbols", {}).items():
+        if not isinstance(payload, dict) or payload.get("error") is not None:
+            out_swing["symbols"][sym] = payload
+            continue
+
+        zones = payload.get("zones") or {}
+        swing_d1 = zones.get("swing_d1")
+        range_w1 = zones.get("range_w1")
+        sel = (swing_d1 or {}).get("selected") if isinstance(swing_d1, dict) else None
+        forecast_swing = {
+            "S1_swing_d1": (sel or {}).get("support") if isinstance(sel, dict) else None,
+            "R1_swing_d1": (sel or {}).get("resistance") if isinstance(sel, dict) else None,
+            "range_w1": range_w1,
+        }
+
+        out_swing["symbols"][sym] = {
+            "data": payload.get("data"),
+            "ma": payload.get("ma"),
+            "vol": payload.get("vol"),
+            "structure": payload.get("structure"),
+            "zones": {
+                "range_w1": range_w1,
+                "swing_d1": swing_d1,
+                "forecast_swing": forecast_swing,
+            },
+        }
 
     for root in OUT_ROOTS:
         d = root / "ta" / "binance"
         d.mkdir(parents=True, exist_ok=True)
-        write_json_compact(d / "state_btc_eth_latest.json", out)
+
+        # Default: SWING
+        write_json_compact(d / "state_btc_eth_latest.json", out_swing)
+        # Optional: FULL (H4 locals)
+        write_json_compact(d / "state_btc_eth_full_latest.json", out_full)
 
 
 if __name__ == "__main__":

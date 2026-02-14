@@ -4,7 +4,9 @@
 
 1) **OHLCV pack** (BTC/ETH по умолчанию)
 2) **Derivatives snapshot** (funding + open interest + long/short)
-3) **TA state** (консервативные зоны/уровни по W1/D1 + рабочий буфер H4)
+3) **TA state**
+   - **SWING (по умолчанию):** разреженные D1 swing-зоны + W1 range-скобка (premium/discount) + EMA200 фильтр
+   - **FULL (опционально):** всё из SWING + локальные H4 зоны (для скальпа/точных входов)
 
 ## 1) Самые важные ссылки
 
@@ -17,9 +19,15 @@ https://andreibaulin.github.io/ohlcv-feed/ohlcv/binance/pack_btc_eth.txt
 
 https://andreibaulin.github.io/ohlcv-feed/deriv/binance/core5_latest.json
 
-### TA state (уровни/зоны)
+### TA state
+
+SWING (default):
 
 https://andreibaulin.github.io/ohlcv-feed/ta/binance/state_btc_eth_latest.json
+
+FULL (includes H4 local zones):
+
+https://andreibaulin.github.io/ohlcv-feed/ta/binance/state_btc_eth_full_latest.json
 
 ## 2) Как это обновляется
 
@@ -28,7 +36,7 @@ Workflow: `.github/workflows/binance_all.yml`
 Шаги:
 1) `scripts/gen_pack_btc_eth.py` → OHLCV хвосты (chunks + parts) + pack
 2) `scripts/build_deriv_binance.py` → funding/OI/long-short (USDⓈ-M futures)
-3) `scripts/build_ta_state.py` → уровни/зоны (пивоты + ATR)
+3) `scripts/build_ta_state.py` → TA state (SWING+FULL профили)
 
 ## 3) Настройка символов (опционально)
 
