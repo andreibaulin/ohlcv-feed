@@ -735,10 +735,23 @@ def zone_stats(s: Series, zone: Tuple[float, float], side: str, lookback: int) -
 
 
 def pick_nearest_zones(zones: List[Dict[str, Any]], price: float, side: str, max_n: int) -> List[Dict[str, Any]]:
-    """Pick nearest zones below (S) or above (R) current price."""
-    filt: List[Tuple[float, Dict[str, Any]]] = []
+    """Pick nearest zones below (S) or above (R) current price, avoiding overlaps.
+
+    Why: wide structural zones can overlap if built from close clusters; this makes the forecast unreadable.
+    We keep only non-overlapping nearest zones.
+    """
+
+    def _norm(z: Dict[str, Any]) -> Tuple[float, float]:
+        lo, hi = z.get("zone", [0.0, 0.0])
+        lo_f, hi_f = float(lo), float(hi)
+        return (lo_f, hi_f) if lo_f <= hi_f else (hi_f, lo_f)
+
+    def _overlap(a: Tuple[float, float], b: Tuple[float, float], eps: float = 0.0) -> bool:
+        return max(a[0], b[0]) <= min(a[1], b[1]) + eps
+
+    filt: List[Tuple[float, float, float, Dict[str, Any]]] = []
     for z in zones:
-        lo, hi = z["zone"]
+        lo, hi = _norm(z)
         if side == "S":
             if hi <= price:
                 dist = price - hi
@@ -749,10 +762,23 @@ def pick_nearest_zones(zones: List[Dict[str, Any]], price: float, side: str, max
                 dist = lo - price
             else:
                 continue
-        filt.append((dist, z))
-    filt.sort(key=lambda x: x[0])
-    return [z for _, z in filt[:max_n]]
 
+        strength = float(z.get("strength") or 0.0)
+        width = max(0.0, hi - lo)
+        # sort: distance, then stronger, then tighter
+        filt.append((dist, -strength, width, z))
+
+    filt.sort(key=lambda x: (x[0], x[1], x[2]))
+
+    out: List[Dict[str, Any]] = []
+    for _, _, _, z in filt:
+        zr = _norm(z)
+        if any(_overlap(zr, _norm(s)) for s in out):
+            continue
+        out.append(z)
+        if len(out) >= max_n:
+            break
+    return out
 
 def build_symbol_state(base_dir: Path, symbol: str) -> Dict[str, Any]:
     # Load series
@@ -825,24 +851,39 @@ def build_symbol_state(base_dir: Path, symbol: str) -> Dict[str, Any]:
         pl_use = pl[-40:]
 
         for side, levels in [("R", ph_use), ("S", pl_use)]:
-            clusters = cluster_levels(levels, merge_tol)
-            for cl in clusters:
-                center = float(cl["center"])
-                zone = clamp_zone(center, half)
-                st = zone_stats(s, zone, side, lookback=min(len(s.c), 400 if tf == "D1" else 260))
-                zones_all.append(
-                    {
-                        "tf": tf,
-                        "side": side,
-                        "center": center,
-                        "zone": [round(zone[0], 2), round(zone[1], 2)],
-                        "cluster_count": int(cl["count"]),
-                        "strength": st["strength"],
-                        "touches": st["touches"],
-                        "rejections": st["rejections"],
-                        "last_touch_utc": st["last_touch_utc"],
-                    }
-                )
+                    clusters = cluster_levels(levels, merge_tol)
+                    if not clusters:
+                        continue
+
+                    # IMPORTANT: prevent overlapping wide zones when cluster centers are close.
+                    centers = [float(cl["center"]) for cl in clusters]
+                    eps = max(atr_tf * 0.02, max(centers) * 1e-6)
+
+                    for i, cl in enumerate(clusters):
+                        center = float(cl["center"])
+
+                        half_eff = half
+                        if i > 0:
+                            half_eff = min(half_eff, max(0.0, 0.5 * (centers[i] - centers[i - 1]) - eps))
+                        if i < len(centers) - 1:
+                            half_eff = min(half_eff, max(0.0, 0.5 * (centers[i + 1] - centers[i]) - eps))
+
+                        zone = clamp_zone(center, half_eff)
+                        st = zone_stats(s, zone, side, lookback=min(len(s.c), 400 if tf == "D1" else 260))
+                        zones_all.append(
+                            {
+                                "tf": tf,
+                                "side": side,
+                                "center": center,
+                                "zone": [round(zone[0], 2), round(zone[1], 2)],
+                                "cluster_count": int(cl["count"]),
+                                "strength": st["strength"],
+                                "touches": st["touches"],
+                                "rejections": st["rejections"],
+                                "last_touch_utc": st["last_touch_utc"],
+                            }
+                        )
+
 
     add_tf_zones("W1", s_w1, ph_w1, pl_w1, atr_w1)
     add_tf_zones("D1", s_d1, ph_d1, pl_d1, atr_d1)

@@ -100,7 +100,76 @@ def main() -> None:
         if s not in report:
             raise SystemExit(f"Report missing proof snippet: {s}")
 
-    print("OK: IRON bundle/report verified.")
+    
+    # Verify views sanity (4S/4R): non-overlap + ordering + side correctness
+    def _norm_range(r: Any) -> Optional[tuple]:
+        if not isinstance(r, (list, tuple)) or len(r) != 2:
+            return None
+        a = float(r[0])
+        b = float(r[1])
+        return (a, b) if a <= b else (b, a)
+
+    def _ov(a: tuple, b: tuple, eps: float) -> bool:
+        return max(a[0], b[0]) <= min(a[1], b[1]) + eps
+
+    def _check_side(sym: str, side: str, price: float, atr_h4: float, items: List[Dict[str, Any]]) -> None:
+        eps = max(atr_h4 * 1e-3, price * 1e-6, 1e-9)
+
+        # ordering
+        if side == "S":
+            want = sorted(items, key=lambda x: _norm_range(x.get("core"))[1] if _norm_range(x.get("core")) else 0.0, reverse=True)
+        else:
+            want = sorted(items, key=lambda x: _norm_range(x.get("core"))[0] if _norm_range(x.get("core")) else 0.0)
+        if items != want:
+            raise SystemExit(f"{sym}: {side} ordering invalid (closest first)")
+
+        for it in items:
+            core = _norm_range(it.get("core"))
+            buf = _norm_range(it.get("buffer"))
+            if core is None or buf is None:
+                raise SystemExit(f"{sym}: bad core/buffer format: {it}")
+            if not (buf[0] - eps <= core[0] <= core[1] <= buf[1] + eps):
+                raise SystemExit(f"{sym}: core must be inside buffer (side={side}) core={core} buf={buf}")
+
+            if side == "S":
+                if core[1] > price + eps:
+                    raise SystemExit(f"{sym}: support core above price core={core} price={price}")
+            else:
+                if core[0] < price - eps:
+                    raise SystemExit(f"{sym}: resistance core below price core={core} price={price}")
+
+        # non-overlap
+        for i in range(len(items)):
+            for j in range(i + 1, len(items)):
+                ci = _norm_range(items[i].get("core"))
+                cj = _norm_range(items[j].get("core"))
+                if ci and cj and _ov(ci, cj, eps):
+                    raise SystemExit(f"{sym}: overlapping CORES {items[i].get('name')} {ci} vs {items[j].get('name')} {cj}")
+
+                bi = _norm_range(items[i].get("buffer"))
+                bj = _norm_range(items[j].get("buffer"))
+                if bi and bj and _ov(bi, bj, eps):
+                    raise SystemExit(f"{sym}: overlapping BUFFERS {items[i].get('name')} {bi} vs {items[j].get('name')} {bj}")
+
+    def _check_sym(sym_key: str, prefix: str) -> None:
+        v = (bundle.get("views") or {}).get(sym_key) or {}
+        if "error" in v:
+            raise SystemExit(f"{sym_key}: views error: {v.get('error')}")
+        price = float(fx.get(f"{prefix}.price") or 0.0)
+        atr_h4 = float(fx.get(f"{prefix}.atr.h4") or 0.0)
+        if price <= 0 or atr_h4 < 0:
+            raise SystemExit(f"{sym_key}: bad price/atr in facts_index: price={price} atr_h4={atr_h4}")
+        s_items = v.get("supports") or []
+        r_items = v.get("resistances") or []
+        if not s_items or not r_items:
+            raise SystemExit(f"{sym_key}: missing supports/resistances in views")
+        _check_side(sym_key, "S", price, atr_h4, s_items)
+        _check_side(sym_key, "R", price, atr_h4, r_items)
+
+    _check_sym("BTCUSDT", "btc")
+    _check_sym("ETHUSDT", "eth")
+
+print("OK: IRON bundle/report verified.")
 
 if __name__ == "__main__":
     main()

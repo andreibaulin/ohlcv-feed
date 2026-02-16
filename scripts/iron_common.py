@@ -24,9 +24,17 @@ def read_json(path: Path) -> Any:
     return json.loads(path.read_text(encoding="utf-8"))
 
 def write_json(path: Path, obj: Any) -> None:
+    """Write JSON in a human-readable, deterministic form.
+
+    - indent=2 so ChatGPT/web can read multi-line
+    - sort_keys=True for stability
+    - newline at end for POSIX friendliness
+    """
     path.parent.mkdir(parents=True, exist_ok=True)
-    # compact but stable (sorted keys)
-    path.write_text(json.dumps(obj, ensure_ascii=False, separators=(",", ":"), sort_keys=True), encoding="utf-8")
+    path.write_text(
+        json.dumps(obj, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
 
 def write_text(path: Path, text: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)

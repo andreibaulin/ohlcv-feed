@@ -128,6 +128,68 @@ def clamp_range(r: Tuple[float, float], lo: Optional[float], hi: Optional[float]
         return (m, m)
     return (a, b)
 
+def assert_levels_ok(
+    sym: str,
+    price: float,
+    atr_h4: float,
+    supports: List[Dict[str, Any]],
+    resistances: List[Dict[str, Any]],
+) -> None:
+    """Hard sanity check for 4S/4R views.
+
+    If this fails, we should NOT publish — it means levels became ambiguous/overlapping.
+    """
+    eps = max(atr_h4 * 1e-3, price * 1e-6, 1e-9)
+
+    def _norm(r) -> Tuple[float, float]:
+        a, b = float(r[0]), float(r[1])
+        return (a, b) if a <= b else (b, a)
+
+    def _ov(a: Tuple[float, float], b: Tuple[float, float]) -> bool:
+        return max(a[0], b[0]) <= min(a[1], b[1]) + eps
+
+    def _check(items: List[Dict[str, Any]], side: str) -> None:
+        # range integrity + side correctness
+        for it in items:
+            if "core" not in it or "buffer" not in it:
+                raise SystemExit(f"{sym}: missing core/buffer in level item: {it}")
+            core = _norm(it["core"])
+            buf = _norm(it["buffer"])
+
+            if not (buf[0] - eps <= core[0] <= core[1] <= buf[1] + eps):
+                raise SystemExit(f"{sym}: core must be inside buffer (side={side}) core={core} buf={buf}")
+
+            if side == "S":
+                # allow touch at price, but not clearly above
+                if core[1] > price + eps:
+                    raise SystemExit(f"{sym}: support core above price: core={core} price={price}")
+            else:
+                if core[0] < price - eps:
+                    raise SystemExit(f"{sym}: resistance core below price: core={core} price={price}")
+
+        # ordering
+        if side == "S":
+            if items != sorted(items, key=lambda x: float(_norm(x["core"])[1]), reverse=True):
+                raise SystemExit(f"{sym}: supports not sorted (closest first)")
+        else:
+            if items != sorted(items, key=lambda x: float(_norm(x["core"])[0])):
+                raise SystemExit(f"{sym}: resistances not sorted (closest first)")
+
+        # non-overlap (core + buffer)
+        for i in range(len(items)):
+            for j in range(i + 1, len(items)):
+                ci = _norm(items[i]["core"])
+                cj = _norm(items[j]["core"])
+                if _ov(ci, cj):
+                    raise SystemExit(f"{sym}: overlapping CORES {items[i].get('name')} {ci} vs {items[j].get('name')} {cj}")
+                bi = _norm(items[i]["buffer"])
+                bj = _norm(items[j]["buffer"])
+                if _ov(bi, bj):
+                    raise SystemExit(f"{sym}: overlapping BUFFERS {items[i].get('name')} {bi} vs {items[j].get('name')} {bj}")
+
+    _check(supports, "S")
+    _check(resistances, "R")
+
 
 def strength_emoji_from_rates(tests: int, rr: Optional[float], fr: Optional[float]) -> str:
     if tests < 3 or rr is None or fr is None:
@@ -399,41 +461,29 @@ def build_levels_v2(sym: str, sym_state: Dict[str, Any], now_utc: datetime) -> D
     atr_h4 = float(((vol.get("atr14") or {}).get("H4")) or 0.0)
 
     local = (zones.get("local_h4") or {})
-    local_s = _pick_local_levels(local.get("supports") or [], price, "S", atr_h4, 4)
-    local_r = _pick_local_levels(local.get("resistances") or [], price, "R", atr_h4, 4)
+    local_raw_s = list(local.get("supports") or [])
+    local_raw_r = list(local.get("resistances") or [])
 
-    # If not enough (edge cases), fallback to structural nearest (wide)
     structural = (zones.get("structural") or {})
-    if len(local_s) < 4:
-        for it in structural.get("supports") or []:
-            z = it.get("zone")
-            if isinstance(z, list) and len(z) == 2:
-                hi = float(max(z[0], z[1]))
-                if hi < price:
-                    it2 = dict(it)
-                    it2["zone"] = [float(min(z[0], z[1])), float(max(z[0], z[1]))]
-                    it2["score"] = float(it.get("touches") or 0) * 10.0
-                    it2["strength"] = float(it.get("strength") or 0)
-                    local_s.append({**it2, "_core": (it2["zone"][0], it2["zone"][1]), "_dist": price - hi})
-            if len(local_s) >= 4:
-                break
-        local_s = local_s[:4]
 
-    if len(local_r) < 4:
-        for it in structural.get("resistances") or []:
+    def _struct_to_local(items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        out: List[Dict[str, Any]] = []
+        for it in items or []:
             z = it.get("zone")
             if isinstance(z, list) and len(z) == 2:
                 lo = float(min(z[0], z[1]))
-                if lo > price:
-                    it2 = dict(it)
-                    it2["zone"] = [float(min(z[0], z[1])), float(max(z[0], z[1]))]
-                    it2["score"] = float(it.get("touches") or 0) * 10.0
-                    it2["strength"] = float(it.get("strength") or 0)
-                    local_r.append({**it2, "_core": (it2["zone"][0], it2["zone"][1]), "_dist": lo - price})
-            if len(local_r) >= 4:
-                break
-        local_r = local_r[:4]
+                hi = float(max(z[0], z[1]))
+                it2 = dict(it)
+                it2["zone"] = [lo, hi]
+                # make it comparable with local candidates
+                it2["score"] = float(it.get("touches") or 0) * 10.0
+                it2["strength"] = float(it.get("strength") or 0)
+                out.append(it2)
+        return out
 
+    # Combine local + structural, then pick 4 disjoint levels (core ranges) deterministically.
+    local_s = _pick_local_levels(local_raw_s + _struct_to_local(structural.get("supports") or []), price, "S", atr_h4, 4)
+    local_r = _pick_local_levels(local_raw_r + _struct_to_local(structural.get("resistances") or []), price, "R", atr_h4, 4)
     macro = _macro_context(sym_state)
 
     def _mk_items(items: List[Dict[str, Any]], side: str) -> List[Dict[str, Any]]:
@@ -535,6 +585,8 @@ def build_levels_v2(sym: str, sym_state: Dict[str, Any], now_utc: datetime) -> D
 
     _cap(supports, "S")
     _cap(resistances, "R")
+
+    assert_levels_ok(sym, price, atr_h4, supports, resistances)
 
     return {
         "price": price,
