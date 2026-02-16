@@ -1,9 +1,9 @@
 IRON-PROOF (НЕ РЕДАКТИРОВАТЬ)
-- generated_utc: 2026-02-16T14:07:10Z
-- generated_local: 2026-02-16 16:07:10 EET
-- state.updated_utc: 2026-02-16T10:01:15.887598Z
-- state.sha256: f49d41dce46936ec0270a2d7ad99d9421436dc48859da4088859eb551b35a990
-- bundle.sha256: 18d6b6360a9d85f98ab01d08f0ce7d300e65123b8097225afa11c56a939b6495
+- generated_utc: 2026-02-16T18:22:53Z
+- generated_local: 2026-02-16 20:22:53 EET
+- state.updated_utc: 2026-02-16T18:22:53.386380Z
+- state.sha256: b8078e15612f5991eba4d83aec0d0f69e1b3cb29e641ac7c218f3bfe4dd9833f
+- bundle.sha256: c542cc3b52ba2ef59b97fe3c9e8c53e75cc3eaec9dc8436f54e9066d312118e1
 
 Ссылки (рукопожатие):
 https://andreibaulin.github.io/ohlcv-feed/ta/binance/chat_bundle_latest.json
@@ -27,22 +27,22 @@ https://fapi.binance.com/futures/data/openInterestHist?symbol=ETHUSDT&period=1h&
 https://fapi.binance.com/fapi/v1/fundingRate?symbol=ETHUSDT&limit=30
 
 ## BTCUSDT
-- price(state): 68 587.90
+- price(state): 67 539.52
 - regime: chop | W1: range | D1: range
-- ATR(D1): 4 837.69 | ATR(H4): 951.93
+- ATR(D1): 4 837.69 | ATR(H4): 1 135.69
 - EMA200(D1): 94 136.58 | EMA200(W1): 68 067.71
 
 ### 4 поддержки / 4 сопротивления (CORE = точка реакции, BUFFER = зона допуска)
 Поддержки:
-- S1 (oper, bounce): CORE [66 242.08 – 67 098.82] | BUF [66 213.23 – 68 262.50] 🟢 (силa=5/5, macro: tests=17, rr=1.0, fr=0.235)
-- S2 (oper, bounce): CORE [65 327.63 – 66 184.37] | BUF [65 128.00 – 66 213.23] 🟢 (силa=5/5, macro: tests=17, rr=1.0, fr=0.235)
-- S3 (struct, bounce): CORE [64 071.63 – 64 928.37] | BUF [62 250.00 – 65 128.00] 🟢 (силa=4/5, macro: tests=17, rr=1.0, fr=0.235)
-- S4 (macro, bounce): CORE [59 571.63 – 60 428.37] | BUF [50 952.84 – 62 250.00] 🟢 (силa=4/5, macro: tests=17, rr=1.0, fr=0.235)
+- S1 (struct, magnet): CORE [50 952.84 – 66 939.16] | BUF [58 609.95 – 66 939.16] 🔴 (силa=5/5, macro: tests=66, rr=0.2576, fr=0.7424)
+- S2 (oper, magnet): CORE [64 606.94 – 66 267.06] | BUF [63 875.72 – 63 875.72] 🔴 (силa=5/5, macro: tests=66, rr=0.2576, fr=0.7424)
+- S3 (macro, magnet): CORE [56 855.50 – 63 144.50] | BUF [58 683.28 – 63 875.72] 🔴 (силa=2/5, macro: tests=66, rr=0.2576, fr=0.7424)
+- S4 (oper, magnet): CORE [59 488.94 – 60 511.06] | BUF [45 492.77 – 58 683.28] 🔴 (силa=2/5, macro: tests=66, rr=0.2576, fr=0.7424)
 Сопротивления:
-- R1 (oper, mixed): CORE [69 054.60 – 70 422.02] | BUF [69 054.60 – 70 872.49] 🟡 (силa=5/5, macro: tests=31, rr=0.968, fr=0.419)
-- R2 (oper, mixed): CORE [71 322.96 – 72 699.78] | BUF [70 872.49 – 75 415.91] 🟡 (силa=5/5, macro: tests=31, rr=0.968, fr=0.419)
-- R3 (struct, mixed): CORE [78 931.63 – 79 788.37] | BUF [78 931.63 – 79 788.37] 🟡 (силa=5/5, macro: tests=31, rr=0.968, fr=0.419)
-- R4 (macro, mixed): CORE [84 192.79 – 85 049.53] | BUF [81 990.58 – 96 758.59] 🟡 (силa=4/5, macro: tests=31, rr=0.968, fr=0.419)
+- R1 (oper, mixed): CORE [67 899.46 – 69 345.40] | BUF [67 899.46 – 69 697.17] 🟡 (силa=5/5, macro: tests=31, rr=0.968, fr=0.419)
+- R2 (oper, mixed): CORE [70 048.95 – 71 637.06] | BUF [69 697.17 – 75 243.00] 🟡 (силa=5/5, macro: tests=31, rr=0.968, fr=0.419)
+- R3 (struct, mixed): CORE [78 848.94 – 79 871.06] | BUF [78 848.94 – 79 871.06] 🟡 (силa=5/5, macro: tests=31, rr=0.968, fr=0.419)
+- R4 (macro, mixed): CORE [84 110.10 – 85 132.22] | BUF [81 990.58 – 96 758.59] 🟡 (силa=5/5, macro: tests=31, rr=0.968, fr=0.419)
 
 ### Деривативы (live ссылки Binance FAPI)
 - premiumIndex: https://fapi.binance.com/fapi/v1/premiumIndex?symbol=BTCUSDT
@@ -51,22 +51,22 @@ https://fapi.binance.com/fapi/v1/fundingRate?symbol=ETHUSDT&limit=30
 - fundingRate(×30): https://fapi.binance.com/fapi/v1/fundingRate?symbol=BTCUSDT&limit=30
 
 ## ETHUSDT
-- price(state): 1 971.13
+- price(state): 1 956.65
 - regime: chop | W1: down | D1: range
-- ATR(D1): 180.12 | ATR(H4): 40.02
+- ATR(D1): 180.12 | ATR(H4): 46.82
 - EMA200(D1): 3 116.00 | EMA200(W1): 2 596.74
 
 ### 4 поддержки / 4 сопротивления (CORE = точка реакции, BUFFER = зона допуска)
 Поддержки:
-- S1 (oper, magnet): CORE [1 910.87 – 1 946.89] | BUF [1 910.58 – 1 946.89] 🔴 (силa=5/5, macro: tests=101, rr=0.1584, fr=0.8416)
-- S2 (macro, magnet): CORE [1 157.64 – 1 910.29] | BUF [1 520.89 – 1 910.29] 🔴 (силa=5/5, macro: tests=101, rr=0.1584, fr=0.8416)
-- S3 (oper, magnet): CORE [1 848.12 – 1 884.14] | BUF [1 806.96 – 1 806.96] 🔴 (силa=2/5, macro: tests=101, rr=0.1584, fr=0.8416)
-- S4 (struct, magnet): CORE [1 729.79 – 1 765.81] | BUF [1 157.64 – 1 806.96] 🔴 (силa=2/5, macro: tests=101, rr=0.1584, fr=0.8416)
+- S1 (oper, magnet): CORE [1 907.81 – 1 949.95] | BUF [1 909.05 – 1 949.95] 🔴 (силa=5/5, macro: tests=101, rr=0.1584, fr=0.8416)
+- S2 (struct, magnet): CORE [1 157.64 – 1 910.29] | BUF [1 511.26 – 1 909.05] 🔴 (силa=5/5, macro: tests=101, rr=0.1584, fr=0.8416)
+- S3 (macro, magnet): CORE [1 630.72 – 1 864.88] | BUF [1 699.80 – 1 699.80] 🔴 (силa=5/5, macro: tests=101, rr=0.1584, fr=0.8416)
+- S4 (oper, magnet): CORE [1 726.73 – 1 768.87] | BUF [1 157.64 – 1 699.80] 🔴 (силa=2/5, macro: tests=101, rr=0.1584, fr=0.8416)
 Сопротивления:
-- R1 (oper, magnet): CORE [1 983.41 – 2 033.82] | BUF [1 983.41 – 2 044.74] 🔴 (силa=5/5, macro: tests=33, rr=0.939, fr=0.758)
-- R2 (oper, magnet): CORE [2 055.67 – 2 091.69] | BUF [2 044.74 – 2 110.70] 🔴 (силa=5/5, macro: tests=33, rr=0.939, fr=0.758)
-- R3 (struct, magnet): CORE [2 129.72 – 2 170.04] | BUF [2 110.70 – 2 247.93] 🔴 (силa=5/5, macro: tests=33, rr=0.939, fr=0.758)
-- R4 (macro, magnet): CORE [2 325.81 – 2 361.83] | BUF [2 247.93 – 3 150.62] 🔴 (силa=5/5, macro: tests=33, rr=0.939, fr=0.758)
+- R1 (oper, mixed): CORE [1 980.35 – 2 036.88] | BUF [1 980.35 – 2 059.57] 🔴 (силa=5/5, macro: tests=30, rr=0.967, fr=0.567)
+- R2 (oper, mixed): CORE [2 082.25 – 2 142.77] | BUF [2 059.57 – 2 232.76] 🔴 (силa=5/5, macro: tests=30, rr=0.967, fr=0.567)
+- R3 (struct, mixed): CORE [2 322.75 – 2 364.89] | BUF [2 232.76 – 2 370.22] 🔴 (силa=5/5, macro: tests=30, rr=0.967, fr=0.567)
+- R4 (macro, mixed): CORE [2 375.55 – 2 417.69] | BUF [2 370.22 – 3 150.62] 🔴 (силa=5/5, macro: tests=30, rr=0.967, fr=0.567)
 
 ### Деривативы (live ссылки Binance FAPI)
 - premiumIndex: https://fapi.binance.com/fapi/v1/premiumIndex?symbol=ETHUSDT
