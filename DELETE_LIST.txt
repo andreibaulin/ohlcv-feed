@@ -1,0 +1,10 @@
+docs/deriv/binance/core10_latest.json
+docs/deriv/binance/core5_latest.json
+iron/IRON_CONTRACT_v1.json
+iron/Iron
+scripts/build_deriv_binance.py
+scripts/build_deriv_mini_binance.py
+scripts/build_ohlcv_binance.py
+scripts/generate_feed.py
+scripts/postprocess_feed.py
+scripts/postprocess_pack.py
