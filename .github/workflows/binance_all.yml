@@ -1,4 +1,4 @@
-name: binance-all (ohlcv + ta + deriv)
+name: binance-all (ohlcv + ta + chat_bundle)
 
 on:
   workflow_dispatch:
@@ -38,15 +38,20 @@ jobs:
           test -f scripts/gen_pack_btc_eth.py || (echo "Missing scripts/gen_pack_btc_eth.py"; ls -la scripts; exit 1)
           python -u scripts/gen_pack_btc_eth.py
 
-      - name: Generate derivatives (funding/OI/long-short)
-        run: |
-          test -f scripts/build_deriv_binance.py || (echo "Missing scripts/build_deriv_binance.py"; ls -la scripts; exit 1)
-          python -u scripts/build_deriv_binance.py
-
       - name: Generate TA state (levels/zones)
         run: |
           test -f scripts/build_ta_state.py || (echo "Missing scripts/build_ta_state.py"; ls -la scripts; exit 1)
           python -u scripts/build_ta_state.py
+
+      - name: Build IRON chat bundle + report (4S/4R)
+        run: |
+          test -f scripts/build_chat_bundle.py || (echo "Missing scripts/build_chat_bundle.py"; ls -la scripts; exit 1)
+          python -u scripts/build_chat_bundle.py
+
+      - name: Verify IRON bundle/report (hard gate)
+        run: |
+          test -f scripts/verify_chat_bundle.py || (echo "Missing scripts/verify_chat_bundle.py"; ls -la scripts; exit 1)
+          python -u scripts/verify_chat_bundle.py
 
       - name: Commit & push if changed
         run: |
@@ -54,7 +59,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          # Стаджим ВСЁ (ohlcv/docs/ta/deriv и т.д.), иначе остаются unstaged changes и rebase падает.
+          # Стаджим ВСЁ (docs/...), иначе остаются unstaged changes и rebase падает.
           git add -A
 
           if git diff --cached --quiet; then
@@ -62,7 +67,7 @@ jobs:
             exit 0
           fi
 
-          git commit -m "binance: update ohlcv/ta/deriv"
+          git commit -m "binance: update docs feeds (ohlcv/ta + chat_bundle)"
 
           # Safety: если что-то изменилось после коммита (редко, но бывает) — включаем в тот же коммит.
           git add -A
