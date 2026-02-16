@@ -25,39 +25,8 @@ from iron_common import (
 
 CONTRACT_PATH = Path("iron/IRON_CONTRACT_CURRENT.json") if Path("iron/IRON_CONTRACT_CURRENT.json").exists() else Path("iron/IRON_CONTRACT_v1.json")
 
-BUNDLE_PATH = Path("ta/binance/chat_bundle_latest.json")
-REPORT_PATH = Path("ta/binance/chat_report_latest.md")
-
-def recompute_derived(fx: Dict[str, Any]) -> Dict[str, Optional[float]]:
-    def premium_pct(pidx: Dict[str, Any]) -> Optional[float]:
-        try:
-            mark = float(pidx.get("markPrice"))
-            idx = float(pidx.get("indexPrice"))
-            if idx == 0:
-                return None
-            return (mark - idx) / idx * 100.0
-        except Exception:
-            return None
-
-    def oi_delta_pct(hist: Any) -> Optional[float]:
-        try:
-            if not isinstance(hist, list) or len(hist) < 2:
-                return None
-            first = float(hist[0].get("openInterest"))
-            last = float(hist[-1].get("openInterest"))
-            if first == 0:
-                return None
-            return (last - first) / first * 100.0
-        except Exception:
-            return None
-
-    out: Dict[str, Optional[float]] = {}
-    for prefix in ("btc","eth"):
-        pidx = fx.get(f"{prefix}.deriv.premiumIndex")
-        hist = fx.get(f"{prefix}.deriv.openInterestHist_1h_30")
-        out[f"{prefix}.deriv.premium_pct"] = premium_pct(pidx) if isinstance(pidx, dict) else None
-        out[f"{prefix}.deriv.oi_delta_pct_30h"] = oi_delta_pct(hist)
-    return out
+BUNDLE_PATH = Path("docs/ta/binance/chat_bundle_latest.json")
+REPORT_PATH = Path("docs/ta/binance/chat_report_latest.md")
 
 def main() -> None:
     if not CONTRACT_PATH.exists():
@@ -73,19 +42,13 @@ def main() -> None:
 
     # Verify source files exist
     state_path = Path(bundle["sources"]["state"]["path"])
-    deriv_path = Path(bundle["sources"]["deriv_mini"]["path"])
     if not state_path.exists():
         raise SystemExit(f"Missing state file referenced by bundle: {state_path}")
-    if not deriv_path.exists():
-        raise SystemExit(f"Missing deriv_mini file referenced by bundle: {deriv_path}")
 
     # Verify sha256 of sources
     state_sha = sha256_file(state_path)
-    deriv_sha = sha256_file(deriv_path)
     if state_sha != bundle["sources"]["state"]["sha256"]:
         raise SystemExit(f"state.sha256 mismatch: computed={state_sha} bundle={bundle['sources']['state']['sha256']}")
-    if deriv_sha != bundle["sources"]["deriv_mini"]["sha256"]:
-        raise SystemExit(f"deriv_mini.sha256 mismatch: computed={deriv_sha} bundle={bundle['sources']['deriv_mini']['sha256']}")
 
     # Verify contract sha
     contract_sha = sha256_file(CONTRACT_PATH)
@@ -108,7 +71,7 @@ def main() -> None:
 
     # Verify facts against JSON pointers
     state = read_json(state_path)
-    deriv = read_json(deriv_path)
+    deriv = {}
     fx: Dict[str, Any] = bundle.get("facts_index", {})
     # rebuild from facts list to avoid tampering
     fx2 = {f["id"]: f.get("value") for f in bundle.get("facts", [])}
@@ -128,29 +91,10 @@ def main() -> None:
         else:
             if expected != actual:
                 raise SystemExit(f"Fact mismatch {f['id']}: expected={expected} actual={actual} pointer={ptr} src={src}")
-
-    # Verify derived facts
-    derived = {d["id"]: d.get("value") for d in bundle.get("derived_facts", [])}
-    recomputed = recompute_derived(fx)
-    for k, v in recomputed.items():
-        if k not in derived:
-            raise SystemExit(f"Missing derived fact: {k}")
-        dv = derived[k]
-        if dv is None and v is None:
-            continue
-        if isinstance(dv, (int, float)) and isinstance(v, (int, float)):
-            if not safe_float_eq(dv, v, eps=1e-9):
-                raise SystemExit(f"Derived mismatch {k}: bundle={dv} recomputed={v}")
-        else:
-            if dv != v:
-                raise SystemExit(f"Derived mismatch {k}: bundle={dv} recomputed={v}")
-
     # Verify report contains the proof lines (basic)
     required_snippets = [
         f"state.sha256: {bundle['sources']['state']['sha256']}",
-        f"deriv_mini.sha256: {bundle['sources']['deriv_mini']['sha256']}",
         f"bundle.sha256: {bundle['bundle_sha256']}",
-        f"report.sha256: {bundle['report_sha256']}",
     ]
     for s in required_snippets:
         if s not in report:

@@ -33,7 +33,7 @@ KLINES_ENDPOINTS: List[str] = [
     "https://api.binance.com/api/v3/klines",
 ]
 
-OUT_ROOTS = [Path("."), Path("docs")]
+OUT_ROOTS = [Path("docs")]
 
 
 # ---------------- HELPERS ----------------
@@ -406,11 +406,9 @@ def main() -> None:
             lines.append(make_url(pages_base, f"{sym}_{tf}_last.json", v))
             lines.append(make_url(pages_base, f"{sym}_{tf}_tail{n}_chunks.json", v))
 
-    # Extra: pointers to deriv + ta state (written by separate scripts)
+    # Extra: pointer to TA state (written by separate scripts)
     site_root = pages_base[:-len('ohlcv/binance/')] if pages_base.endswith('ohlcv/binance/') else pages_base.rstrip('/')
-    deriv_url = f"{site_root}/deriv/binance/core5_latest.json?v={v}"
     ta_url = f"{site_root}/ta/binance/state_btc_eth_latest.json?v={v}"
-    lines.append(deriv_url)
     lines.append(ta_url)
 
     lines.append(make_url(pages_base, "pack_btc_eth.json", v))
