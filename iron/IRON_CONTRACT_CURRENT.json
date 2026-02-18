@@ -1,0 +1,282 @@
+{
+  "schema": "iron.contract.v1",
+  "inputs": {
+    "state_path": "docs/ta/binance/state_btc_eth_full_latest.json"
+  },
+  "assets": [
+    "BTCUSDT",
+    "ETHUSDT"
+  ],
+  "facts": [
+    {
+      "id": "state.updated_utc",
+      "source": "state",
+      "pointer": "/updated_utc",
+      "type": "string"
+    },
+    {
+      "id": "btc.price",
+      "source": "state",
+      "pointer": "/symbols/BTCUSDT/data/price",
+      "type": "number"
+    },
+    {
+      "id": "btc.last_close_utc_h4",
+      "source": "state",
+      "pointer": "/symbols/BTCUSDT/data/last_close_utc_h4",
+      "type": "string"
+    },
+    {
+      "id": "btc.regime",
+      "source": "state",
+      "pointer": "/symbols/BTCUSDT/structure/regime",
+      "type": "string"
+    },
+    {
+      "id": "btc.trend.w1",
+      "source": "state",
+      "pointer": "/symbols/BTCUSDT/structure/W1/trend",
+      "type": "string"
+    },
+    {
+      "id": "btc.trend.d1",
+      "source": "state",
+      "pointer": "/symbols/BTCUSDT/structure/D1/trend",
+      "type": "string"
+    },
+    {
+      "id": "btc.atr.d1",
+      "source": "state",
+      "pointer": "/symbols/BTCUSDT/vol/atr14/D1",
+      "type": "number"
+    },
+    {
+      "id": "btc.atr.h4",
+      "source": "state",
+      "pointer": "/symbols/BTCUSDT/vol/atr14/H4",
+      "type": "number"
+    },
+    {
+      "id": "btc.ema200.d1",
+      "source": "state",
+      "pointer": "/symbols/BTCUSDT/ma/ema200/D1",
+      "type": "number"
+    },
+    {
+      "id": "btc.ema200.w1",
+      "source": "state",
+      "pointer": "/symbols/BTCUSDT/ma/ema200/W1",
+      "type": "number"
+    },
+    {
+      "id": "btc.w1.eq",
+      "source": "state",
+      "pointer": "/symbols/BTCUSDT/zones/range_w1/equilibrium",
+      "type": "number"
+    },
+    {
+      "id": "btc.w1.discount_edge",
+      "source": "state",
+      "pointer": "/symbols/BTCUSDT/zones/range_w1/discount_edge",
+      "type": "number"
+    },
+    {
+      "id": "btc.w1.premium_edge",
+      "source": "state",
+      "pointer": "/symbols/BTCUSDT/zones/range_w1/premium_edge",
+      "type": "number"
+    },
+    {
+      "id": "btc.band.w1.discount",
+      "source": "state",
+      "pointer": "/symbols/BTCUSDT/zones/range_w1/bands/discount",
+      "type": "range"
+    },
+    {
+      "id": "btc.band.w1.premium",
+      "source": "state",
+      "pointer": "/symbols/BTCUSDT/zones/range_w1/bands/premium",
+      "type": "range"
+    },
+    {
+      "id": "btc.zone.w1.support",
+      "source": "state",
+      "pointer": "/symbols/BTCUSDT/zones/range_w1/support/zone",
+      "type": "range"
+    },
+    {
+      "id": "btc.zone.w1.resistance",
+      "source": "state",
+      "pointer": "/symbols/BTCUSDT/zones/range_w1/resistance/zone",
+      "type": "range"
+    },
+    {
+      "id": "btc.band.d1.support_entry",
+      "source": "state",
+      "pointer": "/symbols/BTCUSDT/zones/swing_d1/bands/support_entry",
+      "type": "range"
+    },
+    {
+      "id": "btc.band.d1.resistance_entry",
+      "source": "state",
+      "pointer": "/symbols/BTCUSDT/zones/swing_d1/bands/resistance_entry",
+      "type": "range"
+    },
+    {
+      "id": "btc.q.w1.discount",
+      "source": "state",
+      "pointer": "/symbols/BTCUSDT/zones/range_w1/reaction/discount",
+      "type": "object"
+    },
+    {
+      "id": "btc.q.w1.premium",
+      "source": "state",
+      "pointer": "/symbols/BTCUSDT/zones/range_w1/reaction/premium",
+      "type": "object"
+    },
+    {
+      "id": "btc.q.d1.support_entry",
+      "source": "state",
+      "pointer": "/symbols/BTCUSDT/zones/swing_d1/reaction/support_entry",
+      "type": "object"
+    },
+    {
+      "id": "btc.q.d1.resistance_entry",
+      "source": "state",
+      "pointer": "/symbols/BTCUSDT/zones/swing_d1/reaction/resistance_entry",
+      "type": "object"
+    },
+    {
+      "id": "eth.price",
+      "source": "state",
+      "pointer": "/symbols/ETHUSDT/data/price",
+      "type": "number"
+    },
+    {
+      "id": "eth.last_close_utc_h4",
+      "source": "state",
+      "pointer": "/symbols/ETHUSDT/data/last_close_utc_h4",
+      "type": "string"
+    },
+    {
+      "id": "eth.regime",
+      "source": "state",
+      "pointer": "/symbols/ETHUSDT/structure/regime",
+      "type": "string"
+    },
+    {
+      "id": "eth.trend.w1",
+      "source": "state",
+      "pointer": "/symbols/ETHUSDT/structure/W1/trend",
+      "type": "string"
+    },
+    {
+      "id": "eth.trend.d1",
+      "source": "state",
+      "pointer": "/symbols/ETHUSDT/structure/D1/trend",
+      "type": "string"
+    },
+    {
+      "id": "eth.atr.d1",
+      "source": "state",
+      "pointer": "/symbols/ETHUSDT/vol/atr14/D1",
+      "type": "number"
+    },
+    {
+      "id": "eth.atr.h4",
+      "source": "state",
+      "pointer": "/symbols/ETHUSDT/vol/atr14/H4",
+      "type": "number"
+    },
+    {
+      "id": "eth.ema200.d1",
+      "source": "state",
+      "pointer": "/symbols/ETHUSDT/ma/ema200/D1",
+      "type": "number"
+    },
+    {
+      "id": "eth.ema200.w1",
+      "source": "state",
+      "pointer": "/symbols/ETHUSDT/ma/ema200/W1",
+      "type": "number"
+    },
+    {
+      "id": "eth.w1.eq",
+      "source": "state",
+      "pointer": "/symbols/ETHUSDT/zones/range_w1/equilibrium",
+      "type": "number"
+    },
+    {
+      "id": "eth.w1.discount_edge",
+      "source": "state",
+      "pointer": "/symbols/ETHUSDT/zones/range_w1/discount_edge",
+      "type": "number"
+    },
+    {
+      "id": "eth.w1.premium_edge",
+      "source": "state",
+      "pointer": "/symbols/ETHUSDT/zones/range_w1/premium_edge",
+      "type": "number"
+    },
+    {
+      "id": "eth.band.w1.discount",
+      "source": "state",
+      "pointer": "/symbols/ETHUSDT/zones/range_w1/bands/discount",
+      "type": "range"
+    },
+    {
+      "id": "eth.band.w1.premium",
+      "source": "state",
+      "pointer": "/symbols/ETHUSDT/zones/range_w1/bands/premium",
+      "type": "range"
+    },
+    {
+      "id": "eth.zone.w1.support",
+      "source": "state",
+      "pointer": "/symbols/ETHUSDT/zones/range_w1/support/zone",
+      "type": "range"
+    },
+    {
+      "id": "eth.zone.w1.resistance",
+      "source": "state",
+      "pointer": "/symbols/ETHUSDT/zones/range_w1/resistance/zone",
+      "type": "range"
+    },
+    {
+      "id": "eth.band.d1.support_entry",
+      "source": "state",
+      "pointer": "/symbols/ETHUSDT/zones/swing_d1/bands/support_entry",
+      "type": "range"
+    },
+    {
+      "id": "eth.band.d1.resistance_entry",
+      "source": "state",
+      "pointer": "/symbols/ETHUSDT/zones/swing_d1/bands/resistance_entry",
+      "type": "range"
+    },
+    {
+      "id": "eth.q.w1.discount",
+      "source": "state",
+      "pointer": "/symbols/ETHUSDT/zones/range_w1/reaction/discount",
+      "type": "object"
+    },
+    {
+      "id": "eth.q.w1.premium",
+      "source": "state",
+      "pointer": "/symbols/ETHUSDT/zones/range_w1/reaction/premium",
+      "type": "object"
+    },
+    {
+      "id": "eth.q.d1.support_entry",
+      "source": "state",
+      "pointer": "/symbols/ETHUSDT/zones/swing_d1/reaction/support_entry",
+      "type": "object"
+    },
+    {
+      "id": "eth.q.d1.resistance_entry",
+      "source": "state",
+      "pointer": "/symbols/ETHUSDT/zones/swing_d1/reaction/resistance_entry",
+      "type": "object"
+    }
+  ]
+}
