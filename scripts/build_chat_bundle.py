@@ -148,7 +148,12 @@ def assert_levels_ok(
         return (a, b) if a <= b else (b, a)
 
     def _ov(a: Tuple[float, float], b: Tuple[float, float]) -> bool:
-        return max(a[0], b[0]) <= min(a[1], b[1]) + eps
+        """True only for a *real* overlap.
+
+        Touching at a single boundary point is allowed (adjacent zones are OK).
+        eps protects from float jitter / rounding.
+        """
+        return max(a[0], b[0]) < (min(a[1], b[1]) - eps)
 
     def _check(items: List[Dict[str, Any]], side: str) -> None:
         # range integrity + side correctness

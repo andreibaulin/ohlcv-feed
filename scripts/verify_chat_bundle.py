@@ -110,7 +110,12 @@ def main() -> None:
         return (a, b) if a <= b else (b, a)
 
     def _ov(a: tuple, b: tuple, eps: float) -> bool:
-        return max(a[0], b[0]) <= min(a[1], b[1]) + eps
+        """True only for a *real* overlap.
+
+        Touching at a single boundary point is allowed (adjacent zones are OK).
+        eps protects from float jitter / rounding.
+        """
+        return max(a[0], b[0]) < (min(a[1], b[1]) - eps)
 
     def _check_side(sym: str, side: str, price: float, atr_h4: float, items: List[Dict[str, Any]]) -> None:
         eps = max(atr_h4 * 1e-3, price * 1e-6, 1e-9)
