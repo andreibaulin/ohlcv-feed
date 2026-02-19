@@ -1,0 +1,1668 @@
+{
+  "notes": {
+    "regime": "trend/range/chop is a risk filter; chop/high-vol => prefer WAIT.",
+    "what": "FULL: W1/D1 structural + local/working H4 + MA (EMA200) + range/swing execution bands + reaction stats; NOT a forecast."
+  },
+  "source": "ta_state_pivots_atr_full",
+  "symbols": {
+    "BTCUSDT": {
+      "data": {
+        "bars": {
+          "D1": 1999,
+          "H4": 1499,
+          "W1": 444
+        },
+        "last_close_utc_h4": "2026-02-19T11:59:59Z",
+        "price": 66496.02
+      },
+      "ma": {
+        "available": {
+          "D1": true,
+          "W1": true
+        },
+        "ema200": {
+          "D1": 93352.62,
+          "W1": 68067.71
+        },
+        "ema200_slope": {
+          "D1": "down",
+          "W1": "up"
+        },
+        "period": 200,
+        "price_vs_ema200": {
+          "D1": "below",
+          "W1": "below"
+        }
+      },
+      "structure": {
+        "D1": {
+          "close_break_down": false,
+          "close_break_up": false,
+          "last_swing_high": 70983.0,
+          "last_swing_low": 65118.0,
+          "trend": "range"
+        },
+        "W1": {
+          "close_break_down": true,
+          "close_break_up": false,
+          "last_swing_high": 97924.49,
+          "last_swing_low": 80600.0,
+          "trend": "range"
+        },
+        "regime": "chop"
+      },
+      "vol": {
+        "atr14": {
+          "D1": 4264.72,
+          "H4": 1010.69,
+          "W1": 9403.71
+        },
+        "vol_flag_d1": "high"
+      },
+      "zones": {
+        "forecast_4": {
+          "R1_local_h4": {
+            "age_bars": 5,
+            "basis": [
+              "pivot"
+            ],
+            "center": 68476.22,
+            "cluster_count": 3,
+            "last_touch_utc": "2026-02-18T15:59:59Z",
+            "rejections": 14,
+            "score": 81,
+            "side": "R",
+            "strength": 5,
+            "tf": "H4",
+            "touches": 53,
+            "zone": [
+              67955.71,
+              69289.15
+            ]
+          },
+          "R2_structural": {
+            "center": 71627.205,
+            "cluster_count": 2,
+            "last_touch_utc": "2026-02-17T23:59:59Z",
+            "rejections": 6,
+            "side": "R",
+            "strength": 5,
+            "tf": "D1",
+            "touches": 14,
+            "zone": [
+              68855.14,
+              74399.27
+            ]
+          },
+          "S1_local_h4": {
+            "age_bars": 3,
+            "basis": [
+              "pivot"
+            ],
+            "center": 65813.0,
+            "cluster_count": 2,
+            "last_touch_utc": "2026-02-18T23:59:59Z",
+            "rejections": 7,
+            "score": 29,
+            "side": "S",
+            "strength": 5,
+            "tf": "H4",
+            "touches": 15,
+            "zone": [
+              65301.19,
+              66324.81
+            ]
+          },
+          "S2_structural": {
+            "center": 58946.0,
+            "cluster_count": 1,
+            "last_touch_utc": "2026-02-08T23:59:59Z",
+            "rejections": 16,
+            "side": "S",
+            "strength": 5,
+            "tf": "W1",
+            "touches": 42,
+            "zone": [
+              56404.04,
+              61487.96
+            ]
+          },
+          "confluence": {
+            "R1_with_R2": true,
+            "S1_with_S2": false
+          }
+        },
+        "forecast_swing_4": {
+          "R1_swing_d1": {
+            "center": 71627.205,
+            "cluster_count": 2,
+            "last_touch_utc": "2026-02-17T23:59:59Z",
+            "rejections": 6,
+            "side": "R",
+            "strength": 5,
+            "tf": "D1",
+            "touches": 14,
+            "zone": [
+              68855.14,
+              74399.27
+            ]
+          },
+          "R2_range_w1": {
+            "center": 72797.99,
+            "cluster_count": 3,
+            "last_touch_utc": "2026-02-15T23:59:59Z",
+            "rejections": 11,
+            "side": "R",
+            "strength": 5,
+            "tf": "W1",
+            "touches": 15,
+            "zone": [
+              69961.57,
+              75634.41
+            ]
+          },
+          "S1_swing_d1": {
+            "center": 60000.0,
+            "cluster_count": 1,
+            "last_touch_utc": "2026-02-06T23:59:59Z",
+            "rejections": 2,
+            "side": "S",
+            "strength": 2,
+            "tf": "D1",
+            "touches": 2,
+            "zone": [
+              57526.29,
+              62473.71
+            ]
+          },
+          "S2_range_w1": {
+            "center": 58946.0,
+            "cluster_count": 1,
+            "last_touch_utc": "2026-02-08T23:59:59Z",
+            "rejections": 16,
+            "side": "S",
+            "strength": 5,
+            "tf": "W1",
+            "touches": 42,
+            "zone": [
+              56404.04,
+              61487.96
+            ]
+          },
+          "bands": {
+            "R1_entry": [
+              68855.14,
+              70987.5
+            ],
+            "R2_premium": [
+              69961.57,
+              72093.93
+            ],
+            "S1_entry": [
+              60341.35,
+              62473.71
+            ],
+            "S2_discount": [
+              59355.6,
+              61487.96
+            ]
+          }
+        },
+        "local_h4": {
+          "resistances": [
+            {
+              "age_bars": 5,
+              "basis": [
+                "pivot"
+              ],
+              "center": 68476.22,
+              "cluster_count": 3,
+              "last_touch_utc": "2026-02-18T15:59:59Z",
+              "rejections": 14,
+              "score": 81,
+              "side": "R",
+              "strength": 5,
+              "tf": "H4",
+              "touches": 53,
+              "zone": [
+                67955.71,
+                69289.15
+              ]
+            },
+            {
+              "age_bars": 14,
+              "basis": [
+                "pivot"
+              ],
+              "center": 69362.24,
+              "cluster_count": 2,
+              "last_touch_utc": "2026-02-17T03:59:59Z",
+              "rejections": 13,
+              "score": 72,
+              "side": "R",
+              "strength": 5,
+              "tf": "H4",
+              "touches": 46,
+              "zone": [
+                68786.69,
+                69937.78
+              ]
+            },
+            {
+              "age_bars": 17,
+              "basis": [
+                "pivot"
+              ],
+              "center": 70126.67,
+              "cluster_count": 3,
+              "last_touch_utc": "2026-02-16T15:59:59Z",
+              "rejections": 13,
+              "score": 61,
+              "side": "R",
+              "strength": 5,
+              "tf": "H4",
+              "touches": 35,
+              "zone": [
+                69538.84,
+                71014.82
+              ]
+            },
+            {
+              "age_bars": 24,
+              "basis": [
+                "pivot",
+                "range"
+              ],
+              "center": 71126.0,
+              "cluster_count": 3,
+              "last_touch_utc": "2026-02-15T11:59:59Z",
+              "rejections": 10,
+              "score": 41,
+              "side": "R",
+              "strength": 5,
+              "tf": "H4",
+              "touches": 21,
+              "zone": [
+                70528.19,
+                71580.81
+              ]
+            },
+            {
+              "age_bars": 61,
+              "basis": [
+                "pivot"
+              ],
+              "center": 72011.37,
+              "cluster_count": 2,
+              "last_touch_utc": "2026-02-09T07:59:59Z",
+              "rejections": 9,
+              "score": 31,
+              "side": "R",
+              "strength": 5,
+              "tf": "H4",
+              "touches": 13,
+              "zone": [
+                71296.52,
+                72726.22
+              ]
+            },
+            {
+              "age_bars": 96,
+              "basis": [
+                "pivot"
+              ],
+              "center": 79360.0,
+              "cluster_count": 1,
+              "last_touch_utc": "2026-02-03T11:59:59Z",
+              "rejections": 11,
+              "score": 33,
+              "side": "R",
+              "strength": 5,
+              "tf": "H4",
+              "touches": 11,
+              "zone": [
+                78905.19,
+                79814.81
+              ]
+            }
+          ],
+          "selected": {
+            "resistance": {
+              "age_bars": 5,
+              "basis": [
+                "pivot"
+              ],
+              "center": 68476.22,
+              "cluster_count": 3,
+              "last_touch_utc": "2026-02-18T15:59:59Z",
+              "rejections": 14,
+              "score": 81,
+              "side": "R",
+              "strength": 5,
+              "tf": "H4",
+              "touches": 53,
+              "zone": [
+                67955.71,
+                69289.15
+              ]
+            },
+            "support": {
+              "age_bars": 3,
+              "basis": [
+                "pivot"
+              ],
+              "center": 65813.0,
+              "cluster_count": 2,
+              "last_touch_utc": "2026-02-18T23:59:59Z",
+              "rejections": 7,
+              "score": 29,
+              "side": "S",
+              "strength": 5,
+              "tf": "H4",
+              "touches": 15,
+              "zone": [
+                65301.19,
+                66324.81
+              ]
+            }
+          },
+          "supports": [
+            {
+              "age_bars": 3,
+              "basis": [
+                "pivot"
+              ],
+              "center": 65813.0,
+              "cluster_count": 2,
+              "last_touch_utc": "2026-02-18T23:59:59Z",
+              "rejections": 7,
+              "score": 29,
+              "side": "S",
+              "strength": 5,
+              "tf": "H4",
+              "touches": 15,
+              "zone": [
+                65301.19,
+                66324.81
+              ]
+            },
+            {
+              "age_bars": 39,
+              "basis": [
+                "pivot",
+                "range"
+              ],
+              "center": 65118.0,
+              "cluster_count": 2,
+              "last_touch_utc": "2026-02-12T23:59:59Z",
+              "rejections": 3,
+              "score": 13,
+              "side": "S",
+              "strength": 4,
+              "tf": "H4",
+              "touches": 7,
+              "zone": [
+                64663.19,
+                65572.81
+              ]
+            },
+            {
+              "age_bars": 80,
+              "basis": [
+                "pivot"
+              ],
+              "center": 60000.0,
+              "cluster_count": 1,
+              "last_touch_utc": "2026-02-06T03:59:59Z",
+              "rejections": 1,
+              "score": 3,
+              "side": "S",
+              "strength": 1,
+              "tf": "H4",
+              "touches": 1,
+              "zone": [
+                59545.19,
+                60454.81
+              ]
+            },
+            {
+              "age_bars": 125,
+              "basis": [
+                "pivot"
+              ],
+              "center": 87600.04,
+              "cluster_count": 15,
+              "last_touch_utc": "2026-01-29T15:59:59Z",
+              "rejections": 22,
+              "score": 169,
+              "side": "S",
+              "strength": 5,
+              "tf": "H4",
+              "touches": 125,
+              "zone": [
+                86795.19,
+                88510.81
+              ]
+            },
+            {
+              "age_bars": 125,
+              "basis": [
+                "pivot"
+              ],
+              "center": 88593.18,
+              "cluster_count": 6,
+              "last_touch_utc": "2026-01-29T15:59:59Z",
+              "rejections": 23,
+              "score": 165,
+              "side": "S",
+              "strength": 5,
+              "tf": "H4",
+              "touches": 119,
+              "zone": [
+                88005.15,
+                89362.82
+              ]
+            },
+            {
+              "age_bars": 128,
+              "basis": [
+                "pivot"
+              ],
+              "center": 89434.82,
+              "cluster_count": 10,
+              "last_touch_utc": "2026-01-29T03:59:59Z",
+              "rejections": 19,
+              "score": 146,
+              "side": "S",
+              "strength": 5,
+              "tf": "H4",
+              "touches": 108,
+              "zone": [
+                88798.97,
+                90221.2
+              ]
+            }
+          ]
+        },
+        "range_w1": {
+          "bands": {
+            "band_width": 2132.36,
+            "discount": [
+              59355.6,
+              61487.96
+            ],
+            "params": {
+              "fallback_atr_h4_k": 2.0,
+              "k_atr_d1": 0.5,
+              "minmax": [
+                1500.0,
+                6000.0
+              ]
+            },
+            "premium": [
+              69961.57,
+              72093.93
+            ]
+          },
+          "discount_edge": 61487.96,
+          "equilibrium": 65724.76,
+          "premium_edge": 69961.57,
+          "reaction": {
+            "discount": {
+              "days_since_last_reaction": 13.43,
+              "days_since_last_test": 13.43,
+              "failure_rate": 0.0,
+              "failures": 0,
+              "fwd_h4_bars": 18,
+              "last_reaction_utc": "2026-02-06T03:59:59Z",
+              "last_test_utc": "2026-02-06T03:59:59Z",
+              "lookback_h4_bars": 720,
+              "median_bars_to_reaction_h4": 1,
+              "median_mae_atr_h4": 0.251,
+              "median_mfe_atr_h4": 8.017,
+              "reaction_rate": 1.0,
+              "reactions": 1,
+              "tests": 1,
+              "threshold_atr_h4": 1.0
+            },
+            "premium": {
+              "days_since_last_reaction": 3.93,
+              "days_since_last_test": 3.93,
+              "failure_rate": 0.036,
+              "failures": 1,
+              "fwd_h4_bars": 18,
+              "last_reaction_utc": "2026-02-15T15:59:59Z",
+              "last_test_utc": "2026-02-15T15:59:59Z",
+              "lookback_h4_bars": 720,
+              "median_bars_to_reaction_h4": 2,
+              "median_mae_atr_h4": 1.044,
+              "median_mfe_atr_h4": 4.255,
+              "reaction_rate": 0.964,
+              "reactions": 27,
+              "tests": 28,
+              "threshold_atr_h4": 1.0
+            }
+          },
+          "resistance": {
+            "center": 72797.99,
+            "cluster_count": 3,
+            "last_touch_utc": "2026-02-15T23:59:59Z",
+            "rejections": 11,
+            "side": "R",
+            "strength": 5,
+            "tf": "W1",
+            "touches": 15,
+            "zone": [
+              69961.57,
+              75634.41
+            ]
+          },
+          "support": {
+            "center": 58946.0,
+            "cluster_count": 1,
+            "last_touch_utc": "2026-02-08T23:59:59Z",
+            "rejections": 16,
+            "side": "S",
+            "strength": 5,
+            "tf": "W1",
+            "touches": 42,
+            "zone": [
+              56404.04,
+              61487.96
+            ]
+          }
+        },
+        "structural": {
+          "resistances": [
+            {
+              "center": 71627.205,
+              "cluster_count": 2,
+              "last_touch_utc": "2026-02-17T23:59:59Z",
+              "rejections": 6,
+              "side": "R",
+              "strength": 5,
+              "tf": "D1",
+              "touches": 14,
+              "zone": [
+                68855.14,
+                74399.27
+              ]
+            },
+            {
+              "center": 88765.43,
+              "cluster_count": 1,
+              "last_touch_utc": "2026-02-01T23:59:59Z",
+              "rejections": 7,
+              "side": "R",
+              "strength": 5,
+              "tf": "W1",
+              "touches": 29,
+              "zone": [
+                85207.85,
+                92323.01
+              ]
+            },
+            {
+              "center": 94369.495,
+              "cluster_count": 4,
+              "last_touch_utc": "2026-01-20T23:59:59Z",
+              "rejections": 16,
+              "side": "R",
+              "strength": 5,
+              "tf": "D1",
+              "touches": 61,
+              "zone": [
+                92684.49,
+                96054.5
+              ]
+            }
+          ],
+          "selected": {
+            "resistance": {
+              "center": 71627.205,
+              "cluster_count": 2,
+              "last_touch_utc": "2026-02-17T23:59:59Z",
+              "rejections": 6,
+              "side": "R",
+              "strength": 5,
+              "tf": "D1",
+              "touches": 14,
+              "zone": [
+                68855.14,
+                74399.27
+              ]
+            },
+            "support": {
+              "center": 58946.0,
+              "cluster_count": 1,
+              "last_touch_utc": "2026-02-08T23:59:59Z",
+              "rejections": 16,
+              "side": "S",
+              "strength": 5,
+              "tf": "W1",
+              "touches": 42,
+              "zone": [
+                56404.04,
+                61487.96
+              ]
+            }
+          },
+          "supports": [
+            {
+              "center": 60000.0,
+              "cluster_count": 1,
+              "last_touch_utc": "2026-02-06T23:59:59Z",
+              "rejections": 2,
+              "side": "S",
+              "strength": 2,
+              "tf": "D1",
+              "touches": 2,
+              "zone": [
+                57526.29,
+                62473.71
+              ]
+            },
+            {
+              "center": 53485.93,
+              "cluster_count": 3,
+              "last_touch_utc": "2024-09-15T23:59:59Z",
+              "rejections": 14,
+              "side": "S",
+              "strength": 5,
+              "tf": "W1",
+              "touches": 30,
+              "zone": [
+                50943.97,
+                56027.89
+              ]
+            },
+            {
+              "center": 47965.0,
+              "cluster_count": 2,
+              "last_touch_utc": "2024-08-11T23:59:59Z",
+              "rejections": 10,
+              "side": "S",
+              "strength": 5,
+              "tf": "W1",
+              "touches": 34,
+              "zone": [
+                45392.61,
+                50537.39
+              ]
+            }
+          ]
+        },
+        "swing_d1": {
+          "bands": {
+            "band_width": 2132.36,
+            "resistance_entry": [
+              68855.14,
+              70987.5
+            ],
+            "support_entry": [
+              60341.35,
+              62473.71
+            ]
+          },
+          "reaction": {
+            "resistance_entry": {
+              "days_since_last_reaction": 3.26,
+              "days_since_last_test": 3.26,
+              "failure_rate": 0.34,
+              "failures": 16,
+              "fwd_h4_bars": 18,
+              "last_reaction_utc": "2026-02-16T07:59:59Z",
+              "last_test_utc": "2026-02-16T07:59:59Z",
+              "lookback_h4_bars": 720,
+              "median_bars_to_reaction_h4": 3,
+              "median_mae_atr_h4": 1.281,
+              "median_mfe_atr_h4": 3.246,
+              "reaction_rate": 0.979,
+              "reactions": 46,
+              "tests": 47,
+              "threshold_atr_h4": 1.0
+            },
+            "support_entry": {
+              "days_since_last_reaction": 13.43,
+              "days_since_last_test": 13.43,
+              "failure_rate": 0.0,
+              "failures": 0,
+              "fwd_h4_bars": 18,
+              "last_reaction_utc": "2026-02-06T03:59:59Z",
+              "last_test_utc": "2026-02-06T03:59:59Z",
+              "lookback_h4_bars": 720,
+              "median_bars_to_reaction_h4": 1,
+              "median_mae_atr_h4": 1.565,
+              "median_mfe_atr_h4": 8.64,
+              "reaction_rate": 1.0,
+              "reactions": 2,
+              "tests": 2,
+              "threshold_atr_h4": 1.0
+            }
+          },
+          "resistance": {
+            "center": 71627.205,
+            "cluster_count": 2,
+            "last_touch_utc": "2026-02-17T23:59:59Z",
+            "rejections": 6,
+            "side": "R",
+            "strength": 5,
+            "tf": "D1",
+            "touches": 14,
+            "zone": [
+              68855.14,
+              74399.27
+            ]
+          },
+          "support": {
+            "center": 60000.0,
+            "cluster_count": 1,
+            "last_touch_utc": "2026-02-06T23:59:59Z",
+            "rejections": 2,
+            "side": "S",
+            "strength": 2,
+            "tf": "D1",
+            "touches": 2,
+            "zone": [
+              57526.29,
+              62473.71
+            ]
+          }
+        },
+        "working_h4": [
+          {
+            "center": 60000.0,
+            "from_tf": "D1",
+            "side": "S",
+            "strength": 2,
+            "zone": [
+              59241.98,
+              60758.02
+            ]
+          },
+          {
+            "center": 53485.93,
+            "from_tf": "W1",
+            "side": "S",
+            "strength": 5,
+            "zone": [
+              52727.91,
+              54243.95
+            ]
+          },
+          {
+            "center": 47965.0,
+            "from_tf": "W1",
+            "side": "S",
+            "strength": 5,
+            "zone": [
+              47206.98,
+              48723.02
+            ]
+          },
+          {
+            "center": 71627.205,
+            "from_tf": "D1",
+            "side": "R",
+            "strength": 5,
+            "zone": [
+              70869.19,
+              72385.22
+            ]
+          },
+          {
+            "center": 88765.43,
+            "from_tf": "W1",
+            "side": "R",
+            "strength": 5,
+            "zone": [
+              88007.41,
+              89523.45
+            ]
+          },
+          {
+            "center": 94369.495,
+            "from_tf": "D1",
+            "side": "R",
+            "strength": 5,
+            "zone": [
+              93611.48,
+              95127.51
+            ]
+          }
+        ]
+      }
+    },
+    "ETHUSDT": {
+      "data": {
+        "bars": {
+          "D1": 1999,
+          "H4": 1499,
+          "W1": 444
+        },
+        "last_close_utc_h4": "2026-02-19T11:59:59Z",
+        "price": 1949.58
+      },
+      "ma": {
+        "available": {
+          "D1": true,
+          "W1": true
+        },
+        "ema200": {
+          "D1": 3082.48,
+          "W1": 2596.74
+        },
+        "ema200_slope": {
+          "D1": "down",
+          "W1": "flat"
+        },
+        "period": 200,
+        "price_vs_ema200": {
+          "D1": "below",
+          "W1": "below"
+        }
+      },
+      "structure": {
+        "D1": {
+          "close_break_down": false,
+          "close_break_up": false,
+          "last_swing_high": 2107.67,
+          "last_swing_low": 1897.24,
+          "trend": "range"
+        },
+        "W1": {
+          "close_break_down": true,
+          "close_break_up": false,
+          "last_swing_high": 3402.89,
+          "last_swing_low": 2623.57,
+          "trend": "down"
+        },
+        "regime": "chop"
+      },
+      "vol": {
+        "atr14": {
+          "D1": 149.17,
+          "H4": 39.23,
+          "W1": 442.73
+        },
+        "vol_flag_d1": "high"
+      },
+      "zones": {
+        "forecast_4": {
+          "R1_local_h4": {
+            "age_bars": 1,
+            "basis": [
+              "pivot"
+            ],
+            "center": 2015.33,
+            "cluster_count": 5,
+            "last_touch_utc": "2026-02-19T07:59:59Z",
+            "rejections": 16,
+            "score": 77,
+            "side": "R",
+            "strength": 5,
+            "tf": "H4",
+            "touches": 45,
+            "zone": [
+              1983.76,
+              2041.17
+            ]
+          },
+          "R2_structural": {
+            "center": 2129.8500000000004,
+            "cluster_count": 2,
+            "last_touch_utc": "2026-02-18T23:59:59Z",
+            "rejections": 9,
+            "side": "R",
+            "strength": 5,
+            "tf": "D1",
+            "touches": 37,
+            "zone": [
+              2032.89,
+              2226.81
+            ]
+          },
+          "S1_local_h4": {
+            "age_bars": 39,
+            "basis": [
+              "pivot",
+              "range"
+            ],
+            "center": 1897.24,
+            "cluster_count": 3,
+            "last_touch_utc": "2026-02-12T23:59:59Z",
+            "rejections": 7,
+            "score": 24,
+            "side": "S",
+            "strength": 5,
+            "tf": "H4",
+            "touches": 10,
+            "zone": [
+              1879.58,
+              1920.85
+            ]
+          },
+          "S2_structural": {
+            "center": 1740.0,
+            "cluster_count": 3,
+            "last_touch_utc": "2026-02-08T23:59:59Z",
+            "rejections": 21,
+            "side": "S",
+            "strength": 5,
+            "tf": "W1",
+            "touches": 69,
+            "zone": [
+              1645.84,
+              1834.16
+            ]
+          },
+          "confluence": {
+            "R1_with_R2": true,
+            "S1_with_S2": false
+          }
+        },
+        "forecast_swing_4": {
+          "R1_swing_d1": {
+            "center": 2129.8500000000004,
+            "cluster_count": 2,
+            "last_touch_utc": "2026-02-18T23:59:59Z",
+            "rejections": 9,
+            "side": "R",
+            "strength": 5,
+            "tf": "D1",
+            "touches": 37,
+            "zone": [
+              2032.89,
+              2226.81
+            ]
+          },
+          "R2_range_w1": {
+            "center": 2406.0,
+            "cluster_count": 2,
+            "last_touch_utc": "2026-02-08T23:59:59Z",
+            "rejections": 9,
+            "side": "R",
+            "strength": 5,
+            "tf": "W1",
+            "touches": 64,
+            "zone": [
+              2230.7,
+              2581.3
+            ]
+          },
+          "S1_swing_d1": {
+            "center": 1747.8,
+            "cluster_count": 3,
+            "last_touch_utc": "2026-02-06T23:59:59Z",
+            "rejections": 13,
+            "side": "S",
+            "strength": 5,
+            "tf": "D1",
+            "touches": 32,
+            "zone": [
+              1676.06,
+              1819.54
+            ]
+          },
+          "S2_range_w1": {
+            "center": 1740.0,
+            "cluster_count": 3,
+            "last_touch_utc": "2026-02-08T23:59:59Z",
+            "rejections": 21,
+            "side": "S",
+            "strength": 5,
+            "tf": "W1",
+            "touches": 69,
+            "zone": [
+              1645.84,
+              1834.16
+            ]
+          },
+          "bands": {
+            "R1_entry": [
+              2032.89,
+              2107.48
+            ],
+            "R2_premium": [
+              2230.7,
+              2305.29
+            ],
+            "S1_entry": [
+              1744.95,
+              1819.54
+            ],
+            "S2_discount": [
+              1759.57,
+              1834.16
+            ]
+          }
+        },
+        "local_h4": {
+          "resistances": [
+            {
+              "age_bars": 1,
+              "basis": [
+                "pivot"
+              ],
+              "center": 2015.33,
+              "cluster_count": 5,
+              "last_touch_utc": "2026-02-19T07:59:59Z",
+              "rejections": 16,
+              "score": 77,
+              "side": "R",
+              "strength": 5,
+              "tf": "H4",
+              "touches": 45,
+              "zone": [
+                1983.76,
+                2041.17
+              ]
+            },
+            {
+              "age_bars": 6,
+              "basis": [
+                "pivot"
+              ],
+              "center": 2042.99,
+              "cluster_count": 2,
+              "last_touch_utc": "2026-02-18T11:59:59Z",
+              "rejections": 10,
+              "score": 55,
+              "side": "R",
+              "strength": 5,
+              "tf": "H4",
+              "touches": 35,
+              "zone": [
+                2021.39,
+                2064.6
+              ]
+            },
+            {
+              "age_bars": 23,
+              "basis": [
+                "pivot"
+              ],
+              "center": 2073.68,
+              "cluster_count": 1,
+              "last_touch_utc": "2026-02-15T15:59:59Z",
+              "rejections": 8,
+              "score": 53,
+              "side": "R",
+              "strength": 5,
+              "tf": "H4",
+              "touches": 37,
+              "zone": [
+                2056.02,
+                2091.34
+              ]
+            },
+            {
+              "age_bars": 24,
+              "basis": [
+                "pivot"
+              ],
+              "center": 2113.57,
+              "cluster_count": 4,
+              "last_touch_utc": "2026-02-15T11:59:59Z",
+              "rejections": 12,
+              "score": 56,
+              "side": "R",
+              "strength": 5,
+              "tf": "H4",
+              "touches": 32,
+              "zone": [
+                2085.66,
+                2139.36
+              ]
+            },
+            {
+              "age_bars": 57,
+              "basis": [
+                "pivot",
+                "range"
+              ],
+              "center": 2147.73,
+              "cluster_count": 3,
+              "last_touch_utc": "2026-02-09T23:59:59Z",
+              "rejections": 5,
+              "score": 23,
+              "side": "R",
+              "strength": 5,
+              "tf": "H4",
+              "touches": 13,
+              "zone": [
+                2130.07,
+                2169.69
+              ]
+            },
+            {
+              "age_bars": 93,
+              "basis": [
+                "pivot"
+              ],
+              "center": 2343.82,
+              "cluster_count": 1,
+              "last_touch_utc": "2026-02-03T23:59:59Z",
+              "rejections": 6,
+              "score": 24,
+              "side": "R",
+              "strength": 5,
+              "tf": "H4",
+              "touches": 12,
+              "zone": [
+                2326.16,
+                2361.48
+              ]
+            }
+          ],
+          "selected": {
+            "resistance": {
+              "age_bars": 1,
+              "basis": [
+                "pivot"
+              ],
+              "center": 2015.33,
+              "cluster_count": 5,
+              "last_touch_utc": "2026-02-19T07:59:59Z",
+              "rejections": 16,
+              "score": 77,
+              "side": "R",
+              "strength": 5,
+              "tf": "H4",
+              "touches": 45,
+              "zone": [
+                1983.76,
+                2041.17
+              ]
+            },
+            "support": {
+              "age_bars": 39,
+              "basis": [
+                "pivot",
+                "range"
+              ],
+              "center": 1897.24,
+              "cluster_count": 3,
+              "last_touch_utc": "2026-02-12T23:59:59Z",
+              "rejections": 7,
+              "score": 24,
+              "side": "S",
+              "strength": 5,
+              "tf": "H4",
+              "touches": 10,
+              "zone": [
+                1879.58,
+                1920.85
+              ]
+            }
+          },
+          "supports": [
+            {
+              "age_bars": 39,
+              "basis": [
+                "pivot",
+                "range"
+              ],
+              "center": 1897.24,
+              "cluster_count": 3,
+              "last_touch_utc": "2026-02-12T23:59:59Z",
+              "rejections": 7,
+              "score": 24,
+              "side": "S",
+              "strength": 5,
+              "tf": "H4",
+              "touches": 10,
+              "zone": [
+                1879.58,
+                1920.85
+              ]
+            },
+            {
+              "age_bars": 80,
+              "basis": [
+                "pivot"
+              ],
+              "center": 1747.8,
+              "cluster_count": 1,
+              "last_touch_utc": "2026-02-06T03:59:59Z",
+              "rejections": 1,
+              "score": 3,
+              "side": "S",
+              "strength": 1,
+              "tf": "H4",
+              "touches": 1,
+              "zone": [
+                1730.14,
+                1765.46
+              ]
+            },
+            {
+              "age_bars": 125,
+              "basis": [
+                "pivot"
+              ],
+              "center": 2943.92,
+              "cluster_count": 14,
+              "last_touch_utc": "2026-01-29T15:59:59Z",
+              "rejections": 23,
+              "score": 185,
+              "side": "S",
+              "strength": 5,
+              "tf": "H4",
+              "touches": 139,
+              "zone": [
+                2902.34,
+                2981.83
+              ]
+            },
+            {
+              "age_bars": 124,
+              "basis": [
+                "pivot"
+              ],
+              "center": 2894.53,
+              "cluster_count": 18,
+              "last_touch_utc": "2026-01-29T19:59:59Z",
+              "rejections": 35,
+              "score": 143,
+              "side": "S",
+              "strength": 5,
+              "tf": "H4",
+              "touches": 73,
+              "zone": [
+                2839.66,
+                2934.79
+              ]
+            },
+            {
+              "age_bars": 128,
+              "basis": [
+                "pivot"
+              ],
+              "center": 3065.55,
+              "cluster_count": 13,
+              "last_touch_utc": "2026-01-29T03:59:59Z",
+              "rejections": 22,
+              "score": 129,
+              "side": "S",
+              "strength": 5,
+              "tf": "H4",
+              "touches": 85,
+              "zone": [
+                3006.78,
+                3096.66
+              ]
+            },
+            {
+              "age_bars": 126,
+              "basis": [
+                "pivot"
+              ],
+              "center": 2985.78,
+              "cluster_count": 5,
+              "last_touch_utc": "2026-01-29T11:59:59Z",
+              "rejections": 9,
+              "score": 119,
+              "side": "S",
+              "strength": 5,
+              "tf": "H4",
+              "touches": 101,
+              "zone": [
+                2965.42,
+                3021.66
+              ]
+            }
+          ]
+        },
+        "range_w1": {
+          "bands": {
+            "band_width": 74.59,
+            "discount": [
+              1759.57,
+              1834.16
+            ],
+            "params": {
+              "fallback_atr_h4_k": 2.0,
+              "k_atr_d1": 0.5,
+              "minmax": [
+                60.0,
+                250.0
+              ]
+            },
+            "premium": [
+              2230.7,
+              2305.29
+            ]
+          },
+          "discount_edge": 1834.16,
+          "equilibrium": 2032.43,
+          "premium_edge": 2230.7,
+          "reaction": {
+            "discount": {
+              "days_since_last_reaction": 13.43,
+              "days_since_last_test": 13.43,
+              "failure_rate": 0.0,
+              "failures": 0,
+              "fwd_h4_bars": 18,
+              "last_reaction_utc": "2026-02-06T03:59:59Z",
+              "last_test_utc": "2026-02-06T03:59:59Z",
+              "lookback_h4_bars": 720,
+              "median_bars_to_reaction_h4": 1,
+              "median_mae_atr_h4": 1.335,
+              "median_mfe_atr_h4": 7.461,
+              "reaction_rate": 1.0,
+              "reactions": 2,
+              "tests": 2,
+              "threshold_atr_h4": 1.0
+            },
+            "premium": {
+              "days_since_last_reaction": 14.93,
+              "days_since_last_test": 14.93,
+              "failure_rate": 0.722,
+              "failures": 13,
+              "fwd_h4_bars": 18,
+              "last_reaction_utc": "2026-02-04T15:59:59Z",
+              "last_test_utc": "2026-02-04T15:59:59Z",
+              "lookback_h4_bars": 720,
+              "median_bars_to_reaction_h4": 1,
+              "median_mae_atr_h4": 1.646,
+              "median_mfe_atr_h4": 11.506,
+              "reaction_rate": 1.0,
+              "reactions": 18,
+              "tests": 18,
+              "threshold_atr_h4": 1.0
+            }
+          },
+          "resistance": {
+            "center": 2406.0,
+            "cluster_count": 2,
+            "last_touch_utc": "2026-02-08T23:59:59Z",
+            "rejections": 9,
+            "side": "R",
+            "strength": 5,
+            "tf": "W1",
+            "touches": 64,
+            "zone": [
+              2230.7,
+              2581.3
+            ]
+          },
+          "support": {
+            "center": 1740.0,
+            "cluster_count": 3,
+            "last_touch_utc": "2026-02-08T23:59:59Z",
+            "rejections": 21,
+            "side": "S",
+            "strength": 5,
+            "tf": "W1",
+            "touches": 69,
+            "zone": [
+              1645.84,
+              1834.16
+            ]
+          }
+        },
+        "structural": {
+          "resistances": [
+            {
+              "center": 2129.8500000000004,
+              "cluster_count": 2,
+              "last_touch_utc": "2026-02-18T23:59:59Z",
+              "rejections": 9,
+              "side": "R",
+              "strength": 5,
+              "tf": "D1",
+              "touches": 37,
+              "zone": [
+                2032.89,
+                2226.81
+              ]
+            },
+            {
+              "center": 2406.0,
+              "cluster_count": 2,
+              "last_touch_utc": "2026-02-08T23:59:59Z",
+              "rejections": 9,
+              "side": "R",
+              "strength": 5,
+              "tf": "W1",
+              "touches": 64,
+              "zone": [
+                2230.7,
+                2581.3
+              ]
+            },
+            {
+              "center": 2774.3,
+              "cluster_count": 4,
+              "last_touch_utc": "2026-02-01T23:59:59Z",
+              "rejections": 28,
+              "side": "R",
+              "strength": 5,
+              "tf": "W1",
+              "touches": 74,
+              "zone": [
+                2599.0,
+                2949.6
+              ]
+            }
+          ],
+          "selected": {
+            "resistance": {
+              "center": 2129.8500000000004,
+              "cluster_count": 2,
+              "last_touch_utc": "2026-02-18T23:59:59Z",
+              "rejections": 9,
+              "side": "R",
+              "strength": 5,
+              "tf": "D1",
+              "touches": 37,
+              "zone": [
+                2032.89,
+                2226.81
+              ]
+            },
+            "support": {
+              "center": 1740.0,
+              "cluster_count": 3,
+              "last_touch_utc": "2026-02-08T23:59:59Z",
+              "rejections": 21,
+              "side": "S",
+              "strength": 5,
+              "tf": "W1",
+              "touches": 69,
+              "zone": [
+                1645.84,
+                1834.16
+              ]
+            }
+          },
+          "supports": [
+            {
+              "center": 1740.0,
+              "cluster_count": 3,
+              "last_touch_utc": "2026-02-08T23:59:59Z",
+              "rejections": 21,
+              "side": "S",
+              "strength": 5,
+              "tf": "W1",
+              "touches": 69,
+              "zone": [
+                1645.84,
+                1834.16
+              ]
+            },
+            {
+              "center": 1537.26,
+              "cluster_count": 1,
+              "last_touch_utc": "2025-04-22T23:59:59Z",
+              "rejections": 3,
+              "side": "S",
+              "strength": 5,
+              "tf": "D1",
+              "touches": 17,
+              "zone": [
+                1440.3,
+                1634.22
+              ]
+            },
+            {
+              "center": 1190.0,
+              "cluster_count": 5,
+              "last_touch_utc": "2023-01-15T23:59:59Z",
+              "rejections": 5,
+              "side": "S",
+              "strength": 5,
+              "tf": "W1",
+              "touches": 23,
+              "zone": [
+                1044.63,
+                1335.37
+              ]
+            }
+          ]
+        },
+        "swing_d1": {
+          "bands": {
+            "band_width": 74.59,
+            "resistance_entry": [
+              2032.89,
+              2107.48
+            ],
+            "support_entry": [
+              1744.95,
+              1819.54
+            ]
+          },
+          "reaction": {
+            "resistance_entry": {
+              "days_since_last_reaction": 3.93,
+              "days_since_last_test": 3.93,
+              "failure_rate": 0.571,
+              "failures": 24,
+              "fwd_h4_bars": 18,
+              "last_reaction_utc": "2026-02-15T15:59:59Z",
+              "last_test_utc": "2026-02-15T15:59:59Z",
+              "lookback_h4_bars": 720,
+              "median_bars_to_reaction_h4": 2,
+              "median_mae_atr_h4": 1.279,
+              "median_mfe_atr_h4": 3.86,
+              "reaction_rate": 0.976,
+              "reactions": 41,
+              "tests": 42,
+              "threshold_atr_h4": 1.0
+            },
+            "support_entry": {
+              "days_since_last_reaction": 13.43,
+              "days_since_last_test": 13.43,
+              "failure_rate": 0.0,
+              "failures": 0,
+              "fwd_h4_bars": 18,
+              "last_reaction_utc": "2026-02-06T03:59:59Z",
+              "last_test_utc": "2026-02-06T03:59:59Z",
+              "lookback_h4_bars": 720,
+              "median_bars_to_reaction_h4": 1,
+              "median_mae_atr_h4": 1.335,
+              "median_mfe_atr_h4": 7.461,
+              "reaction_rate": 1.0,
+              "reactions": 2,
+              "tests": 2,
+              "threshold_atr_h4": 1.0
+            }
+          },
+          "resistance": {
+            "center": 2129.8500000000004,
+            "cluster_count": 2,
+            "last_touch_utc": "2026-02-18T23:59:59Z",
+            "rejections": 9,
+            "side": "R",
+            "strength": 5,
+            "tf": "D1",
+            "touches": 37,
+            "zone": [
+              2032.89,
+              2226.81
+            ]
+          },
+          "support": {
+            "center": 1747.8,
+            "cluster_count": 3,
+            "last_touch_utc": "2026-02-06T23:59:59Z",
+            "rejections": 13,
+            "side": "S",
+            "strength": 5,
+            "tf": "D1",
+            "touches": 32,
+            "zone": [
+              1676.06,
+              1819.54
+            ]
+          }
+        },
+        "working_h4": [
+          {
+            "center": 1740.0,
+            "from_tf": "W1",
+            "side": "S",
+            "strength": 5,
+            "zone": [
+              1710.57,
+              1769.43
+            ]
+          },
+          {
+            "center": 1537.26,
+            "from_tf": "D1",
+            "side": "S",
+            "strength": 5,
+            "zone": [
+              1507.83,
+              1566.69
+            ]
+          },
+          {
+            "center": 1190.0,
+            "from_tf": "W1",
+            "side": "S",
+            "strength": 5,
+            "zone": [
+              1160.57,
+              1219.43
+            ]
+          },
+          {
+            "center": 2129.8500000000004,
+            "from_tf": "D1",
+            "side": "R",
+            "strength": 5,
+            "zone": [
+              2100.42,
+              2159.28
+            ]
+          },
+          {
+            "center": 2406.0,
+            "from_tf": "W1",
+            "side": "R",
+            "strength": 5,
+            "zone": [
+              2376.57,
+              2435.43
+            ]
+          },
+          {
+            "center": 2774.3,
+            "from_tf": "W1",
+            "side": "R",
+            "strength": 5,
+            "zone": [
+              2744.87,
+              2803.73
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "updated_utc": "2026-02-19T14:18:01.269943Z"
+}

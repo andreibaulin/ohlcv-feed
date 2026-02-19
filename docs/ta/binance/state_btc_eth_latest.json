@@ -1,0 +1,606 @@
+{
+  "notes": {
+    "how": "Use edges (bands) for entries; avoid trading the middle of chop.",
+    "what": "SWING (default): W1 range map (premium/discount edges + equilibrium) + D1 swing zones + EMA200 as filter + execution bands + reaction stats; NOT a forecast."
+  },
+  "source": "ta_state_pivots_atr_swing",
+  "symbols": {
+    "BTCUSDT": {
+      "data": {
+        "bars": {
+          "D1": 1999,
+          "H4": 1499,
+          "W1": 444
+        },
+        "last_close_utc_h4": "2026-02-19T11:59:59Z",
+        "price": 66496.02
+      },
+      "ma": {
+        "available": {
+          "D1": true,
+          "W1": true
+        },
+        "ema200": {
+          "D1": 93352.62,
+          "W1": 68067.71
+        },
+        "ema200_slope": {
+          "D1": "down",
+          "W1": "up"
+        },
+        "period": 200,
+        "price_vs_ema200": {
+          "D1": "below",
+          "W1": "below"
+        }
+      },
+      "structure": {
+        "D1": {
+          "close_break_down": false,
+          "close_break_up": false,
+          "last_swing_high": 70983.0,
+          "last_swing_low": 65118.0,
+          "trend": "range"
+        },
+        "W1": {
+          "close_break_down": true,
+          "close_break_up": false,
+          "last_swing_high": 97924.49,
+          "last_swing_low": 80600.0,
+          "trend": "range"
+        },
+        "regime": "chop"
+      },
+      "vol": {
+        "atr14": {
+          "D1": 4264.72,
+          "H4": 1010.69,
+          "W1": 9403.71
+        },
+        "vol_flag_d1": "high"
+      },
+      "zones": {
+        "forecast_swing_4": {
+          "R1_swing_d1": {
+            "center": 71627.205,
+            "cluster_count": 2,
+            "last_touch_utc": "2026-02-17T23:59:59Z",
+            "rejections": 6,
+            "side": "R",
+            "strength": 5,
+            "tf": "D1",
+            "touches": 14,
+            "zone": [
+              68855.14,
+              74399.27
+            ]
+          },
+          "R2_range_w1": {
+            "center": 72797.99,
+            "cluster_count": 3,
+            "last_touch_utc": "2026-02-15T23:59:59Z",
+            "rejections": 11,
+            "side": "R",
+            "strength": 5,
+            "tf": "W1",
+            "touches": 15,
+            "zone": [
+              69961.57,
+              75634.41
+            ]
+          },
+          "S1_swing_d1": {
+            "center": 60000.0,
+            "cluster_count": 1,
+            "last_touch_utc": "2026-02-06T23:59:59Z",
+            "rejections": 2,
+            "side": "S",
+            "strength": 2,
+            "tf": "D1",
+            "touches": 2,
+            "zone": [
+              57526.29,
+              62473.71
+            ]
+          },
+          "S2_range_w1": {
+            "center": 58946.0,
+            "cluster_count": 1,
+            "last_touch_utc": "2026-02-08T23:59:59Z",
+            "rejections": 16,
+            "side": "S",
+            "strength": 5,
+            "tf": "W1",
+            "touches": 42,
+            "zone": [
+              56404.04,
+              61487.96
+            ]
+          },
+          "bands": {
+            "R1_entry": [
+              68855.14,
+              70987.5
+            ],
+            "R2_premium": [
+              69961.57,
+              72093.93
+            ],
+            "S1_entry": [
+              60341.35,
+              62473.71
+            ],
+            "S2_discount": [
+              59355.6,
+              61487.96
+            ]
+          }
+        },
+        "range_w1": {
+          "bands": {
+            "band_width": 2132.36,
+            "discount": [
+              59355.6,
+              61487.96
+            ],
+            "params": {
+              "fallback_atr_h4_k": 2.0,
+              "k_atr_d1": 0.5,
+              "minmax": [
+                1500.0,
+                6000.0
+              ]
+            },
+            "premium": [
+              69961.57,
+              72093.93
+            ]
+          },
+          "discount_edge": 61487.96,
+          "equilibrium": 65724.76,
+          "premium_edge": 69961.57,
+          "reaction": {
+            "discount": {
+              "days_since_last_reaction": 13.43,
+              "days_since_last_test": 13.43,
+              "failure_rate": 0.0,
+              "failures": 0,
+              "fwd_h4_bars": 18,
+              "last_reaction_utc": "2026-02-06T03:59:59Z",
+              "last_test_utc": "2026-02-06T03:59:59Z",
+              "lookback_h4_bars": 720,
+              "median_bars_to_reaction_h4": 1,
+              "median_mae_atr_h4": 0.251,
+              "median_mfe_atr_h4": 8.017,
+              "reaction_rate": 1.0,
+              "reactions": 1,
+              "tests": 1,
+              "threshold_atr_h4": 1.0
+            },
+            "premium": {
+              "days_since_last_reaction": 3.93,
+              "days_since_last_test": 3.93,
+              "failure_rate": 0.036,
+              "failures": 1,
+              "fwd_h4_bars": 18,
+              "last_reaction_utc": "2026-02-15T15:59:59Z",
+              "last_test_utc": "2026-02-15T15:59:59Z",
+              "lookback_h4_bars": 720,
+              "median_bars_to_reaction_h4": 2,
+              "median_mae_atr_h4": 1.044,
+              "median_mfe_atr_h4": 4.255,
+              "reaction_rate": 0.964,
+              "reactions": 27,
+              "tests": 28,
+              "threshold_atr_h4": 1.0
+            }
+          },
+          "resistance": {
+            "center": 72797.99,
+            "cluster_count": 3,
+            "last_touch_utc": "2026-02-15T23:59:59Z",
+            "rejections": 11,
+            "side": "R",
+            "strength": 5,
+            "tf": "W1",
+            "touches": 15,
+            "zone": [
+              69961.57,
+              75634.41
+            ]
+          },
+          "support": {
+            "center": 58946.0,
+            "cluster_count": 1,
+            "last_touch_utc": "2026-02-08T23:59:59Z",
+            "rejections": 16,
+            "side": "S",
+            "strength": 5,
+            "tf": "W1",
+            "touches": 42,
+            "zone": [
+              56404.04,
+              61487.96
+            ]
+          }
+        },
+        "swing_d1": {
+          "bands": {
+            "band_width": 2132.36,
+            "resistance_entry": [
+              68855.14,
+              70987.5
+            ],
+            "support_entry": [
+              60341.35,
+              62473.71
+            ]
+          },
+          "reaction": {
+            "resistance_entry": {
+              "days_since_last_reaction": 3.26,
+              "days_since_last_test": 3.26,
+              "failure_rate": 0.34,
+              "failures": 16,
+              "fwd_h4_bars": 18,
+              "last_reaction_utc": "2026-02-16T07:59:59Z",
+              "last_test_utc": "2026-02-16T07:59:59Z",
+              "lookback_h4_bars": 720,
+              "median_bars_to_reaction_h4": 3,
+              "median_mae_atr_h4": 1.281,
+              "median_mfe_atr_h4": 3.246,
+              "reaction_rate": 0.979,
+              "reactions": 46,
+              "tests": 47,
+              "threshold_atr_h4": 1.0
+            },
+            "support_entry": {
+              "days_since_last_reaction": 13.43,
+              "days_since_last_test": 13.43,
+              "failure_rate": 0.0,
+              "failures": 0,
+              "fwd_h4_bars": 18,
+              "last_reaction_utc": "2026-02-06T03:59:59Z",
+              "last_test_utc": "2026-02-06T03:59:59Z",
+              "lookback_h4_bars": 720,
+              "median_bars_to_reaction_h4": 1,
+              "median_mae_atr_h4": 1.565,
+              "median_mfe_atr_h4": 8.64,
+              "reaction_rate": 1.0,
+              "reactions": 2,
+              "tests": 2,
+              "threshold_atr_h4": 1.0
+            }
+          },
+          "resistance": {
+            "center": 71627.205,
+            "cluster_count": 2,
+            "last_touch_utc": "2026-02-17T23:59:59Z",
+            "rejections": 6,
+            "side": "R",
+            "strength": 5,
+            "tf": "D1",
+            "touches": 14,
+            "zone": [
+              68855.14,
+              74399.27
+            ]
+          },
+          "support": {
+            "center": 60000.0,
+            "cluster_count": 1,
+            "last_touch_utc": "2026-02-06T23:59:59Z",
+            "rejections": 2,
+            "side": "S",
+            "strength": 2,
+            "tf": "D1",
+            "touches": 2,
+            "zone": [
+              57526.29,
+              62473.71
+            ]
+          }
+        }
+      }
+    },
+    "ETHUSDT": {
+      "data": {
+        "bars": {
+          "D1": 1999,
+          "H4": 1499,
+          "W1": 444
+        },
+        "last_close_utc_h4": "2026-02-19T11:59:59Z",
+        "price": 1949.58
+      },
+      "ma": {
+        "available": {
+          "D1": true,
+          "W1": true
+        },
+        "ema200": {
+          "D1": 3082.48,
+          "W1": 2596.74
+        },
+        "ema200_slope": {
+          "D1": "down",
+          "W1": "flat"
+        },
+        "period": 200,
+        "price_vs_ema200": {
+          "D1": "below",
+          "W1": "below"
+        }
+      },
+      "structure": {
+        "D1": {
+          "close_break_down": false,
+          "close_break_up": false,
+          "last_swing_high": 2107.67,
+          "last_swing_low": 1897.24,
+          "trend": "range"
+        },
+        "W1": {
+          "close_break_down": true,
+          "close_break_up": false,
+          "last_swing_high": 3402.89,
+          "last_swing_low": 2623.57,
+          "trend": "down"
+        },
+        "regime": "chop"
+      },
+      "vol": {
+        "atr14": {
+          "D1": 149.17,
+          "H4": 39.23,
+          "W1": 442.73
+        },
+        "vol_flag_d1": "high"
+      },
+      "zones": {
+        "forecast_swing_4": {
+          "R1_swing_d1": {
+            "center": 2129.8500000000004,
+            "cluster_count": 2,
+            "last_touch_utc": "2026-02-18T23:59:59Z",
+            "rejections": 9,
+            "side": "R",
+            "strength": 5,
+            "tf": "D1",
+            "touches": 37,
+            "zone": [
+              2032.89,
+              2226.81
+            ]
+          },
+          "R2_range_w1": {
+            "center": 2406.0,
+            "cluster_count": 2,
+            "last_touch_utc": "2026-02-08T23:59:59Z",
+            "rejections": 9,
+            "side": "R",
+            "strength": 5,
+            "tf": "W1",
+            "touches": 64,
+            "zone": [
+              2230.7,
+              2581.3
+            ]
+          },
+          "S1_swing_d1": {
+            "center": 1747.8,
+            "cluster_count": 3,
+            "last_touch_utc": "2026-02-06T23:59:59Z",
+            "rejections": 13,
+            "side": "S",
+            "strength": 5,
+            "tf": "D1",
+            "touches": 32,
+            "zone": [
+              1676.06,
+              1819.54
+            ]
+          },
+          "S2_range_w1": {
+            "center": 1740.0,
+            "cluster_count": 3,
+            "last_touch_utc": "2026-02-08T23:59:59Z",
+            "rejections": 21,
+            "side": "S",
+            "strength": 5,
+            "tf": "W1",
+            "touches": 69,
+            "zone": [
+              1645.84,
+              1834.16
+            ]
+          },
+          "bands": {
+            "R1_entry": [
+              2032.89,
+              2107.48
+            ],
+            "R2_premium": [
+              2230.7,
+              2305.29
+            ],
+            "S1_entry": [
+              1744.95,
+              1819.54
+            ],
+            "S2_discount": [
+              1759.57,
+              1834.16
+            ]
+          }
+        },
+        "range_w1": {
+          "bands": {
+            "band_width": 74.59,
+            "discount": [
+              1759.57,
+              1834.16
+            ],
+            "params": {
+              "fallback_atr_h4_k": 2.0,
+              "k_atr_d1": 0.5,
+              "minmax": [
+                60.0,
+                250.0
+              ]
+            },
+            "premium": [
+              2230.7,
+              2305.29
+            ]
+          },
+          "discount_edge": 1834.16,
+          "equilibrium": 2032.43,
+          "premium_edge": 2230.7,
+          "reaction": {
+            "discount": {
+              "days_since_last_reaction": 13.43,
+              "days_since_last_test": 13.43,
+              "failure_rate": 0.0,
+              "failures": 0,
+              "fwd_h4_bars": 18,
+              "last_reaction_utc": "2026-02-06T03:59:59Z",
+              "last_test_utc": "2026-02-06T03:59:59Z",
+              "lookback_h4_bars": 720,
+              "median_bars_to_reaction_h4": 1,
+              "median_mae_atr_h4": 1.335,
+              "median_mfe_atr_h4": 7.461,
+              "reaction_rate": 1.0,
+              "reactions": 2,
+              "tests": 2,
+              "threshold_atr_h4": 1.0
+            },
+            "premium": {
+              "days_since_last_reaction": 14.93,
+              "days_since_last_test": 14.93,
+              "failure_rate": 0.722,
+              "failures": 13,
+              "fwd_h4_bars": 18,
+              "last_reaction_utc": "2026-02-04T15:59:59Z",
+              "last_test_utc": "2026-02-04T15:59:59Z",
+              "lookback_h4_bars": 720,
+              "median_bars_to_reaction_h4": 1,
+              "median_mae_atr_h4": 1.646,
+              "median_mfe_atr_h4": 11.506,
+              "reaction_rate": 1.0,
+              "reactions": 18,
+              "tests": 18,
+              "threshold_atr_h4": 1.0
+            }
+          },
+          "resistance": {
+            "center": 2406.0,
+            "cluster_count": 2,
+            "last_touch_utc": "2026-02-08T23:59:59Z",
+            "rejections": 9,
+            "side": "R",
+            "strength": 5,
+            "tf": "W1",
+            "touches": 64,
+            "zone": [
+              2230.7,
+              2581.3
+            ]
+          },
+          "support": {
+            "center": 1740.0,
+            "cluster_count": 3,
+            "last_touch_utc": "2026-02-08T23:59:59Z",
+            "rejections": 21,
+            "side": "S",
+            "strength": 5,
+            "tf": "W1",
+            "touches": 69,
+            "zone": [
+              1645.84,
+              1834.16
+            ]
+          }
+        },
+        "swing_d1": {
+          "bands": {
+            "band_width": 74.59,
+            "resistance_entry": [
+              2032.89,
+              2107.48
+            ],
+            "support_entry": [
+              1744.95,
+              1819.54
+            ]
+          },
+          "reaction": {
+            "resistance_entry": {
+              "days_since_last_reaction": 3.93,
+              "days_since_last_test": 3.93,
+              "failure_rate": 0.571,
+              "failures": 24,
+              "fwd_h4_bars": 18,
+              "last_reaction_utc": "2026-02-15T15:59:59Z",
+              "last_test_utc": "2026-02-15T15:59:59Z",
+              "lookback_h4_bars": 720,
+              "median_bars_to_reaction_h4": 2,
+              "median_mae_atr_h4": 1.279,
+              "median_mfe_atr_h4": 3.86,
+              "reaction_rate": 0.976,
+              "reactions": 41,
+              "tests": 42,
+              "threshold_atr_h4": 1.0
+            },
+            "support_entry": {
+              "days_since_last_reaction": 13.43,
+              "days_since_last_test": 13.43,
+              "failure_rate": 0.0,
+              "failures": 0,
+              "fwd_h4_bars": 18,
+              "last_reaction_utc": "2026-02-06T03:59:59Z",
+              "last_test_utc": "2026-02-06T03:59:59Z",
+              "lookback_h4_bars": 720,
+              "median_bars_to_reaction_h4": 1,
+              "median_mae_atr_h4": 1.335,
+              "median_mfe_atr_h4": 7.461,
+              "reaction_rate": 1.0,
+              "reactions": 2,
+              "tests": 2,
+              "threshold_atr_h4": 1.0
+            }
+          },
+          "resistance": {
+            "center": 2129.8500000000004,
+            "cluster_count": 2,
+            "last_touch_utc": "2026-02-18T23:59:59Z",
+            "rejections": 9,
+            "side": "R",
+            "strength": 5,
+            "tf": "D1",
+            "touches": 37,
+            "zone": [
+              2032.89,
+              2226.81
+            ]
+          },
+          "support": {
+            "center": 1747.8,
+            "cluster_count": 3,
+            "last_touch_utc": "2026-02-06T23:59:59Z",
+            "rejections": 13,
+            "side": "S",
+            "strength": 5,
+            "tf": "D1",
+            "touches": 32,
+            "zone": [
+              1676.06,
+              1819.54
+            ]
+          }
+        }
+      }
+    }
+  },
+  "updated_utc": "2026-02-19T14:18:01.269943Z"
+}
