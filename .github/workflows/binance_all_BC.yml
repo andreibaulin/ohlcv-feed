@@ -1,0 +1,119 @@
+name: binance-all (ohlcv + ta + chat_bundle)
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "*/30 * * * *"
+
+concurrency:
+  group: ohlcv-feed
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps (optional)
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Generate OHLCV pack (BTC/ETH)
+        run: |
+          test -f scripts/gen_pack_btc_eth.py || (echo "Missing scripts/gen_pack_btc_eth.py"; ls -la scripts; exit 1)
+          python -u scripts/gen_pack_btc_eth.py
+
+      - name: Generate Deriv snapshot (core5)
+        run: |
+          test -f scripts/build_deriv_binance.py || (echo "Missing scripts/build_deriv_binance.py"; ls -la scripts; exit 1)
+          python -u scripts/build_deriv_binance.py
+
+      - name: Generate TA state (levels/zones)
+        run: |
+          test -f scripts/build_ta_state.py || (echo "Missing scripts/build_ta_state.py"; ls -la scripts; exit 1)
+          python -u scripts/build_ta_state.py
+
+      - name: Build IRON chat bundle + report (4S/4R)
+        run: |
+          test -f scripts/build_chat_bundle.py || (echo "Missing scripts/build_chat_bundle.py"; ls -la scripts; exit 1)
+          python -u scripts/build_chat_bundle.py
+
+      - name: Verify IRON bundle/report (non-blocking)
+        run: |
+          test -f scripts/verify_chat_bundle.py || (echo "Missing scripts/verify_chat_bundle.py"; ls -la scripts; exit 1)
+          python -u scripts/verify_chat_bundle.py
+
+      - name: Commit & push if changed
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Стаджим ВСЁ (docs/...), иначе остаются unstaged changes и rebase падает.
+          git add -A
+
+          if git diff --cached --quiet; then
+            echo "No changes."
+            exit 0
+          fi
+
+          git commit -m "binance: update docs feeds (ohlcv/ta + chat_bundle)"
+
+          # Safety: если что-то изменилось после коммита (редко, но бывает) — включаем в тот же коммит.
+          git add -A
+          if ! git diff --cached --quiet; then
+            git commit --amend --no-edit
+          fi
+
+          # Если main успел обновиться — rebase + retry (без force).
+          for attempt in 1 2 3; do
+            echo "Push attempt ${attempt}/3..."
+            git fetch origin main
+            if git rebase origin/main; then
+              if git push; then
+                exit 0
+              fi
+            else
+              echo "Rebase failed; aborting..."
+              git rebase --abort || true
+            fi
+            echo "Push rejected; retrying in 5s..."
+            sleep 5
+          done
+
+          echo "ERROR: push failed after retries."
+          git status --porcelain || true
+          exit 1
+
+
+      - name: Signal IRON quality (fail after push)
+        run: |
+          python - <<'PY'
+          import json, sys
+          p = "docs/ta/binance/build_status_latest.json"
+          try:
+              with open(p, "r", encoding="utf-8") as f:
+                  st = json.load(f)
+          except Exception as e:
+              print("Cannot read build status:", e)
+              sys.exit(1)
+          q = st.get("quality")
+          print("IRON quality =", q)
+          if q == "FAIL":
+              sys.exit(1)
+          PY
