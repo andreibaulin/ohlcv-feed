@@ -1,0 +1,44 @@
+{
+  "candidate": {
+    "bundle_rel": "ta/binance/chat_bundle_bad_latest.json",
+    "bundle_sha256": "69e2d5f8e57a1e0d2671190836639d065b7c8a92e1af4e8cecb2b164bc8d68a6",
+    "report_rel": "ta/binance/chat_report_bad_latest.md",
+    "report_sha256": "10c9f2afbf865d7e8f04edd254517c9855fa5c9c1e97f4c78df916d2f9693153"
+  },
+  "errors": [
+    "verify: BTCUSDT: missing supports/resistances in views",
+    "verify: ETHUSDT: missing supports/resistances in views"
+  ],
+  "generated_utc": "2026-02-19T17:59:25Z",
+  "kept_last_good": true,
+  "published": {
+    "bundle_rel": "ta/binance/chat_bundle_latest.json",
+    "bundle_sha256": "1cf05527154a77441fa79cfe0afd8dcd30e6e069cebf29034aaf378fd3e7a84e",
+    "report_rel": "ta/binance/chat_report_latest.md",
+    "report_sha256": "77594baf1dac1139ac1da0e488bcb964aeceff7678843a2c7d81487ee94ee34b"
+  },
+  "quality": "FAIL",
+  "schema": "iron.build_status.v1",
+  "sources": {
+    "contract": {
+      "path": "iron/IRON_CONTRACT_CURRENT.json",
+      "sha256": "447e0370aa9935021e3a665877d4bed31a7955d8ae3c3fb18a50090bf5ca5f77"
+    },
+    "state": {
+      "path": "docs/ta/binance/state_btc_eth_full_latest.json",
+      "sha256": "ec54638057912c6bc218dcf06bab8b0369cdb52f29c2205a21e8c2b29d8802e0",
+      "source": "ta_state_pivots_atr_full",
+      "updated_utc": "2026-02-19T17:59:25.071132Z"
+    }
+  },
+  "verify": {
+    "errors": [],
+    "ran": true,
+    "target": {
+      "bundle_rel": "ta/binance/chat_bundle_bad_latest.json",
+      "report_rel": "ta/binance/chat_report_bad_latest.md"
+    },
+    "warnings": []
+  },
+  "warnings": []
+}
