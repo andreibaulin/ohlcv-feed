@@ -509,8 +509,8 @@
           "premium_edge": 69961.57,
           "reaction": {
             "discount": {
-              "days_since_last_reaction": 13.43,
-              "days_since_last_test": 13.43,
+              "days_since_last_reaction": 13.45,
+              "days_since_last_test": 13.45,
               "failure_rate": 0.0,
               "failures": 0,
               "fwd_h4_bars": 18,
@@ -526,8 +526,8 @@
               "threshold_atr_h4": 1.0
             },
             "premium": {
-              "days_since_last_reaction": 3.93,
-              "days_since_last_test": 3.93,
+              "days_since_last_reaction": 3.95,
+              "days_since_last_test": 3.95,
               "failure_rate": 0.036,
               "failures": 1,
               "fwd_h4_bars": 18,
@@ -706,8 +706,8 @@
           },
           "reaction": {
             "resistance_entry": {
-              "days_since_last_reaction": 3.26,
-              "days_since_last_test": 3.26,
+              "days_since_last_reaction": 3.28,
+              "days_since_last_test": 3.28,
               "failure_rate": 0.34,
               "failures": 16,
               "fwd_h4_bars": 18,
@@ -723,8 +723,8 @@
               "threshold_atr_h4": 1.0
             },
             "support_entry": {
-              "days_since_last_reaction": 13.43,
-              "days_since_last_test": 13.43,
+              "days_since_last_reaction": 13.45,
+              "days_since_last_test": 13.45,
               "failure_rate": 0.0,
               "failures": 0,
               "fwd_h4_bars": 18,
@@ -1339,8 +1339,8 @@
           "premium_edge": 2230.7,
           "reaction": {
             "discount": {
-              "days_since_last_reaction": 13.43,
-              "days_since_last_test": 13.43,
+              "days_since_last_reaction": 13.45,
+              "days_since_last_test": 13.45,
               "failure_rate": 0.0,
               "failures": 0,
               "fwd_h4_bars": 18,
@@ -1356,8 +1356,8 @@
               "threshold_atr_h4": 1.0
             },
             "premium": {
-              "days_since_last_reaction": 14.93,
-              "days_since_last_test": 14.93,
+              "days_since_last_reaction": 14.95,
+              "days_since_last_test": 14.95,
               "failure_rate": 0.722,
               "failures": 13,
               "fwd_h4_bars": 18,
@@ -1536,8 +1536,8 @@
           },
           "reaction": {
             "resistance_entry": {
-              "days_since_last_reaction": 3.93,
-              "days_since_last_test": 3.93,
+              "days_since_last_reaction": 3.95,
+              "days_since_last_test": 3.95,
               "failure_rate": 0.571,
               "failures": 24,
               "fwd_h4_bars": 18,
@@ -1553,8 +1553,8 @@
               "threshold_atr_h4": 1.0
             },
             "support_entry": {
-              "days_since_last_reaction": 13.43,
-              "days_since_last_test": 13.43,
+              "days_since_last_reaction": 13.45,
+              "days_since_last_test": 13.45,
               "failure_rate": 0.0,
               "failures": 0,
               "fwd_h4_bars": 18,
@@ -1664,5 +1664,5 @@
       }
     }
   },
-  "updated_utc": "2026-02-19T14:18:01.269943Z"
+  "updated_utc": "2026-02-19T14:43:03.495348Z"
 }
