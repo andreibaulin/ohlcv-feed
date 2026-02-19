@@ -606,7 +606,9 @@ def build_levels_v2(sym: str, sym_state: Dict[str, Any], now_utc: datetime) -> D
         "atr_h4": atr_h4,
         "supports": supports,
         "resistances": resistances,
+        "issues": issues,
     }
+    return out
 
 
 def build_views_v2(state_full: Dict[str, Any]) -> Dict[str, Any]:
