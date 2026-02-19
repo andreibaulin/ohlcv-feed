@@ -1,12 +1,12 @@
 {
-  "bundle_sha256": "b1126452eabc417a7164d40cf325e7bfc6db509706c68000de3f0cd502095fe8",
+  "bundle_sha256": "10a1ec8fa0734dd73a65b510ce4a63ca7b29b85d5ef3595bb64ba7cd29d0002b",
   "facts": [
     {
       "id": "state.updated_utc",
       "pointer": "/updated_utc",
       "source": "state",
       "type": "string",
-      "value": "2026-02-19T14:43:03.495348Z"
+      "value": "2026-02-19T15:40:24.208330Z"
     },
     {
       "id": "btc.price",
@@ -158,8 +158,8 @@
       "source": "state",
       "type": "object",
       "value": {
-        "days_since_last_reaction": 13.45,
-        "days_since_last_test": 13.45,
+        "days_since_last_reaction": 13.49,
+        "days_since_last_test": 13.49,
         "failure_rate": 0.0,
         "failures": 0,
         "fwd_h4_bars": 18,
@@ -181,8 +181,8 @@
       "source": "state",
       "type": "object",
       "value": {
-        "days_since_last_reaction": 3.95,
-        "days_since_last_test": 3.95,
+        "days_since_last_reaction": 3.99,
+        "days_since_last_test": 3.99,
         "failure_rate": 0.036,
         "failures": 1,
         "fwd_h4_bars": 18,
@@ -204,8 +204,8 @@
       "source": "state",
       "type": "object",
       "value": {
-        "days_since_last_reaction": 13.45,
-        "days_since_last_test": 13.45,
+        "days_since_last_reaction": 13.49,
+        "days_since_last_test": 13.49,
         "failure_rate": 0.0,
         "failures": 0,
         "fwd_h4_bars": 18,
@@ -227,8 +227,8 @@
       "source": "state",
       "type": "object",
       "value": {
-        "days_since_last_reaction": 3.28,
-        "days_since_last_test": 3.28,
+        "days_since_last_reaction": 3.32,
+        "days_since_last_test": 3.32,
         "failure_rate": 0.34,
         "failures": 16,
         "fwd_h4_bars": 18,
@@ -394,8 +394,8 @@
       "source": "state",
       "type": "object",
       "value": {
-        "days_since_last_reaction": 13.45,
-        "days_since_last_test": 13.45,
+        "days_since_last_reaction": 13.49,
+        "days_since_last_test": 13.49,
         "failure_rate": 0.0,
         "failures": 0,
         "fwd_h4_bars": 18,
@@ -417,8 +417,8 @@
       "source": "state",
       "type": "object",
       "value": {
-        "days_since_last_reaction": 14.95,
-        "days_since_last_test": 14.95,
+        "days_since_last_reaction": 14.99,
+        "days_since_last_test": 14.99,
         "failure_rate": 0.722,
         "failures": 13,
         "fwd_h4_bars": 18,
@@ -440,8 +440,8 @@
       "source": "state",
       "type": "object",
       "value": {
-        "days_since_last_reaction": 13.45,
-        "days_since_last_test": 13.45,
+        "days_since_last_reaction": 13.49,
+        "days_since_last_test": 13.49,
         "failure_rate": 0.0,
         "failures": 0,
         "fwd_h4_bars": 18,
@@ -463,8 +463,8 @@
       "source": "state",
       "type": "object",
       "value": {
-        "days_since_last_reaction": 3.95,
-        "days_since_last_test": 3.95,
+        "days_since_last_reaction": 3.99,
+        "days_since_last_test": 3.99,
         "failure_rate": 0.571,
         "failures": 24,
         "fwd_h4_bars": 18,
@@ -505,8 +505,8 @@
     "btc.last_close_utc_h4": "2026-02-19T11:59:59Z",
     "btc.price": 66496.02,
     "btc.q.d1.resistance_entry": {
-      "days_since_last_reaction": 3.28,
-      "days_since_last_test": 3.28,
+      "days_since_last_reaction": 3.32,
+      "days_since_last_test": 3.32,
       "failure_rate": 0.34,
       "failures": 16,
       "fwd_h4_bars": 18,
@@ -522,8 +522,8 @@
       "threshold_atr_h4": 1.0
     },
     "btc.q.d1.support_entry": {
-      "days_since_last_reaction": 13.45,
-      "days_since_last_test": 13.45,
+      "days_since_last_reaction": 13.49,
+      "days_since_last_test": 13.49,
       "failure_rate": 0.0,
       "failures": 0,
       "fwd_h4_bars": 18,
@@ -539,8 +539,8 @@
       "threshold_atr_h4": 1.0
     },
     "btc.q.w1.discount": {
-      "days_since_last_reaction": 13.45,
-      "days_since_last_test": 13.45,
+      "days_since_last_reaction": 13.49,
+      "days_since_last_test": 13.49,
       "failure_rate": 0.0,
       "failures": 0,
       "fwd_h4_bars": 18,
@@ -556,8 +556,8 @@
       "threshold_atr_h4": 1.0
     },
     "btc.q.w1.premium": {
-      "days_since_last_reaction": 3.95,
-      "days_since_last_test": 3.95,
+      "days_since_last_reaction": 3.99,
+      "days_since_last_test": 3.99,
       "failure_rate": 0.036,
       "failures": 1,
       "fwd_h4_bars": 18,
@@ -609,8 +609,8 @@
     "eth.last_close_utc_h4": "2026-02-19T11:59:59Z",
     "eth.price": 1949.58,
     "eth.q.d1.resistance_entry": {
-      "days_since_last_reaction": 3.95,
-      "days_since_last_test": 3.95,
+      "days_since_last_reaction": 3.99,
+      "days_since_last_test": 3.99,
       "failure_rate": 0.571,
       "failures": 24,
       "fwd_h4_bars": 18,
@@ -626,8 +626,8 @@
       "threshold_atr_h4": 1.0
     },
     "eth.q.d1.support_entry": {
-      "days_since_last_reaction": 13.45,
-      "days_since_last_test": 13.45,
+      "days_since_last_reaction": 13.49,
+      "days_since_last_test": 13.49,
       "failure_rate": 0.0,
       "failures": 0,
       "fwd_h4_bars": 18,
@@ -643,8 +643,8 @@
       "threshold_atr_h4": 1.0
     },
     "eth.q.w1.discount": {
-      "days_since_last_reaction": 13.45,
-      "days_since_last_test": 13.45,
+      "days_since_last_reaction": 13.49,
+      "days_since_last_test": 13.49,
       "failure_rate": 0.0,
       "failures": 0,
       "fwd_h4_bars": 18,
@@ -660,8 +660,8 @@
       "threshold_atr_h4": 1.0
     },
     "eth.q.w1.premium": {
-      "days_since_last_reaction": 14.95,
-      "days_since_last_test": 14.95,
+      "days_since_last_reaction": 14.99,
+      "days_since_last_test": 14.99,
       "failure_rate": 0.722,
       "failures": 13,
       "fwd_h4_bars": 18,
@@ -690,9 +690,9 @@
       1645.84,
       1834.16
     ],
-    "state.updated_utc": "2026-02-19T14:43:03.495348Z"
+    "state.updated_utc": "2026-02-19T15:40:24.208330Z"
   },
-  "generated_utc": "2026-02-19T14:43:03Z",
+  "generated_utc": "2026-02-19T15:40:24Z",
   "handshake_links": [
     "https://andreibaulin.github.io/ohlcv-feed/ta/binance/chat_bundle_latest.json",
     "https://andreibaulin.github.io/ohlcv-feed/ta/binance/chat_report_latest.md",
@@ -715,7 +715,7 @@
     "https://fapi.binance.com/futures/data/openInterestHist?symbol=ETHUSDT&period=1h&limit=30",
     "https://fapi.binance.com/fapi/v1/fundingRate?symbol=ETHUSDT&limit=30"
   ],
-  "report_sha256": "29ac48e755665d1882ccb5388c3908b04b178568c9cb3d63b8549a1bd6044520",
+  "report_sha256": "a632b611955a2cd945056918d32bb7c3756c4e20f544a2604cce6c9fcf46c37e",
   "schema": "iron.chat_bundle.v3",
   "sources": {
     "contract": {
@@ -724,9 +724,9 @@
     },
     "state": {
       "path": "docs/ta/binance/state_btc_eth_full_latest.json",
-      "sha256": "cdddf9aa6c6ebf0a0c5ba3a73a3149208101621a1671d305899c33332dee76ee",
+      "sha256": "3c8f98218b570ffb5e620d03eab72f48480c14a805da316e2afabb6ef3874f94",
       "source": "ta_state_pivots_atr_full",
-      "updated_utc": "2026-02-19T14:43:03.495348Z"
+      "updated_utc": "2026-02-19T15:40:24.208330Z"
     }
   },
   "views": {
@@ -747,14 +747,14 @@
           "distance_to_price": 1459.69,
           "name": "R1",
           "quality_local": {
-            "days_since_last_test": 0.947,
+            "days_since_last_test": 0.986,
             "failure_rate": 0.7358,
             "last_touch_utc": "2026-02-18T15:59:59Z",
             "reaction_rate": 0.2642,
             "tests": 53
           },
           "quality_macro_best": {
-            "days_since_last_test": 3.28,
+            "days_since_last_test": 3.32,
             "failure_rate": 0.34,
             "last_test_utc": "2026-02-16T07:59:59Z",
             "reaction_rate": 0.979,
@@ -785,14 +785,14 @@
           "distance_to_price": 3042.82,
           "name": "R2",
           "quality_local": {
-            "days_since_last_test": 2.947,
+            "days_since_last_test": 2.986,
             "failure_rate": 0.6286,
             "last_touch_utc": "2026-02-16T15:59:59Z",
             "reaction_rate": 0.3714,
             "tests": 35
           },
           "quality_macro_best": {
-            "days_since_last_test": 3.28,
+            "days_since_last_test": 3.32,
             "failure_rate": 0.34,
             "last_test_utc": "2026-02-16T07:59:59Z",
             "reaction_rate": 0.979,
@@ -824,14 +824,14 @@
           "distance_to_price": 4800.5,
           "name": "R3",
           "quality_local": {
-            "days_since_last_test": 10.28,
+            "days_since_last_test": 10.32,
             "failure_rate": 0.3077,
             "last_touch_utc": "2026-02-09T07:59:59Z",
             "reaction_rate": 0.6923,
             "tests": 13
           },
           "quality_macro_best": {
-            "days_since_last_test": 3.28,
+            "days_since_last_test": 3.32,
             "failure_rate": 0.34,
             "last_test_utc": "2026-02-16T07:59:59Z",
             "reaction_rate": 0.979,
@@ -863,14 +863,14 @@
           "distance_to_price": 12409.17,
           "name": "R4",
           "quality_local": {
-            "days_since_last_test": 16.113,
+            "days_since_last_test": 16.153,
             "failure_rate": 0.0,
             "last_touch_utc": "2026-02-03T11:59:59Z",
             "reaction_rate": 1.0,
             "tests": 11
           },
           "quality_macro_best": {
-            "days_since_last_test": 3.28,
+            "days_since_last_test": 3.32,
             "failure_rate": 0.34,
             "last_test_utc": "2026-02-16T07:59:59Z",
             "reaction_rate": 0.979,
@@ -901,7 +901,7 @@
           "distance_to_price": 171.21,
           "name": "S1",
           "quality_local": {
-            "days_since_last_test": 0.613,
+            "days_since_last_test": 0.653,
             "failure_rate": 0.5333,
             "last_touch_utc": "2026-02-18T23:59:59Z",
             "reaction_rate": 0.4667,
@@ -936,7 +936,7 @@
           "distance_to_price": 4022.31,
           "name": "S2",
           "quality_local": {
-            "days_since_last_test": 12.613,
+            "days_since_last_test": 12.653,
             "failure_rate": 0.0,
             "last_touch_utc": "2026-02-06T23:59:59Z",
             "reaction_rate": 1.0,
@@ -976,7 +976,7 @@
           "distance_to_price": 10468.13,
           "name": "S3",
           "quality_local": {
-            "days_since_last_test": 521.613,
+            "days_since_last_test": 521.653,
             "failure_rate": 0.5333,
             "last_touch_utc": "2024-09-15T23:59:59Z",
             "reaction_rate": 0.4667,
@@ -1014,7 +1014,7 @@
           "distance_to_price": 15958.63,
           "name": "S4",
           "quality_local": {
-            "days_since_last_test": 556.613,
+            "days_since_last_test": 556.653,
             "failure_rate": 0.7059,
             "last_touch_utc": "2024-08-11T23:59:59Z",
             "reaction_rate": 0.2941,
@@ -1057,14 +1057,14 @@
           "distance_to_price": 34.18,
           "name": "R1",
           "quality_local": {
-            "days_since_last_test": 0.28,
+            "days_since_last_test": 0.32,
             "failure_rate": 0.6444,
             "last_touch_utc": "2026-02-19T07:59:59Z",
             "reaction_rate": 0.3556,
             "tests": 45
           },
           "quality_macro_best": {
-            "days_since_last_test": 3.95,
+            "days_since_last_test": 3.99,
             "failure_rate": 0.571,
             "last_test_utc": "2026-02-15T15:59:59Z",
             "reaction_rate": 0.976,
@@ -1097,14 +1097,14 @@
           "distance_to_price": 106.44,
           "name": "R2",
           "quality_local": {
-            "days_since_last_test": 3.947,
+            "days_since_last_test": 3.986,
             "failure_rate": 0.7838,
             "last_touch_utc": "2026-02-15T15:59:59Z",
             "reaction_rate": 0.2162,
             "tests": 37
           },
           "quality_macro_best": {
-            "days_since_last_test": 3.95,
+            "days_since_last_test": 3.99,
             "failure_rate": 0.571,
             "last_test_utc": "2026-02-15T15:59:59Z",
             "reaction_rate": 0.976,
@@ -1136,14 +1136,14 @@
           "distance_to_price": 180.49,
           "name": "R3",
           "quality_local": {
-            "days_since_last_test": 9.613,
+            "days_since_last_test": 9.653,
             "failure_rate": 0.6154,
             "last_touch_utc": "2026-02-09T23:59:59Z",
             "reaction_rate": 0.3846,
             "tests": 13
           },
           "quality_macro_best": {
-            "days_since_last_test": 3.95,
+            "days_since_last_test": 3.99,
             "failure_rate": 0.571,
             "last_test_utc": "2026-02-15T15:59:59Z",
             "reaction_rate": 0.976,
@@ -1175,14 +1175,14 @@
           "distance_to_price": 281.12,
           "name": "R4",
           "quality_local": {
-            "days_since_last_test": 10.613,
+            "days_since_last_test": 10.653,
             "failure_rate": 0.8594,
             "last_touch_utc": "2026-02-08T23:59:59Z",
             "reaction_rate": 0.1406,
             "tests": 64
           },
           "quality_macro_best": {
-            "days_since_last_test": 3.95,
+            "days_since_last_test": 3.99,
             "failure_rate": 0.571,
             "last_test_utc": "2026-02-15T15:59:59Z",
             "reaction_rate": 0.976,
@@ -1218,7 +1218,7 @@
           "distance_to_price": 28.73,
           "name": "S1",
           "quality_local": {
-            "days_since_last_test": 6.613,
+            "days_since_last_test": 6.653,
             "failure_rate": 0.3,
             "last_touch_utc": "2026-02-12T23:59:59Z",
             "reaction_rate": 0.7,
@@ -1253,7 +1253,7 @@
           "distance_to_price": 115.42,
           "name": "S2",
           "quality_local": {
-            "days_since_last_test": 10.613,
+            "days_since_last_test": 10.653,
             "failure_rate": 0.6957,
             "last_touch_utc": "2026-02-08T23:59:59Z",
             "reaction_rate": 0.3043,
@@ -1292,7 +1292,7 @@
           "distance_to_price": 315.36,
           "name": "S3",
           "quality_local": {
-            "days_since_last_test": 302.613,
+            "days_since_last_test": 302.653,
             "failure_rate": 0.8235,
             "last_touch_utc": "2025-04-22T23:59:59Z",
             "reaction_rate": 0.1765,
@@ -1329,7 +1329,7 @@
           "distance_to_price": 614.21,
           "name": "S4",
           "quality_local": {
-            "days_since_last_test": 1130.613,
+            "days_since_last_test": 1130.653,
             "failure_rate": 0.7826,
             "last_touch_utc": "2023-01-15T23:59:59Z",
             "reaction_rate": 0.2174,
