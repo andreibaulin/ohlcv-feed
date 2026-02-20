@@ -1,9 +1,9 @@
 IRON-PROOF (НЕ РЕДАКТИРОВАТЬ)
-- generated_utc: 2026-02-20T03:44:40Z
-- generated_local: 2026-02-20 05:44:40 EET
-- state.updated_utc: 2026-02-20T03:44:40.755709Z
-- state.sha256: ff00801044250f0bec2d9cc3ea1b2223123fb97c24774e9a39dcaa218deb6282
-- bundle.sha256: 9247d2a8f9900db4e16dda4ca8d0cd8edf9a51c9045d15c615bc3a9f3479e424
+- generated_utc: 2026-02-20T05:13:36Z
+- generated_local: 2026-02-20 07:13:36 EET
+- state.updated_utc: 2026-02-20T05:13:36.394478Z
+- state.sha256: 35a7843d03aa6570334fd0b5bfddc22a211ae6087005e8c726781c10082f27d8
+- bundle.sha256: 73f05e9574c2cf33b0669b3e425639a034945696fd15419c707d1515479e8bbd
 
 Ссылки (рукопожатие):
 https://andreibaulin.github.io/ohlcv-feed/ta/binance/chat_bundle_latest.json
@@ -28,22 +28,22 @@ https://fapi.binance.com/futures/data/openInterestHist?symbol=ETHUSDT&period=1h&
 https://fapi.binance.com/fapi/v1/fundingRate?symbol=ETHUSDT&limit=30
 
 ## BTCUSDT
-- price(state): 67 003.73
+- price(state): 67 366.25
 - regime: chop | W1: range | D1: range
-- ATR(D1): 3 599.87 | ATR(H4): 981.75
+- ATR(D1): 3 599.87 | ATR(H4): 923.53
 - EMA200(D1): 93 090.44 | EMA200(W1): 68 067.71
 
 ### 4 поддержки / 4 сопротивления (CORE = точка реакции, BUFFER = зона допуска)
 Поддержки:
-- S1 (oper, mixed): CORE [65 314.21 – 66 311.79] | BUF [65 314.21 – 66 311.79] 🔴 (силa=5/5, macro: tests=30, rr=0.4667, fr=0.5333)
-- S2 (oper, mixed): CORE [57 660.09 – 62 339.91] | BUF [56 843.99 – 62 339.91] 🔴 (силa=2/5, macro: tests=30, rr=0.4667, fr=0.5333)
-- S3 (struct, mixed): CORE [50 943.97 – 56 027.89] | BUF [50 740.68 – 56 843.99] 🔴 (силa=5/5, macro: tests=30, rr=0.4667, fr=0.5333)
-- S4 (macro, mixed): CORE [45 392.61 – 50 537.39] | BUF [45 392.61 – 50 740.68] 🔴 (силa=5/5, macro: tests=30, rr=0.4667, fr=0.5333)
+- S1 (oper, mixed): CORE [66 205.47 – 67 086.04] | BUF [66 205.47 – 67 086.04] 🔴 (силa=5/5, macro: tests=30, rr=0.4667, fr=0.5333)
+- S2 (oper, mixed): CORE [64 702.41 – 66 047.42] | BUF [64 702.41 – 66 047.42] 🔴 (силa=5/5, macro: tests=30, rr=0.4667, fr=0.5333)
+- S3 (struct, mixed): CORE [57 660.09 – 62 339.91] | BUF [56 843.99 – 62 339.91] 🔴 (силa=2/5, macro: tests=30, rr=0.4667, fr=0.5333)
+- S4 (macro, mixed): CORE [50 943.97 – 56 027.89] | BUF [45 392.61 – 56 843.99] 🔴 (силa=5/5, macro: tests=30, rr=0.4667, fr=0.5333)
 Сопротивления:
-- R1 (oper, bounce): CORE [67 968.73 – 69 276.13] | BUF [67 968.73 – 69 276.13] 🟢 (силa=5/5, macro: tests=28, rr=0.964, fr=0.286)
-- R2 (oper, bounce): CORE [69 551.86 – 71 001.80] | BUF [69 551.86 – 71 155.67] 🟢 (силa=5/5, macro: tests=28, rr=0.964, fr=0.286)
-- R3 (struct, bounce): CORE [71 309.54 – 72 713.20] | BUF [71 155.67 – 75 634.41] 🟢 (силa=5/5, macro: tests=28, rr=0.964, fr=0.286)
-- R4 (macro, bounce): CORE [78 918.21 – 79 801.79] | BUF [78 918.21 – 79 801.79] 🟢 (силa=5/5, macro: tests=28, rr=0.964, fr=0.286)
+- R1 (oper, bounce): CORE [67 994.93 – 69 249.93] | BUF [67 994.93 – 69 249.93] 🟢 (силa=5/5, macro: tests=28, rr=0.964, fr=0.286)
+- R2 (oper, bounce): CORE [69 578.06 – 70 975.60] | BUF [69 578.06 – 71 155.67] 🟢 (силa=5/5, macro: tests=28, rr=0.964, fr=0.286)
+- R3 (struct, bounce): CORE [71 335.74 – 72 687.00] | BUF [71 155.67 – 75 634.41] 🟢 (силa=5/5, macro: tests=28, rr=0.964, fr=0.286)
+- R4 (macro, bounce): CORE [78 944.41 – 79 775.59] | BUF [78 944.41 – 79 775.59] 🟢 (силa=5/5, macro: tests=28, rr=0.964, fr=0.286)
 
 ### Деривативы (live ссылки Binance FAPI)
 - premiumIndex: https://fapi.binance.com/fapi/v1/premiumIndex?symbol=BTCUSDT
@@ -52,19 +52,19 @@ https://fapi.binance.com/fapi/v1/fundingRate?symbol=ETHUSDT&limit=30
 - fundingRate(×30): https://fapi.binance.com/fapi/v1/fundingRate?symbol=BTCUSDT&limit=30
 
 ## ETHUSDT
-- price(state): 1 949.08
+- price(state): 1 954.85
 - regime: chop | W1: down | D1: range
-- ATR(D1): 129.53 | ATR(H4): 37.73
+- ATR(D1): 129.53 | ATR(H4): 34.58
 - EMA200(D1): 3 071.20 | EMA200(W1): 2 596.74
 
 ### 4 поддержки / 4 сопротивления (CORE = точка реакции, BUFFER = зона допуска)
 Поддержки:
-- S1 (oper, magnet): CORE [1 880.26 – 1 920.17] | BUF [1 880.26 – 1 920.17] 🔴 (силa=5/5, macro: tests=69, rr=0.3043, fr=0.6957)
+- S1 (oper, magnet): CORE [1 881.68 – 1 922.56] | BUF [1 881.68 – 1 922.56] 🔴 (силa=5/5, macro: tests=69, rr=0.3043, fr=0.6957)
 - S2 (oper, magnet): CORE [1 645.84 – 1 834.16] | BUF [1 636.99 – 1 834.16] 🔴 (силa=5/5, macro: tests=69, rr=0.3043, fr=0.6957)
 - S3 (struct, magnet): CORE [1 439.80 – 1 628.13] | BUF [1 439.80 – 1 636.99] 🔴 (силa=5/5, macro: tests=69, rr=0.3043, fr=0.6957)
 - S4 (macro, magnet): CORE [1 044.63 – 1 335.37] | BUF [1 044.63 – 1 387.59] 🔴 (силa=5/5, macro: tests=69, rr=0.3043, fr=0.6957)
 Сопротивления:
-- R1 (oper, mixed): CORE [1 970.57 – 2 040.49] | BUF [1 970.57 – 2 043.08] 🔴 (силa=5/5, macro: tests=42, rr=0.976, fr=0.595)
+- R1 (oper, mixed): CORE [1 971.99 – 2 039.07] | BUF [1 971.99 – 2 042.37] 🔴 (силa=5/5, macro: tests=42, rr=0.976, fr=0.595)
 - R2 (oper, mixed): CORE [2 045.66 – 2 214.04] | BUF [2 045.66 – 2 222.37] 🔴 (силa=5/5, macro: tests=42, rr=0.976, fr=0.595)
 - R3 (struct, mixed): CORE [2 230.70 – 2 581.30] | BUF [2 222.37 – 2 590.15] 🔴 (силa=5/5, macro: tests=42, rr=0.976, fr=0.595)
 - R4 (macro, mixed): CORE [2 599.00 – 2 949.60] | BUF [2 590.15 – 2 949.60] 🔴 (силa=5/5, macro: tests=42, rr=0.976, fr=0.595)
