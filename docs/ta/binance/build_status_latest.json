@@ -1,18 +1,18 @@
 {
   "candidate": {
     "bundle_rel": "ta/binance/chat_bundle_latest.json",
-    "bundle_sha256": "73f05e9574c2cf33b0669b3e425639a034945696fd15419c707d1515479e8bbd",
+    "bundle_sha256": "392ff81afd82d586bf4467e00df4e7790af6f1c36894f440ff6c0793e9183ddf",
     "report_rel": "ta/binance/chat_report_latest.md",
-    "report_sha256": "c0256369481038c455e3bd92030bb83a1119224325e2fa72ce55c4b0bed0b568"
+    "report_sha256": "26a80d750c80887bdd9b2458bfabd170982440751ac9ae71118a55030adab4ce"
   },
   "errors": [],
-  "generated_utc": "2026-02-20T05:13:36Z",
+  "generated_utc": "2026-02-20T06:13:19Z",
   "kept_last_good": false,
   "published": {
     "bundle_rel": "ta/binance/chat_bundle_latest.json",
-    "bundle_sha256": "73f05e9574c2cf33b0669b3e425639a034945696fd15419c707d1515479e8bbd",
+    "bundle_sha256": "392ff81afd82d586bf4467e00df4e7790af6f1c36894f440ff6c0793e9183ddf",
     "report_rel": "ta/binance/chat_report_latest.md",
-    "report_sha256": "c0256369481038c455e3bd92030bb83a1119224325e2fa72ce55c4b0bed0b568"
+    "report_sha256": "26a80d750c80887bdd9b2458bfabd170982440751ac9ae71118a55030adab4ce"
   },
   "quality": "OK",
   "schema": "iron.build_status.v1",
@@ -23,9 +23,9 @@
     },
     "state": {
       "path": "docs/ta/binance/state_btc_eth_full_latest.json",
-      "sha256": "35a7843d03aa6570334fd0b5bfddc22a211ae6087005e8c726781c10082f27d8",
+      "sha256": "d180a4d164835cb82405346cbcba941b18892726b132b0dbf7554b6a02326031",
       "source": "ta_state_pivots_atr_full",
-      "updated_utc": "2026-02-20T05:13:36.394478Z"
+      "updated_utc": "2026-02-20T06:13:19.258226Z"
     }
   },
   "verify": {
