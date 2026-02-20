@@ -1,15 +1,15 @@
 {
   "candidate": {
     "bundle_rel": "ta/binance/chat_bundle_bad_latest.json",
-    "bundle_sha256": "22126c133878419d56bb9ae4447b1c2cf13c9f4f24fdfbda7d9835322a0b5d72",
+    "bundle_sha256": "a690eb59a36c5d2a4249c4738808b3e92b4a77cb6b9d917d18ba7d96b1e69c21",
     "report_rel": "ta/binance/chat_report_bad_latest.md",
-    "report_sha256": "7b01db4fd4c895fe71ca603061e4356dab0565653c178b880bdd5f7ba8322a43"
+    "report_sha256": "65a21f65fc92798f91ccbabc34cd2d1cb10c52398d6a14a18d6ee14d746a93a9"
   },
   "errors": [
     "verify: BTCUSDT: missing supports/resistances in views",
     "verify: ETHUSDT: missing supports/resistances in views"
   ],
-  "generated_utc": "2026-02-20T07:47:11Z",
+  "generated_utc": "2026-02-20T08:03:28Z",
   "kept_last_good": true,
   "published": {
     "bundle_rel": "ta/binance/chat_bundle_latest.json",
@@ -26,9 +26,9 @@
     },
     "state": {
       "path": "docs/ta/binance/state_btc_eth_full_latest.json",
-      "sha256": "b2a430aca6c0c39746e690ff24f141ff7844b2efa4b0287f2ef14e4db6a63e70",
+      "sha256": "fcbddc75cdd5031839b409b6f6c4a63d0ecc08d8af1d043d9a2f15b817091fb4",
       "source": "ta_state_pivots_atr_full",
-      "updated_utc": "2026-02-20T07:47:11.843727Z"
+      "updated_utc": "2026-02-20T08:03:28.311685Z"
     }
   },
   "verify": {

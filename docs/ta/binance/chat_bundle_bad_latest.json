@@ -1,26 +1,26 @@
 {
-  "bundle_sha256": "22126c133878419d56bb9ae4447b1c2cf13c9f4f24fdfbda7d9835322a0b5d72",
+  "bundle_sha256": "a690eb59a36c5d2a4249c4738808b3e92b4a77cb6b9d917d18ba7d96b1e69c21",
   "facts": [
     {
       "id": "state.updated_utc",
       "pointer": "/updated_utc",
       "source": "state",
       "type": "string",
-      "value": "2026-02-20T07:47:11.843727Z"
+      "value": "2026-02-20T08:03:28.311685Z"
     },
     {
       "id": "btc.price",
       "pointer": "/symbols/BTCUSDT/data/price",
       "source": "state",
       "type": "number",
-      "value": 67366.25
+      "value": 67825.91
     },
     {
       "id": "btc.last_close_utc_h4",
       "pointer": "/symbols/BTCUSDT/data/last_close_utc_h4",
       "source": "state",
       "type": "string",
-      "value": "2026-02-20T03:59:59Z"
+      "value": "2026-02-20T07:59:59Z"
     },
     {
       "id": "btc.regime",
@@ -55,7 +55,7 @@
       "pointer": "/symbols/BTCUSDT/vol/atr14/H4",
       "source": "state",
       "type": "number",
-      "value": 923.53
+      "value": 949.0
     },
     {
       "id": "btc.ema200.d1",
@@ -138,8 +138,8 @@
       "source": "state",
       "type": "range",
       "value": [
-        60539.98,
-        62339.91
+        65657.98,
+        67457.91
       ]
     },
     {
@@ -158,8 +158,8 @@
       "source": "state",
       "type": "object",
       "value": {
-        "days_since_last_reaction": 14.16,
-        "days_since_last_test": 14.16,
+        "days_since_last_reaction": 14.17,
+        "days_since_last_test": 14.17,
         "failure_rate": 0.0,
         "failures": 0,
         "fwd_h4_bars": 18,
@@ -167,8 +167,8 @@
         "last_test_utc": "2026-02-06T03:59:59Z",
         "lookback_h4_bars": 720,
         "median_bars_to_reaction_h4": 1,
-        "median_mae_atr_h4": 0.275,
-        "median_mfe_atr_h4": 8.774,
+        "median_mae_atr_h4": 0.267,
+        "median_mfe_atr_h4": 8.539,
         "reaction_rate": 1.0,
         "reactions": 1,
         "tests": 1,
@@ -181,8 +181,8 @@
       "source": "state",
       "type": "object",
       "value": {
-        "days_since_last_reaction": 3.66,
-        "days_since_last_test": 3.66,
+        "days_since_last_reaction": 3.67,
+        "days_since_last_test": 3.67,
         "failure_rate": 0.286,
         "failures": 8,
         "fwd_h4_bars": 18,
@@ -190,8 +190,8 @@
         "last_test_utc": "2026-02-16T15:59:59Z",
         "lookback_h4_bars": 720,
         "median_bars_to_reaction_h4": 2,
-        "median_mae_atr_h4": 1.194,
-        "median_mfe_atr_h4": 4.413,
+        "median_mae_atr_h4": 1.162,
+        "median_mfe_atr_h4": 4.295,
         "reaction_rate": 0.964,
         "reactions": 27,
         "tests": 28,
@@ -204,20 +204,20 @@
       "source": "state",
       "type": "object",
       "value": {
-        "days_since_last_reaction": 14.16,
-        "days_since_last_test": 14.16,
-        "failure_rate": 0.0,
-        "failures": 0,
+        "days_since_last_reaction": 3.67,
+        "days_since_last_test": 3.67,
+        "failure_rate": 0.583,
+        "failures": 14,
         "fwd_h4_bars": 18,
-        "last_reaction_utc": "2026-02-06T03:59:59Z",
-        "last_test_utc": "2026-02-06T03:59:59Z",
+        "last_reaction_utc": "2026-02-16T15:59:59Z",
+        "last_test_utc": "2026-02-16T15:59:59Z",
         "lookback_h4_bars": 720,
-        "median_bars_to_reaction_h4": 1,
-        "median_mae_atr_h4": 0.275,
-        "median_mfe_atr_h4": 8.774,
+        "median_bars_to_reaction_h4": 2,
+        "median_mae_atr_h4": 1.744,
+        "median_mfe_atr_h4": 4.156,
         "reaction_rate": 1.0,
-        "reactions": 1,
-        "tests": 1,
+        "reactions": 24,
+        "tests": 24,
         "threshold_atr_h4": 1.0
       }
     },
@@ -227,17 +227,17 @@
       "source": "state",
       "type": "object",
       "value": {
-        "days_since_last_reaction": 4.66,
-        "days_since_last_test": 4.66,
+        "days_since_last_reaction": 4.67,
+        "days_since_last_test": 4.67,
         "failure_rate": 0.304,
         "failures": 7,
         "fwd_h4_bars": 18,
         "last_reaction_utc": "2026-02-15T15:59:59Z",
         "last_test_utc": "2026-02-15T15:59:59Z",
         "lookback_h4_bars": 720,
-        "median_bars_to_reaction_h4": 1,
-        "median_mae_atr_h4": 1.172,
-        "median_mfe_atr_h4": 4.953,
+        "median_bars_to_reaction_h4": 2,
+        "median_mae_atr_h4": 1.141,
+        "median_mfe_atr_h4": 4.82,
         "reaction_rate": 0.957,
         "reactions": 22,
         "tests": 23,
@@ -249,14 +249,14 @@
       "pointer": "/symbols/ETHUSDT/data/price",
       "source": "state",
       "type": "number",
-      "value": 1954.85
+      "value": 1960.97
     },
     {
       "id": "eth.last_close_utc_h4",
       "pointer": "/symbols/ETHUSDT/data/last_close_utc_h4",
       "source": "state",
       "type": "string",
-      "value": "2026-02-20T03:59:59Z"
+      "value": "2026-02-20T07:59:59Z"
     },
     {
       "id": "eth.regime",
@@ -291,7 +291,7 @@
       "pointer": "/symbols/ETHUSDT/vol/atr14/H4",
       "source": "state",
       "type": "number",
-      "value": 34.58
+      "value": 36.09
     },
     {
       "id": "eth.ema200.d1",
@@ -394,8 +394,8 @@
       "source": "state",
       "type": "object",
       "value": {
-        "days_since_last_reaction": 14.16,
-        "days_since_last_test": 14.16,
+        "days_since_last_reaction": 14.17,
+        "days_since_last_test": 14.17,
         "failure_rate": 0.5,
         "failures": 1,
         "fwd_h4_bars": 18,
@@ -403,8 +403,8 @@
         "last_test_utc": "2026-02-06T03:59:59Z",
         "lookback_h4_bars": 720,
         "median_bars_to_reaction_h4": 1,
-        "median_mae_atr_h4": 1.514,
-        "median_mfe_atr_h4": 8.465,
+        "median_mae_atr_h4": 1.451,
+        "median_mfe_atr_h4": 8.111,
         "reaction_rate": 1.0,
         "reactions": 2,
         "tests": 2,
@@ -417,8 +417,8 @@
       "source": "state",
       "type": "object",
       "value": {
-        "days_since_last_reaction": 15.66,
-        "days_since_last_test": 15.66,
+        "days_since_last_reaction": 15.67,
+        "days_since_last_test": 15.67,
         "failure_rate": 0.706,
         "failures": 12,
         "fwd_h4_bars": 18,
@@ -426,8 +426,8 @@
         "last_test_utc": "2026-02-04T15:59:59Z",
         "lookback_h4_bars": 720,
         "median_bars_to_reaction_h4": 1,
-        "median_mae_atr_h4": 1.942,
-        "median_mfe_atr_h4": 12.88,
+        "median_mae_atr_h4": 1.86,
+        "median_mfe_atr_h4": 12.342,
         "reaction_rate": 1.0,
         "reactions": 17,
         "tests": 17,
@@ -440,8 +440,8 @@
       "source": "state",
       "type": "object",
       "value": {
-        "days_since_last_reaction": 14.16,
-        "days_since_last_test": 14.16,
+        "days_since_last_reaction": 14.17,
+        "days_since_last_test": 14.17,
         "failure_rate": 0.0,
         "failures": 0,
         "fwd_h4_bars": 18,
@@ -449,8 +449,8 @@
         "last_test_utc": "2026-02-06T03:59:59Z",
         "lookback_h4_bars": 720,
         "median_bars_to_reaction_h4": 1,
-        "median_mae_atr_h4": 1.514,
-        "median_mfe_atr_h4": 8.465,
+        "median_mae_atr_h4": 1.451,
+        "median_mfe_atr_h4": 8.111,
         "reaction_rate": 1.0,
         "reactions": 2,
         "tests": 2,
@@ -463,17 +463,17 @@
       "source": "state",
       "type": "object",
       "value": {
-        "days_since_last_reaction": 4.66,
-        "days_since_last_test": 4.66,
+        "days_since_last_reaction": 4.67,
+        "days_since_last_test": 4.67,
         "failure_rate": 0.595,
         "failures": 25,
         "fwd_h4_bars": 18,
         "last_reaction_utc": "2026-02-15T15:59:59Z",
         "last_test_utc": "2026-02-15T15:59:59Z",
         "lookback_h4_bars": 720,
-        "median_bars_to_reaction_h4": 1,
-        "median_mae_atr_h4": 1.5,
-        "median_mfe_atr_h4": 4.571,
+        "median_bars_to_reaction_h4": 2,
+        "median_mae_atr_h4": 1.438,
+        "median_mfe_atr_h4": 4.38,
         "reaction_rate": 0.976,
         "reactions": 41,
         "tests": 42,
@@ -483,14 +483,14 @@
   ],
   "facts_index": {
     "btc.atr.d1": 3599.87,
-    "btc.atr.h4": 923.53,
+    "btc.atr.h4": 949.0,
     "btc.band.d1.resistance_entry": [
       70410.79,
       71555.21
     ],
     "btc.band.d1.support_entry": [
-      60539.98,
-      62339.91
+      65657.98,
+      67457.91
     ],
     "btc.band.w1.discount": [
       59688.03,
@@ -502,45 +502,45 @@
     ],
     "btc.ema200.d1": 93090.44,
     "btc.ema200.w1": 68067.71,
-    "btc.last_close_utc_h4": "2026-02-20T03:59:59Z",
-    "btc.price": 67366.25,
+    "btc.last_close_utc_h4": "2026-02-20T07:59:59Z",
+    "btc.price": 67825.91,
     "btc.q.d1.resistance_entry": {
-      "days_since_last_reaction": 4.66,
-      "days_since_last_test": 4.66,
+      "days_since_last_reaction": 4.67,
+      "days_since_last_test": 4.67,
       "failure_rate": 0.304,
       "failures": 7,
       "fwd_h4_bars": 18,
       "last_reaction_utc": "2026-02-15T15:59:59Z",
       "last_test_utc": "2026-02-15T15:59:59Z",
       "lookback_h4_bars": 720,
-      "median_bars_to_reaction_h4": 1,
-      "median_mae_atr_h4": 1.172,
-      "median_mfe_atr_h4": 4.953,
+      "median_bars_to_reaction_h4": 2,
+      "median_mae_atr_h4": 1.141,
+      "median_mfe_atr_h4": 4.82,
       "reaction_rate": 0.957,
       "reactions": 22,
       "tests": 23,
       "threshold_atr_h4": 1.0
     },
     "btc.q.d1.support_entry": {
-      "days_since_last_reaction": 14.16,
-      "days_since_last_test": 14.16,
-      "failure_rate": 0.0,
-      "failures": 0,
+      "days_since_last_reaction": 3.67,
+      "days_since_last_test": 3.67,
+      "failure_rate": 0.583,
+      "failures": 14,
       "fwd_h4_bars": 18,
-      "last_reaction_utc": "2026-02-06T03:59:59Z",
-      "last_test_utc": "2026-02-06T03:59:59Z",
+      "last_reaction_utc": "2026-02-16T15:59:59Z",
+      "last_test_utc": "2026-02-16T15:59:59Z",
       "lookback_h4_bars": 720,
-      "median_bars_to_reaction_h4": 1,
-      "median_mae_atr_h4": 0.275,
-      "median_mfe_atr_h4": 8.774,
+      "median_bars_to_reaction_h4": 2,
+      "median_mae_atr_h4": 1.744,
+      "median_mfe_atr_h4": 4.156,
       "reaction_rate": 1.0,
-      "reactions": 1,
-      "tests": 1,
+      "reactions": 24,
+      "tests": 24,
       "threshold_atr_h4": 1.0
     },
     "btc.q.w1.discount": {
-      "days_since_last_reaction": 14.16,
-      "days_since_last_test": 14.16,
+      "days_since_last_reaction": 14.17,
+      "days_since_last_test": 14.17,
       "failure_rate": 0.0,
       "failures": 0,
       "fwd_h4_bars": 18,
@@ -548,16 +548,16 @@
       "last_test_utc": "2026-02-06T03:59:59Z",
       "lookback_h4_bars": 720,
       "median_bars_to_reaction_h4": 1,
-      "median_mae_atr_h4": 0.275,
-      "median_mfe_atr_h4": 8.774,
+      "median_mae_atr_h4": 0.267,
+      "median_mfe_atr_h4": 8.539,
       "reaction_rate": 1.0,
       "reactions": 1,
       "tests": 1,
       "threshold_atr_h4": 1.0
     },
     "btc.q.w1.premium": {
-      "days_since_last_reaction": 3.66,
-      "days_since_last_test": 3.66,
+      "days_since_last_reaction": 3.67,
+      "days_since_last_test": 3.67,
       "failure_rate": 0.286,
       "failures": 8,
       "fwd_h4_bars": 18,
@@ -565,8 +565,8 @@
       "last_test_utc": "2026-02-16T15:59:59Z",
       "lookback_h4_bars": 720,
       "median_bars_to_reaction_h4": 2,
-      "median_mae_atr_h4": 1.194,
-      "median_mfe_atr_h4": 4.413,
+      "median_mae_atr_h4": 1.162,
+      "median_mfe_atr_h4": 4.295,
       "reaction_rate": 0.964,
       "reactions": 27,
       "tests": 28,
@@ -587,7 +587,7 @@
       61487.96
     ],
     "eth.atr.d1": 129.53,
-    "eth.atr.h4": 34.58,
+    "eth.atr.h4": 36.09,
     "eth.band.d1.resistance_entry": [
       2045.66,
       2110.42
@@ -606,28 +606,28 @@
     ],
     "eth.ema200.d1": 3071.2,
     "eth.ema200.w1": 2596.74,
-    "eth.last_close_utc_h4": "2026-02-20T03:59:59Z",
-    "eth.price": 1954.85,
+    "eth.last_close_utc_h4": "2026-02-20T07:59:59Z",
+    "eth.price": 1960.97,
     "eth.q.d1.resistance_entry": {
-      "days_since_last_reaction": 4.66,
-      "days_since_last_test": 4.66,
+      "days_since_last_reaction": 4.67,
+      "days_since_last_test": 4.67,
       "failure_rate": 0.595,
       "failures": 25,
       "fwd_h4_bars": 18,
       "last_reaction_utc": "2026-02-15T15:59:59Z",
       "last_test_utc": "2026-02-15T15:59:59Z",
       "lookback_h4_bars": 720,
-      "median_bars_to_reaction_h4": 1,
-      "median_mae_atr_h4": 1.5,
-      "median_mfe_atr_h4": 4.571,
+      "median_bars_to_reaction_h4": 2,
+      "median_mae_atr_h4": 1.438,
+      "median_mfe_atr_h4": 4.38,
       "reaction_rate": 0.976,
       "reactions": 41,
       "tests": 42,
       "threshold_atr_h4": 1.0
     },
     "eth.q.d1.support_entry": {
-      "days_since_last_reaction": 14.16,
-      "days_since_last_test": 14.16,
+      "days_since_last_reaction": 14.17,
+      "days_since_last_test": 14.17,
       "failure_rate": 0.0,
       "failures": 0,
       "fwd_h4_bars": 18,
@@ -635,16 +635,16 @@
       "last_test_utc": "2026-02-06T03:59:59Z",
       "lookback_h4_bars": 720,
       "median_bars_to_reaction_h4": 1,
-      "median_mae_atr_h4": 1.514,
-      "median_mfe_atr_h4": 8.465,
+      "median_mae_atr_h4": 1.451,
+      "median_mfe_atr_h4": 8.111,
       "reaction_rate": 1.0,
       "reactions": 2,
       "tests": 2,
       "threshold_atr_h4": 1.0
     },
     "eth.q.w1.discount": {
-      "days_since_last_reaction": 14.16,
-      "days_since_last_test": 14.16,
+      "days_since_last_reaction": 14.17,
+      "days_since_last_test": 14.17,
       "failure_rate": 0.5,
       "failures": 1,
       "fwd_h4_bars": 18,
@@ -652,16 +652,16 @@
       "last_test_utc": "2026-02-06T03:59:59Z",
       "lookback_h4_bars": 720,
       "median_bars_to_reaction_h4": 1,
-      "median_mae_atr_h4": 1.514,
-      "median_mfe_atr_h4": 8.465,
+      "median_mae_atr_h4": 1.451,
+      "median_mfe_atr_h4": 8.111,
       "reaction_rate": 1.0,
       "reactions": 2,
       "tests": 2,
       "threshold_atr_h4": 1.0
     },
     "eth.q.w1.premium": {
-      "days_since_last_reaction": 15.66,
-      "days_since_last_test": 15.66,
+      "days_since_last_reaction": 15.67,
+      "days_since_last_test": 15.67,
       "failure_rate": 0.706,
       "failures": 12,
       "fwd_h4_bars": 18,
@@ -669,8 +669,8 @@
       "last_test_utc": "2026-02-04T15:59:59Z",
       "lookback_h4_bars": 720,
       "median_bars_to_reaction_h4": 1,
-      "median_mae_atr_h4": 1.942,
-      "median_mfe_atr_h4": 12.88,
+      "median_mae_atr_h4": 1.86,
+      "median_mfe_atr_h4": 12.342,
       "reaction_rate": 1.0,
       "reactions": 17,
       "tests": 17,
@@ -690,9 +690,9 @@
       1645.84,
       1834.16
     ],
-    "state.updated_utc": "2026-02-20T07:47:11.843727Z"
+    "state.updated_utc": "2026-02-20T08:03:28.311685Z"
   },
-  "generated_utc": "2026-02-20T07:47:11Z",
+  "generated_utc": "2026-02-20T08:03:28Z",
   "handshake_links": [
     "https://andreibaulin.github.io/ohlcv-feed/ta/binance/chat_bundle_latest.json",
     "https://andreibaulin.github.io/ohlcv-feed/ta/binance/chat_report_latest.md",
@@ -715,7 +715,7 @@
     "https://fapi.binance.com/futures/data/openInterestHist?symbol=ETHUSDT&period=1h&limit=30",
     "https://fapi.binance.com/fapi/v1/fundingRate?symbol=ETHUSDT&limit=30"
   ],
-  "report_sha256": "7b01db4fd4c895fe71ca603061e4356dab0565653c178b880bdd5f7ba8322a43",
+  "report_sha256": "65a21f65fc92798f91ccbabc34cd2d1cb10c52398d6a14a18d6ee14d746a93a9",
   "schema": "iron.chat_bundle.v3",
   "sources": {
     "contract": {
@@ -724,9 +724,9 @@
     },
     "state": {
       "path": "docs/ta/binance/state_btc_eth_full_latest.json",
-      "sha256": "b2a430aca6c0c39746e690ff24f141ff7844b2efa4b0287f2ef14e4db6a63e70",
+      "sha256": "fcbddc75cdd5031839b409b6f6c4a63d0ecc08d8af1d043d9a2f15b817091fb4",
       "source": "ta_state_pivots_atr_full",
-      "updated_utc": "2026-02-20T07:47:11.843727Z"
+      "updated_utc": "2026-02-20T08:03:28.311685Z"
     }
   },
   "views": {

@@ -12,8 +12,8 @@
           "H4": 1499,
           "W1": 444
         },
-        "last_close_utc_h4": "2026-02-20T03:59:59Z",
-        "price": 67366.25
+        "last_close_utc_h4": "2026-02-20T07:59:59Z",
+        "price": 67825.91
       },
       "ma": {
         "available": {
@@ -54,7 +54,7 @@
       "vol": {
         "atr14": {
           "D1": 3599.87,
-          "H4": 923.53,
+          "H4": 949.0,
           "W1": 9403.71
         },
         "vol_flag_d1": "high"
@@ -62,22 +62,22 @@
       "zones": {
         "forecast_4": {
           "R1_local_h4": {
-            "age_bars": 9,
+            "age_bars": 0,
             "basis": [
               "pivot"
             ],
             "center": 68476.22,
             "cluster_count": 3,
-            "last_touch_utc": "2026-02-18T15:59:59Z",
-            "rejections": 15,
-            "score": 81,
+            "last_touch_utc": "2026-02-20T07:59:59Z",
+            "rejections": 16,
+            "score": 85,
             "side": "R",
             "strength": 5,
             "tf": "H4",
-            "touches": 51,
+            "touches": 53,
             "zone": [
-              67994.93,
-              69249.93
+              67983.47,
+              69261.39
             ]
           },
           "R2_structural": {
@@ -95,7 +95,7 @@
             ]
           },
           "S1_local_h4": {
-            "age_bars": 0,
+            "age_bars": 1,
             "basis": [
               "pivot"
             ],
@@ -109,27 +109,27 @@
             "tf": "H4",
             "touches": 34,
             "zone": [
-              66205.47,
-              67086.04
+              66194.01,
+              67097.5
             ]
           },
           "S2_structural": {
-            "center": 58946.0,
+            "center": 65118.0,
             "cluster_count": 1,
-            "last_touch_utc": "2026-02-08T23:59:59Z",
-            "rejections": 16,
+            "last_touch_utc": "2026-02-19T23:59:59Z",
+            "rejections": 5,
             "side": "S",
             "strength": 5,
-            "tf": "W1",
-            "touches": 42,
+            "tf": "D1",
+            "touches": 10,
             "zone": [
-              56404.04,
-              61487.96
+              62778.09,
+              67457.91
             ]
           },
           "confluence": {
             "R1_with_R2": false,
-            "S1_with_S2": false
+            "S1_with_S2": true
           }
         },
         "forecast_swing_4": {
@@ -162,17 +162,17 @@
             ]
           },
           "S1_swing_d1": {
-            "center": 60000.0,
+            "center": 65118.0,
             "cluster_count": 1,
-            "last_touch_utc": "2026-02-06T23:59:59Z",
-            "rejections": 1,
+            "last_touch_utc": "2026-02-19T23:59:59Z",
+            "rejections": 5,
             "side": "S",
-            "strength": 1,
+            "strength": 5,
             "tf": "D1",
-            "touches": 1,
+            "touches": 10,
             "zone": [
-              57660.09,
-              62339.91
+              62778.09,
+              67457.91
             ]
           },
           "S2_range_w1": {
@@ -199,8 +199,8 @@
               71761.5
             ],
             "S1_entry": [
-              60539.98,
-              62339.91
+              65657.98,
+              67457.91
             ],
             "S2_discount": [
               59688.03,
@@ -211,26 +211,26 @@
         "local_h4": {
           "resistances": [
             {
-              "age_bars": 9,
+              "age_bars": 0,
               "basis": [
                 "pivot"
               ],
               "center": 68476.22,
               "cluster_count": 3,
-              "last_touch_utc": "2026-02-18T15:59:59Z",
-              "rejections": 15,
-              "score": 81,
+              "last_touch_utc": "2026-02-20T07:59:59Z",
+              "rejections": 16,
+              "score": 85,
               "side": "R",
               "strength": 5,
               "tf": "H4",
-              "touches": 51,
+              "touches": 53,
               "zone": [
-                67994.93,
-                69249.93
+                67983.47,
+                69261.39
               ]
             },
             {
-              "age_bars": 18,
+              "age_bars": 19,
               "basis": [
                 "pivot"
               ],
@@ -244,12 +244,12 @@
               "tf": "H4",
               "touches": 44,
               "zone": [
-                68825.91,
-                69898.56
+                68814.45,
+                69910.02
               ]
             },
             {
-              "age_bars": 21,
+              "age_bars": 22,
               "basis": [
                 "pivot"
               ],
@@ -263,12 +263,12 @@
               "tf": "H4",
               "touches": 35,
               "zone": [
-                69578.06,
-                70975.6
+                69566.6,
+                70987.06
               ]
             },
             {
-              "age_bars": 28,
+              "age_bars": 29,
               "basis": [
                 "pivot",
                 "range"
@@ -276,19 +276,19 @@
               "center": 70983.0,
               "cluster_count": 3,
               "last_touch_utc": "2026-02-15T11:59:59Z",
-              "rejections": 8,
-              "score": 35,
+              "rejections": 9,
+              "score": 38,
               "side": "R",
               "strength": 5,
               "tf": "H4",
-              "touches": 19,
+              "touches": 20,
               "zone": [
-                70567.41,
-                71541.59
+                70555.95,
+                71553.05
               ]
             },
             {
-              "age_bars": 65,
+              "age_bars": 66,
               "basis": [
                 "pivot"
               ],
@@ -302,12 +302,12 @@
               "tf": "H4",
               "touches": 13,
               "zone": [
-                71335.74,
-                72687.0
+                71324.28,
+                72698.46
               ]
             },
             {
-              "age_bars": 100,
+              "age_bars": 101,
               "basis": [
                 "pivot"
               ],
@@ -321,33 +321,33 @@
               "tf": "H4",
               "touches": 11,
               "zone": [
-                78944.41,
-                79775.59
+                78932.95,
+                79787.05
               ]
             }
           ],
           "selected": {
             "resistance": {
-              "age_bars": 9,
+              "age_bars": 0,
               "basis": [
                 "pivot"
               ],
               "center": 68476.22,
               "cluster_count": 3,
-              "last_touch_utc": "2026-02-18T15:59:59Z",
-              "rejections": 15,
-              "score": 81,
+              "last_touch_utc": "2026-02-20T07:59:59Z",
+              "rejections": 16,
+              "score": 85,
               "side": "R",
               "strength": 5,
               "tf": "H4",
-              "touches": 51,
+              "touches": 53,
               "zone": [
-                67994.93,
-                69249.93
+                67983.47,
+                69261.39
               ]
             },
             "support": {
-              "age_bars": 0,
+              "age_bars": 1,
               "basis": [
                 "pivot"
               ],
@@ -361,14 +361,14 @@
               "tf": "H4",
               "touches": 34,
               "zone": [
-                66205.47,
-                67086.04
+                66194.01,
+                67097.5
               ]
             }
           },
           "supports": [
             {
-              "age_bars": 0,
+              "age_bars": 1,
               "basis": [
                 "pivot"
               ],
@@ -382,12 +382,12 @@
               "tf": "H4",
               "touches": 34,
               "zone": [
-                66205.47,
-                67086.04
+                66194.01,
+                67097.5
               ]
             },
             {
-              "age_bars": 2,
+              "age_bars": 3,
               "basis": [
                 "pivot"
               ],
@@ -401,12 +401,12 @@
               "tf": "H4",
               "touches": 17,
               "zone": [
-                65340.41,
-                66285.59
+                65328.95,
+                66297.05
               ]
             },
             {
-              "age_bars": 2,
+              "age_bars": 3,
               "basis": [
                 "pivot",
                 "range"
@@ -414,19 +414,19 @@
               "center": 65118.0,
               "cluster_count": 3,
               "last_touch_utc": "2026-02-19T19:59:59Z",
-              "rejections": 9,
-              "score": 32,
+              "rejections": 10,
+              "score": 35,
               "side": "S",
               "strength": 5,
               "tf": "H4",
-              "touches": 14,
+              "touches": 15,
               "zone": [
-                64702.41,
-                66047.42
+                64690.95,
+                66058.88
               ]
             },
             {
-              "age_bars": 84,
+              "age_bars": 85,
               "basis": [
                 "pivot"
               ],
@@ -440,12 +440,12 @@
               "tf": "H4",
               "touches": 1,
               "zone": [
-                59584.41,
-                60415.59
+                59572.95,
+                60427.05
               ]
             },
             {
-              "age_bars": 129,
+              "age_bars": 130,
               "basis": [
                 "pivot"
               ],
@@ -459,27 +459,27 @@
               "tf": "H4",
               "touches": 124,
               "zone": [
-                86834.41,
-                88471.59
+                86822.95,
+                88483.05
               ]
             },
             {
-              "age_bars": 129,
+              "age_bars": 130,
               "basis": [
                 "pivot"
               ],
               "center": 88593.18,
               "cluster_count": 6,
               "last_touch_utc": "2026-01-29T15:59:59Z",
-              "rejections": 22,
-              "score": 158,
+              "rejections": 21,
+              "score": 156,
               "side": "S",
               "strength": 5,
               "tf": "H4",
               "touches": 114,
               "zone": [
-                88044.37,
-                89323.6
+                88032.91,
+                89335.06
               ]
             }
           ]
@@ -509,8 +509,8 @@
           "premium_edge": 69961.57,
           "reaction": {
             "discount": {
-              "days_since_last_reaction": 14.16,
-              "days_since_last_test": 14.16,
+              "days_since_last_reaction": 14.17,
+              "days_since_last_test": 14.17,
               "failure_rate": 0.0,
               "failures": 0,
               "fwd_h4_bars": 18,
@@ -518,16 +518,16 @@
               "last_test_utc": "2026-02-06T03:59:59Z",
               "lookback_h4_bars": 720,
               "median_bars_to_reaction_h4": 1,
-              "median_mae_atr_h4": 0.275,
-              "median_mfe_atr_h4": 8.774,
+              "median_mae_atr_h4": 0.267,
+              "median_mfe_atr_h4": 8.539,
               "reaction_rate": 1.0,
               "reactions": 1,
               "tests": 1,
               "threshold_atr_h4": 1.0
             },
             "premium": {
-              "days_since_last_reaction": 3.66,
-              "days_since_last_test": 3.66,
+              "days_since_last_reaction": 3.67,
+              "days_since_last_test": 3.67,
               "failure_rate": 0.286,
               "failures": 8,
               "fwd_h4_bars": 18,
@@ -535,8 +535,8 @@
               "last_test_utc": "2026-02-16T15:59:59Z",
               "lookback_h4_bars": 720,
               "median_bars_to_reaction_h4": 2,
-              "median_mae_atr_h4": 1.194,
-              "median_mfe_atr_h4": 4.413,
+              "median_mae_atr_h4": 1.162,
+              "median_mfe_atr_h4": 4.295,
               "reaction_rate": 0.964,
               "reactions": 27,
               "tests": 28,
@@ -633,21 +633,35 @@
               ]
             },
             "support": {
-              "center": 58946.0,
+              "center": 65118.0,
               "cluster_count": 1,
-              "last_touch_utc": "2026-02-08T23:59:59Z",
-              "rejections": 16,
+              "last_touch_utc": "2026-02-19T23:59:59Z",
+              "rejections": 5,
               "side": "S",
               "strength": 5,
-              "tf": "W1",
-              "touches": 42,
+              "tf": "D1",
+              "touches": 10,
               "zone": [
-                56404.04,
-                61487.96
+                62778.09,
+                67457.91
               ]
             }
           },
           "supports": [
+            {
+              "center": 65118.0,
+              "cluster_count": 1,
+              "last_touch_utc": "2026-02-19T23:59:59Z",
+              "rejections": 5,
+              "side": "S",
+              "strength": 5,
+              "tf": "D1",
+              "touches": 10,
+              "zone": [
+                62778.09,
+                67457.91
+              ]
+            },
             {
               "center": 60000.0,
               "cluster_count": 1,
@@ -675,20 +689,6 @@
                 50943.97,
                 56027.89
               ]
-            },
-            {
-              "center": 47965.0,
-              "cluster_count": 2,
-              "last_touch_utc": "2024-08-11T23:59:59Z",
-              "rejections": 10,
-              "side": "S",
-              "strength": 5,
-              "tf": "W1",
-              "touches": 34,
-              "zone": [
-                45392.61,
-                50537.39
-              ]
             }
           ]
         },
@@ -700,43 +700,43 @@
               71555.21
             ],
             "support_entry": [
-              60539.98,
-              62339.91
+              65657.98,
+              67457.91
             ]
           },
           "reaction": {
             "resistance_entry": {
-              "days_since_last_reaction": 4.66,
-              "days_since_last_test": 4.66,
+              "days_since_last_reaction": 4.67,
+              "days_since_last_test": 4.67,
               "failure_rate": 0.304,
               "failures": 7,
               "fwd_h4_bars": 18,
               "last_reaction_utc": "2026-02-15T15:59:59Z",
               "last_test_utc": "2026-02-15T15:59:59Z",
               "lookback_h4_bars": 720,
-              "median_bars_to_reaction_h4": 1,
-              "median_mae_atr_h4": 1.172,
-              "median_mfe_atr_h4": 4.953,
+              "median_bars_to_reaction_h4": 2,
+              "median_mae_atr_h4": 1.141,
+              "median_mfe_atr_h4": 4.82,
               "reaction_rate": 0.957,
               "reactions": 22,
               "tests": 23,
               "threshold_atr_h4": 1.0
             },
             "support_entry": {
-              "days_since_last_reaction": 14.16,
-              "days_since_last_test": 14.16,
-              "failure_rate": 0.0,
-              "failures": 0,
+              "days_since_last_reaction": 3.67,
+              "days_since_last_test": 3.67,
+              "failure_rate": 0.583,
+              "failures": 14,
               "fwd_h4_bars": 18,
-              "last_reaction_utc": "2026-02-06T03:59:59Z",
-              "last_test_utc": "2026-02-06T03:59:59Z",
+              "last_reaction_utc": "2026-02-16T15:59:59Z",
+              "last_test_utc": "2026-02-16T15:59:59Z",
               "lookback_h4_bars": 720,
-              "median_bars_to_reaction_h4": 1,
-              "median_mae_atr_h4": 0.275,
-              "median_mfe_atr_h4": 8.774,
+              "median_bars_to_reaction_h4": 2,
+              "median_mae_atr_h4": 1.744,
+              "median_mfe_atr_h4": 4.156,
               "reaction_rate": 1.0,
-              "reactions": 1,
-              "tests": 1,
+              "reactions": 24,
+              "tests": 24,
               "threshold_atr_h4": 1.0
             }
           },
@@ -755,29 +755,39 @@
             ]
           },
           "support": {
-            "center": 60000.0,
+            "center": 65118.0,
             "cluster_count": 1,
-            "last_touch_utc": "2026-02-06T23:59:59Z",
-            "rejections": 1,
+            "last_touch_utc": "2026-02-19T23:59:59Z",
+            "rejections": 5,
             "side": "S",
-            "strength": 1,
+            "strength": 5,
             "tf": "D1",
-            "touches": 1,
+            "touches": 10,
             "zone": [
-              57660.09,
-              62339.91
+              62778.09,
+              67457.91
             ]
           }
         },
         "working_h4": [
+          {
+            "center": 65118.0,
+            "from_tf": "D1",
+            "side": "S",
+            "strength": 5,
+            "zone": [
+              64406.25,
+              65829.75
+            ]
+          },
           {
             "center": 60000.0,
             "from_tf": "D1",
             "side": "S",
             "strength": 1,
             "zone": [
-              59307.35,
-              60692.65
+              59288.25,
+              60711.75
             ]
           },
           {
@@ -786,18 +796,8 @@
             "side": "S",
             "strength": 5,
             "zone": [
-              52793.28,
-              54178.58
-            ]
-          },
-          {
-            "center": 47965.0,
-            "from_tf": "W1",
-            "side": "S",
-            "strength": 5,
-            "zone": [
-              47272.35,
-              48657.65
+              52774.18,
+              54197.68
             ]
           },
           {
@@ -806,8 +806,8 @@
             "side": "R",
             "strength": 5,
             "zone": [
-              72105.34,
-              73490.64
+              72086.24,
+              73509.74
             ]
           },
           {
@@ -816,8 +816,8 @@
             "side": "R",
             "strength": 5,
             "zone": [
-              88072.78,
-              89458.08
+              88053.68,
+              89477.18
             ]
           },
           {
@@ -826,8 +826,8 @@
             "side": "R",
             "strength": 5,
             "zone": [
-              93676.85,
-              95062.14
+              93657.75,
+              95081.24
             ]
           }
         ]
@@ -840,8 +840,8 @@
           "H4": 1499,
           "W1": 444
         },
-        "last_close_utc_h4": "2026-02-20T03:59:59Z",
-        "price": 1954.85
+        "last_close_utc_h4": "2026-02-20T07:59:59Z",
+        "price": 1960.97
       },
       "ma": {
         "available": {
@@ -882,7 +882,7 @@
       "vol": {
         "atr14": {
           "D1": 129.53,
-          "H4": 34.58,
+          "H4": 36.09,
           "W1": 442.73
         },
         "vol_flag_d1": "high"
@@ -890,7 +890,7 @@
       "zones": {
         "forecast_4": {
           "R1_local_h4": {
-            "age_bars": 4,
+            "age_bars": 5,
             "basis": [
               "pivot"
             ],
@@ -904,8 +904,8 @@
             "tf": "H4",
             "touches": 52,
             "zone": [
-              1971.99,
-              2039.07
+              1971.31,
+              2039.75
             ]
           },
           "R2_structural": {
@@ -923,23 +923,22 @@
             ]
           },
           "S1_local_h4": {
-            "age_bars": 2,
+            "age_bars": 0,
             "basis": [
-              "pivot",
-              "range"
+              "pivot"
             ],
-            "center": 1900.22,
+            "center": 1933.06,
             "cluster_count": 4,
-            "last_touch_utc": "2026-02-19T19:59:59Z",
-            "rejections": 9,
-            "score": 30,
+            "last_touch_utc": "2026-02-20T07:59:59Z",
+            "rejections": 17,
+            "score": 75,
             "side": "S",
             "strength": 5,
             "tf": "H4",
-            "touches": 12,
+            "touches": 41,
             "zone": [
-              1881.68,
-              1922.56
+              1907.54,
+              1957.9
             ]
           },
           "S2_structural": {
@@ -1040,7 +1039,7 @@
         "local_h4": {
           "resistances": [
             {
-              "age_bars": 4,
+              "age_bars": 5,
               "basis": [
                 "pivot"
               ],
@@ -1054,31 +1053,31 @@
               "tf": "H4",
               "touches": 52,
               "zone": [
-                1971.99,
-                2039.07
+                1971.31,
+                2039.75
               ]
             },
             {
-              "age_bars": 10,
+              "age_bars": 11,
               "basis": [
                 "pivot"
               ],
               "center": 2042.99,
               "cluster_count": 2,
               "last_touch_utc": "2026-02-18T11:59:59Z",
-              "rejections": 11,
-              "score": 54,
+              "rejections": 12,
+              "score": 57,
               "side": "R",
               "strength": 5,
               "tf": "H4",
-              "touches": 32,
+              "touches": 33,
               "zone": [
-                2023.49,
-                2062.5
+                2022.81,
+                2063.18
               ]
             },
             {
-              "age_bars": 27,
+              "age_bars": 28,
               "basis": [
                 "pivot"
               ],
@@ -1086,18 +1085,18 @@
               "cluster_count": 1,
               "last_touch_utc": "2026-02-15T15:59:59Z",
               "rejections": 9,
-              "score": 54,
+              "score": 55,
               "side": "R",
               "strength": 5,
               "tf": "H4",
-              "touches": 36,
+              "touches": 37,
               "zone": [
-                2058.12,
-                2089.24
+                2057.44,
+                2089.92
               ]
             },
             {
-              "age_bars": 28,
+              "age_bars": 29,
               "basis": [
                 "pivot",
                 "range"
@@ -1105,19 +1104,19 @@
               "center": 2107.67,
               "cluster_count": 5,
               "last_touch_utc": "2026-02-15T11:59:59Z",
-              "rejections": 14,
-              "score": 59,
+              "rejections": 13,
+              "score": 57,
               "side": "R",
               "strength": 5,
               "tf": "H4",
               "touches": 31,
               "zone": [
-                2087.76,
-                2137.26
+                2087.08,
+                2137.94
               ]
             },
             {
-              "age_bars": 61,
+              "age_bars": 62,
               "basis": [
                 "pivot"
               ],
@@ -1131,12 +1130,12 @@
               "tf": "H4",
               "touches": 13,
               "zone": [
-                2132.17,
-                2167.59
+                2131.49,
+                2168.27
               ]
             },
             {
-              "age_bars": 97,
+              "age_bars": 98,
               "basis": [
                 "pivot"
               ],
@@ -1150,14 +1149,14 @@
               "tf": "H4",
               "touches": 12,
               "zone": [
-                2328.26,
-                2359.38
+                2327.58,
+                2360.06
               ]
             }
           ],
           "selected": {
             "resistance": {
-              "age_bars": 4,
+              "age_bars": 5,
               "basis": [
                 "pivot"
               ],
@@ -1171,34 +1170,52 @@
               "tf": "H4",
               "touches": 52,
               "zone": [
-                1971.99,
-                2039.07
+                1971.31,
+                2039.75
               ]
             },
             "support": {
-              "age_bars": 2,
+              "age_bars": 0,
               "basis": [
-                "pivot",
-                "range"
+                "pivot"
               ],
-              "center": 1900.22,
+              "center": 1933.06,
               "cluster_count": 4,
-              "last_touch_utc": "2026-02-19T19:59:59Z",
-              "rejections": 9,
-              "score": 30,
+              "last_touch_utc": "2026-02-20T07:59:59Z",
+              "rejections": 17,
+              "score": 75,
               "side": "S",
               "strength": 5,
               "tf": "H4",
-              "touches": 12,
+              "touches": 41,
               "zone": [
-                1881.68,
-                1922.56
+                1907.54,
+                1957.9
               ]
             }
           },
           "supports": [
             {
-              "age_bars": 2,
+              "age_bars": 0,
+              "basis": [
+                "pivot"
+              ],
+              "center": 1933.06,
+              "cluster_count": 4,
+              "last_touch_utc": "2026-02-20T07:59:59Z",
+              "rejections": 17,
+              "score": 75,
+              "side": "S",
+              "strength": 5,
+              "tf": "H4",
+              "touches": 41,
+              "zone": [
+                1907.54,
+                1957.9
+              ]
+            },
+            {
+              "age_bars": 3,
               "basis": [
                 "pivot",
                 "range"
@@ -1213,12 +1230,12 @@
               "tf": "H4",
               "touches": 12,
               "zone": [
-                1881.68,
-                1922.56
+                1881.0,
+                1923.24
               ]
             },
             {
-              "age_bars": 84,
+              "age_bars": 85,
               "basis": [
                 "pivot"
               ],
@@ -1232,8 +1249,27 @@
               "tf": "H4",
               "touches": 1,
               "zone": [
-                1732.24,
-                1763.36
+                1731.56,
+                1764.04
+              ]
+            },
+            {
+              "age_bars": 131,
+              "basis": [
+                "pivot"
+              ],
+              "center": 2961.91,
+              "cluster_count": 5,
+              "last_touch_utc": "2026-01-29T11:59:59Z",
+              "rejections": 19,
+              "score": 170,
+              "side": "S",
+              "strength": 5,
+              "tf": "H4",
+              "touches": 132,
+              "zone": [
+                2942.67,
+                2999.32
               ]
             },
             {
@@ -1241,18 +1277,18 @@
               "basis": [
                 "pivot"
               ],
-              "center": 2961.66,
-              "cluster_count": 4,
-              "last_touch_utc": "2026-01-29T11:59:59Z",
-              "rejections": 26,
-              "score": 171,
+              "center": 2936.3,
+              "cluster_count": 11,
+              "last_touch_utc": "2026-01-29T15:59:59Z",
+              "rejections": 25,
+              "score": 159,
               "side": "S",
               "strength": 5,
               "tf": "H4",
-              "touches": 119,
+              "touches": 109,
               "zone": [
-                2943.35,
-                2979.73
+                2900.89,
+                2962.8
               ]
             },
             {
@@ -1260,56 +1296,18 @@
               "basis": [
                 "pivot"
               ],
-              "center": 2936.3,
-              "cluster_count": 11,
-              "last_touch_utc": "2026-01-29T15:59:59Z",
-              "rejections": 27,
-              "score": 163,
-              "side": "S",
-              "strength": 5,
-              "tf": "H4",
-              "touches": 109,
-              "zone": [
-                2901.57,
-                2962.12
-              ]
-            },
-            {
-              "age_bars": 128,
-              "basis": [
-                "pivot"
-              ],
               "center": 2894.49,
               "cluster_count": 17,
               "last_touch_utc": "2026-01-29T19:59:59Z",
               "rejections": 41,
-              "score": 148,
+              "score": 149,
               "side": "S",
               "strength": 5,
               "tf": "H4",
-              "touches": 66,
+              "touches": 67,
               "zone": [
-                2841.76,
-                2927.56
-              ]
-            },
-            {
-              "age_bars": 133,
-              "basis": [
-                "pivot"
-              ],
-              "center": 3065.96,
-              "cluster_count": 12,
-              "last_touch_utc": "2026-01-28T23:59:59Z",
-              "rejections": 24,
-              "score": 113,
-              "side": "S",
-              "strength": 5,
-              "tf": "H4",
-              "touches": 65,
-              "zone": [
-                3029.75,
-                3094.56
+                2841.08,
+                2928.24
               ]
             }
           ]
@@ -1339,8 +1337,8 @@
           "premium_edge": 2230.7,
           "reaction": {
             "discount": {
-              "days_since_last_reaction": 14.16,
-              "days_since_last_test": 14.16,
+              "days_since_last_reaction": 14.17,
+              "days_since_last_test": 14.17,
               "failure_rate": 0.5,
               "failures": 1,
               "fwd_h4_bars": 18,
@@ -1348,16 +1346,16 @@
               "last_test_utc": "2026-02-06T03:59:59Z",
               "lookback_h4_bars": 720,
               "median_bars_to_reaction_h4": 1,
-              "median_mae_atr_h4": 1.514,
-              "median_mfe_atr_h4": 8.465,
+              "median_mae_atr_h4": 1.451,
+              "median_mfe_atr_h4": 8.111,
               "reaction_rate": 1.0,
               "reactions": 2,
               "tests": 2,
               "threshold_atr_h4": 1.0
             },
             "premium": {
-              "days_since_last_reaction": 15.66,
-              "days_since_last_test": 15.66,
+              "days_since_last_reaction": 15.67,
+              "days_since_last_test": 15.67,
               "failure_rate": 0.706,
               "failures": 12,
               "fwd_h4_bars": 18,
@@ -1365,8 +1363,8 @@
               "last_test_utc": "2026-02-04T15:59:59Z",
               "lookback_h4_bars": 720,
               "median_bars_to_reaction_h4": 1,
-              "median_mae_atr_h4": 1.942,
-              "median_mfe_atr_h4": 12.88,
+              "median_mae_atr_h4": 1.86,
+              "median_mfe_atr_h4": 12.342,
               "reaction_rate": 1.0,
               "reactions": 17,
               "tests": 17,
@@ -1536,25 +1534,25 @@
           },
           "reaction": {
             "resistance_entry": {
-              "days_since_last_reaction": 4.66,
-              "days_since_last_test": 4.66,
+              "days_since_last_reaction": 4.67,
+              "days_since_last_test": 4.67,
               "failure_rate": 0.595,
               "failures": 25,
               "fwd_h4_bars": 18,
               "last_reaction_utc": "2026-02-15T15:59:59Z",
               "last_test_utc": "2026-02-15T15:59:59Z",
               "lookback_h4_bars": 720,
-              "median_bars_to_reaction_h4": 1,
-              "median_mae_atr_h4": 1.5,
-              "median_mfe_atr_h4": 4.571,
+              "median_bars_to_reaction_h4": 2,
+              "median_mae_atr_h4": 1.438,
+              "median_mfe_atr_h4": 4.38,
               "reaction_rate": 0.976,
               "reactions": 41,
               "tests": 42,
               "threshold_atr_h4": 1.0
             },
             "support_entry": {
-              "days_since_last_reaction": 14.16,
-              "days_since_last_test": 14.16,
+              "days_since_last_reaction": 14.17,
+              "days_since_last_test": 14.17,
               "failure_rate": 0.0,
               "failures": 0,
               "fwd_h4_bars": 18,
@@ -1562,8 +1560,8 @@
               "last_test_utc": "2026-02-06T03:59:59Z",
               "lookback_h4_bars": 720,
               "median_bars_to_reaction_h4": 1,
-              "median_mae_atr_h4": 1.514,
-              "median_mfe_atr_h4": 8.465,
+              "median_mae_atr_h4": 1.451,
+              "median_mfe_atr_h4": 8.111,
               "reaction_rate": 1.0,
               "reactions": 2,
               "tests": 2,
@@ -1606,8 +1604,8 @@
             "side": "S",
             "strength": 5,
             "zone": [
-              1714.07,
-              1765.93
+              1712.93,
+              1767.07
             ]
           },
           {
@@ -1616,8 +1614,8 @@
             "side": "S",
             "strength": 5,
             "zone": [
-              1508.03,
-              1559.9
+              1506.9,
+              1561.03
             ]
           },
           {
@@ -1626,8 +1624,8 @@
             "side": "S",
             "strength": 5,
             "zone": [
-              1164.07,
-              1215.93
+              1162.93,
+              1217.07
             ]
           },
           {
@@ -1636,8 +1634,8 @@
             "side": "R",
             "strength": 5,
             "zone": [
-              2103.92,
-              2155.79
+              2102.78,
+              2156.92
             ]
           },
           {
@@ -1646,8 +1644,8 @@
             "side": "R",
             "strength": 5,
             "zone": [
-              2380.07,
-              2431.93
+              2378.93,
+              2433.07
             ]
           },
           {
@@ -1656,13 +1654,13 @@
             "side": "R",
             "strength": 5,
             "zone": [
-              2748.37,
-              2800.24
+              2747.23,
+              2801.37
             ]
           }
         ]
       }
     }
   },
-  "updated_utc": "2026-02-20T07:47:11.843727Z"
+  "updated_utc": "2026-02-20T08:03:28.311685Z"
 }
