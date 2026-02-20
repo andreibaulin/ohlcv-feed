@@ -12,8 +12,8 @@
           "H4": 1499,
           "W1": 444
         },
-        "last_close_utc_h4": "2026-02-19T19:59:59Z",
-        "price": 67050.0
+        "last_close_utc_h4": "2026-02-19T23:59:59Z",
+        "price": 67003.73
       },
       "ma": {
         "available": {
@@ -21,7 +21,7 @@
           "W1": true
         },
         "ema200": {
-          "D1": 93352.62,
+          "D1": 93090.44,
           "W1": 68067.71
         },
         "ema200_slope": {
@@ -53,8 +53,8 @@
       },
       "vol": {
         "atr14": {
-          "D1": 4264.72,
-          "H4": 1069.1,
+          "D1": 3599.87,
+          "H4": 981.75,
           "W1": 9403.71
         },
         "vol_flag_d1": "high"
@@ -62,17 +62,17 @@
       "zones": {
         "forecast_swing_4": {
           "R1_swing_d1": {
-            "center": 71627.205,
-            "cluster_count": 2,
-            "last_touch_utc": "2026-02-17T23:59:59Z",
-            "rejections": 6,
+            "center": 70983.0,
+            "cluster_count": 1,
+            "last_touch_utc": "2026-02-15T23:59:59Z",
+            "rejections": 7,
             "side": "R",
             "strength": 5,
             "tf": "D1",
-            "touches": 14,
+            "touches": 8,
             "zone": [
-              68855.14,
-              74399.27
+              70410.79,
+              71555.21
             ]
           },
           "R2_range_w1": {
@@ -93,14 +93,14 @@
             "center": 60000.0,
             "cluster_count": 1,
             "last_touch_utc": "2026-02-06T23:59:59Z",
-            "rejections": 2,
+            "rejections": 1,
             "side": "S",
-            "strength": 2,
+            "strength": 1,
             "tf": "D1",
-            "touches": 2,
+            "touches": 1,
             "zone": [
-              57526.29,
-              62473.71
+              57660.09,
+              62339.91
             ]
           },
           "S2_range_w1": {
@@ -119,28 +119,28 @@
           },
           "bands": {
             "R1_entry": [
-              68855.14,
-              70987.5
+              70410.79,
+              71555.21
             ],
             "R2_premium": [
               69961.57,
-              72093.93
+              71761.5
             ],
             "S1_entry": [
-              60341.35,
-              62473.71
+              60539.98,
+              62339.91
             ],
             "S2_discount": [
-              59355.6,
+              59688.03,
               61487.96
             ]
           }
         },
         "range_w1": {
           "bands": {
-            "band_width": 2132.36,
+            "band_width": 1799.93,
             "discount": [
-              59355.6,
+              59688.03,
               61487.96
             ],
             "params": {
@@ -153,7 +153,7 @@
             },
             "premium": [
               69961.57,
-              72093.93
+              71761.5
             ]
           },
           "discount_edge": 61487.96,
@@ -161,8 +161,8 @@
           "premium_edge": 69961.57,
           "reaction": {
             "discount": {
-              "days_since_last_reaction": 13.83,
-              "days_since_last_test": 13.83,
+              "days_since_last_reaction": 13.88,
+              "days_since_last_test": 13.88,
               "failure_rate": 0.0,
               "failures": 0,
               "fwd_h4_bars": 18,
@@ -170,28 +170,28 @@
               "last_test_utc": "2026-02-06T03:59:59Z",
               "lookback_h4_bars": 720,
               "median_bars_to_reaction_h4": 1,
-              "median_mae_atr_h4": 0.237,
-              "median_mfe_atr_h4": 7.579,
+              "median_mae_atr_h4": 0.258,
+              "median_mfe_atr_h4": 8.254,
               "reaction_rate": 1.0,
               "reactions": 1,
               "tests": 1,
               "threshold_atr_h4": 1.0
             },
             "premium": {
-              "days_since_last_reaction": 3.33,
-              "days_since_last_test": 3.33,
-              "failure_rate": 0.034,
-              "failures": 1,
+              "days_since_last_reaction": 3.38,
+              "days_since_last_test": 3.38,
+              "failure_rate": 0.286,
+              "failures": 8,
               "fwd_h4_bars": 18,
               "last_reaction_utc": "2026-02-16T15:59:59Z",
               "last_test_utc": "2026-02-16T15:59:59Z",
               "lookback_h4_bars": 720,
               "median_bars_to_reaction_h4": 2,
-              "median_mae_atr_h4": 1.012,
-              "median_mfe_atr_h4": 3.935,
-              "reaction_rate": 0.966,
-              "reactions": 28,
-              "tests": 29,
+              "median_mae_atr_h4": 1.123,
+              "median_mfe_atr_h4": 4.151,
+              "reaction_rate": 0.964,
+              "reactions": 27,
+              "tests": 28,
               "threshold_atr_h4": 1.0
             }
           },
@@ -226,37 +226,37 @@
         },
         "swing_d1": {
           "bands": {
-            "band_width": 2132.36,
+            "band_width": 1799.93,
             "resistance_entry": [
-              68855.14,
-              70987.5
+              70410.79,
+              71555.21
             ],
             "support_entry": [
-              60341.35,
-              62473.71
+              60539.98,
+              62339.91
             ]
           },
           "reaction": {
             "resistance_entry": {
-              "days_since_last_reaction": 3.33,
-              "days_since_last_test": 3.33,
-              "failure_rate": 0.327,
-              "failures": 16,
+              "days_since_last_reaction": 4.38,
+              "days_since_last_test": 4.38,
+              "failure_rate": 0.304,
+              "failures": 7,
               "fwd_h4_bars": 18,
-              "last_reaction_utc": "2026-02-16T15:59:59Z",
-              "last_test_utc": "2026-02-16T15:59:59Z",
+              "last_reaction_utc": "2026-02-15T15:59:59Z",
+              "last_test_utc": "2026-02-15T15:59:59Z",
               "lookback_h4_bars": 720,
-              "median_bars_to_reaction_h4": 3,
-              "median_mae_atr_h4": 1.229,
-              "median_mfe_atr_h4": 3.043,
-              "reaction_rate": 0.98,
-              "reactions": 48,
-              "tests": 49,
+              "median_bars_to_reaction_h4": 2,
+              "median_mae_atr_h4": 1.103,
+              "median_mfe_atr_h4": 4.659,
+              "reaction_rate": 0.957,
+              "reactions": 22,
+              "tests": 23,
               "threshold_atr_h4": 1.0
             },
             "support_entry": {
-              "days_since_last_reaction": 13.83,
-              "days_since_last_test": 13.83,
+              "days_since_last_reaction": 13.88,
+              "days_since_last_test": 13.88,
               "failure_rate": 0.0,
               "failures": 0,
               "fwd_h4_bars": 18,
@@ -264,40 +264,40 @@
               "last_test_utc": "2026-02-06T03:59:59Z",
               "lookback_h4_bars": 720,
               "median_bars_to_reaction_h4": 1,
-              "median_mae_atr_h4": 1.48,
-              "median_mfe_atr_h4": 8.168,
+              "median_mae_atr_h4": 0.258,
+              "median_mfe_atr_h4": 8.254,
               "reaction_rate": 1.0,
-              "reactions": 2,
-              "tests": 2,
+              "reactions": 1,
+              "tests": 1,
               "threshold_atr_h4": 1.0
             }
           },
           "resistance": {
-            "center": 71627.205,
-            "cluster_count": 2,
-            "last_touch_utc": "2026-02-17T23:59:59Z",
-            "rejections": 6,
+            "center": 70983.0,
+            "cluster_count": 1,
+            "last_touch_utc": "2026-02-15T23:59:59Z",
+            "rejections": 7,
             "side": "R",
             "strength": 5,
             "tf": "D1",
-            "touches": 14,
+            "touches": 8,
             "zone": [
-              68855.14,
-              74399.27
+              70410.79,
+              71555.21
             ]
           },
           "support": {
             "center": 60000.0,
             "cluster_count": 1,
             "last_touch_utc": "2026-02-06T23:59:59Z",
-            "rejections": 2,
+            "rejections": 1,
             "side": "S",
-            "strength": 2,
+            "strength": 1,
             "tf": "D1",
-            "touches": 2,
+            "touches": 1,
             "zone": [
-              57526.29,
-              62473.71
+              57660.09,
+              62339.91
             ]
           }
         }
@@ -310,8 +310,8 @@
           "H4": 1499,
           "W1": 444
         },
-        "last_close_utc_h4": "2026-02-19T19:59:59Z",
-        "price": 1941.34
+        "last_close_utc_h4": "2026-02-19T23:59:59Z",
+        "price": 1949.08
       },
       "ma": {
         "available": {
@@ -319,7 +319,7 @@
           "W1": true
         },
         "ema200": {
-          "D1": 3082.48,
+          "D1": 3071.2,
           "W1": 2596.74
         },
         "ema200_slope": {
@@ -351,8 +351,8 @@
       },
       "vol": {
         "atr14": {
-          "D1": 149.17,
-          "H4": 40.82,
+          "D1": 129.53,
+          "H4": 37.73,
           "W1": 442.73
         },
         "vol_flag_d1": "high"
@@ -362,15 +362,15 @@
           "R1_swing_d1": {
             "center": 2129.8500000000004,
             "cluster_count": 2,
-            "last_touch_utc": "2026-02-18T23:59:59Z",
-            "rejections": 9,
+            "last_touch_utc": "2026-02-15T23:59:59Z",
+            "rejections": 7,
             "side": "R",
             "strength": 5,
             "tf": "D1",
-            "touches": 37,
+            "touches": 33,
             "zone": [
-              2032.89,
-              2226.81
+              2045.66,
+              2214.04
             ]
           },
           "R2_range_w1": {
@@ -397,8 +397,8 @@
             "tf": "D1",
             "touches": 32,
             "zone": [
-              1676.06,
-              1819.54
+              1675.67,
+              1819.93
             ]
           },
           "S2_range_w1": {
@@ -417,28 +417,28 @@
           },
           "bands": {
             "R1_entry": [
-              2032.89,
-              2107.48
+              2045.66,
+              2110.42
             ],
             "R2_premium": [
               2230.7,
-              2305.29
+              2295.46
             ],
             "S1_entry": [
-              1744.95,
-              1819.54
+              1755.17,
+              1819.93
             ],
             "S2_discount": [
-              1759.57,
+              1769.4,
               1834.16
             ]
           }
         },
         "range_w1": {
           "bands": {
-            "band_width": 74.59,
+            "band_width": 64.76,
             "discount": [
-              1759.57,
+              1769.4,
               1834.16
             ],
             "params": {
@@ -451,7 +451,7 @@
             },
             "premium": [
               2230.7,
-              2305.29
+              2295.46
             ]
           },
           "discount_edge": 1834.16,
@@ -459,37 +459,37 @@
           "premium_edge": 2230.7,
           "reaction": {
             "discount": {
-              "days_since_last_reaction": 13.83,
-              "days_since_last_test": 13.83,
-              "failure_rate": 0.0,
-              "failures": 0,
+              "days_since_last_reaction": 13.88,
+              "days_since_last_test": 13.88,
+              "failure_rate": 0.5,
+              "failures": 1,
               "fwd_h4_bars": 18,
               "last_reaction_utc": "2026-02-06T03:59:59Z",
               "last_test_utc": "2026-02-06T03:59:59Z",
               "lookback_h4_bars": 720,
               "median_bars_to_reaction_h4": 1,
-              "median_mae_atr_h4": 1.283,
-              "median_mfe_atr_h4": 7.17,
+              "median_mae_atr_h4": 1.388,
+              "median_mfe_atr_h4": 7.757,
               "reaction_rate": 1.0,
               "reactions": 2,
               "tests": 2,
               "threshold_atr_h4": 1.0
             },
             "premium": {
-              "days_since_last_reaction": 15.33,
-              "days_since_last_test": 15.33,
-              "failure_rate": 0.722,
-              "failures": 13,
+              "days_since_last_reaction": 15.38,
+              "days_since_last_test": 15.38,
+              "failure_rate": 0.706,
+              "failures": 12,
               "fwd_h4_bars": 18,
               "last_reaction_utc": "2026-02-04T15:59:59Z",
               "last_test_utc": "2026-02-04T15:59:59Z",
               "lookback_h4_bars": 720,
               "median_bars_to_reaction_h4": 1,
-              "median_mae_atr_h4": 1.582,
-              "median_mfe_atr_h4": 11.058,
+              "median_mae_atr_h4": 1.779,
+              "median_mfe_atr_h4": 11.803,
               "reaction_rate": 1.0,
-              "reactions": 18,
-              "tests": 18,
+              "reactions": 17,
+              "tests": 17,
               "threshold_atr_h4": 1.0
             }
           },
@@ -524,37 +524,37 @@
         },
         "swing_d1": {
           "bands": {
-            "band_width": 74.59,
+            "band_width": 64.76,
             "resistance_entry": [
-              2032.89,
-              2107.48
+              2045.66,
+              2110.42
             ],
             "support_entry": [
-              1744.95,
-              1819.54
+              1755.17,
+              1819.93
             ]
           },
           "reaction": {
             "resistance_entry": {
-              "days_since_last_reaction": 4.33,
-              "days_since_last_test": 4.33,
-              "failure_rate": 0.571,
-              "failures": 24,
+              "days_since_last_reaction": 4.38,
+              "days_since_last_test": 4.38,
+              "failure_rate": 0.595,
+              "failures": 25,
               "fwd_h4_bars": 18,
               "last_reaction_utc": "2026-02-15T15:59:59Z",
               "last_test_utc": "2026-02-15T15:59:59Z",
               "lookback_h4_bars": 720,
               "median_bars_to_reaction_h4": 2,
-              "median_mae_atr_h4": 1.229,
-              "median_mfe_atr_h4": 3.71,
+              "median_mae_atr_h4": 1.375,
+              "median_mfe_atr_h4": 4.189,
               "reaction_rate": 0.976,
               "reactions": 41,
               "tests": 42,
               "threshold_atr_h4": 1.0
             },
             "support_entry": {
-              "days_since_last_reaction": 13.83,
-              "days_since_last_test": 13.83,
+              "days_since_last_reaction": 13.88,
+              "days_since_last_test": 13.88,
               "failure_rate": 0.0,
               "failures": 0,
               "fwd_h4_bars": 18,
@@ -562,8 +562,8 @@
               "last_test_utc": "2026-02-06T03:59:59Z",
               "lookback_h4_bars": 720,
               "median_bars_to_reaction_h4": 1,
-              "median_mae_atr_h4": 1.283,
-              "median_mfe_atr_h4": 7.17,
+              "median_mae_atr_h4": 1.388,
+              "median_mfe_atr_h4": 7.757,
               "reaction_rate": 1.0,
               "reactions": 2,
               "tests": 2,
@@ -573,15 +573,15 @@
           "resistance": {
             "center": 2129.8500000000004,
             "cluster_count": 2,
-            "last_touch_utc": "2026-02-18T23:59:59Z",
-            "rejections": 9,
+            "last_touch_utc": "2026-02-15T23:59:59Z",
+            "rejections": 7,
             "side": "R",
             "strength": 5,
             "tf": "D1",
-            "touches": 37,
+            "touches": 33,
             "zone": [
-              2032.89,
-              2226.81
+              2045.66,
+              2214.04
             ]
           },
           "support": {
@@ -594,13 +594,13 @@
             "tf": "D1",
             "touches": 32,
             "zone": [
-              1676.06,
-              1819.54
+              1675.67,
+              1819.93
             ]
           }
         }
       }
     }
   },
-  "updated_utc": "2026-02-19T23:52:56.326063Z"
+  "updated_utc": "2026-02-20T01:10:59.224815Z"
 }
