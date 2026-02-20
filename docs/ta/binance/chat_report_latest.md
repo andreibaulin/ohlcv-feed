@@ -1,9 +1,9 @@
 IRON-PROOF (НЕ РЕДАКТИРОВАТЬ)
-- generated_utc: 2026-02-20T01:10:59Z
-- generated_local: 2026-02-20 03:10:59 EET
-- state.updated_utc: 2026-02-20T01:10:59.224815Z
-- state.sha256: ca535b275012d2c63b7b134ae752cc7a6e1f986cb0ce110fa91067edaf7341c5
-- bundle.sha256: f483c079f2d7304886c5c13feb3098ce57f80ae01824e91705746bf15b66b75e
+- generated_utc: 2026-02-20T03:44:40Z
+- generated_local: 2026-02-20 05:44:40 EET
+- state.updated_utc: 2026-02-20T03:44:40.755709Z
+- state.sha256: ff00801044250f0bec2d9cc3ea1b2223123fb97c24774e9a39dcaa218deb6282
+- bundle.sha256: 9247d2a8f9900db4e16dda4ca8d0cd8edf9a51c9045d15c615bc3a9f3479e424
 
 Ссылки (рукопожатие):
 https://andreibaulin.github.io/ohlcv-feed/ta/binance/chat_bundle_latest.json
