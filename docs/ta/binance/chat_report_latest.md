@@ -1,9 +1,9 @@
 IRON-PROOF (НЕ РЕДАКТИРОВАТЬ)
-- generated_utc: 2026-02-20T15:31:30Z
-- generated_local: 2026-02-20 17:31:30 EET
-- state.updated_utc: 2026-02-20T15:31:30.703907Z
-- state.sha256: 6bd73da29ac783afba887ca2b07db267fc581abc33cb0d09b15e569a1346c814
-- bundle.sha256: 80dba9ec7a80d7d804aa1a129a7030be70c5f16af73ad92147bd77a25ac876d2
+- generated_utc: 2026-02-20T16:03:25Z
+- generated_local: 2026-02-20 18:03:25 EET
+- state.updated_utc: 2026-02-20T16:03:25.517874Z
+- state.sha256: 7795615dda6806d871467de7b83bbc47562fde7487118a03fb2ab43c64784e95
+- bundle.sha256: 263d5bc89fd702995385e5d6181e2fd966970144911035cf83032e68b59c666f
 
 Ссылки (рукопожатие):
 https://andreibaulin.github.io/ohlcv-feed/ta/binance/chat_bundle_latest.json
@@ -28,23 +28,22 @@ https://fapi.binance.com/futures/data/openInterestHist?symbol=ETHUSDT&period=1h&
 https://fapi.binance.com/fapi/v1/fundingRate?symbol=ETHUSDT&limit=30
 
 ## BTCUSDT
-- price(state): 67 318.41
+- price(state): 67 582.95
 - range(W1): middle | discount: [59 688.03 – 61 487.96] | mid: 65 724.76 | premium: [69 961.57 – 71 761.50]
 - regime: chop | W1: range | D1: range
-- ATR(D1): 3 599.87 | ATR(H4): 965.01
+- ATR(D1): 3 599.87 | ATR(H4): 1 042.44
 - EMA200(D1): 93 090.44 | EMA200(W1): 68 067.71
 
 ### 4 поддержки / 4 сопротивления (ZONE = рабочая зона)
 Поддержки:
-- S1 (oper, mixed): ZONE [66 186.81 – 67 104.70] 🔴 (силa=5/5, local: tests=34, rr=0.4706, fr=0.5294)
-- S2 (oper, bounce): ZONE [64 683.75 – 66 066.08] 🟡 (силa=5/5, local: tests=15, rr=0.6667, fr=0.3333)
-- S3 (struct, unknown): ZONE [57 660.09 – 62 339.91] ⚪ (силa=1/5, local: tests=1, rr=1.0, fr=0.0)
-- S4 (macro, mixed): ZONE [50 943.97 – 56 027.89] 🔴 (силa=5/5, local: tests=30, rr=0.4667, fr=0.5333)
+- S1 (oper, mixed): ZONE [62 778.09 – 67 457.91] 🔴 (силa=5/5, local: tests=10, rr=0.5, fr=0.5)
+- S2 (oper, unknown): ZONE [57 660.09 – 62 339.91] ⚪ (силa=1/5, local: tests=1, rr=1.0, fr=0.0)
+- S3 (struct, mixed): ZONE [50 943.97 – 56 027.89] 🔴 (силa=5/5, local: tests=30, rr=0.4667, fr=0.5333)
 Сопротивления:
-- R1 (oper, magnet): ZONE [67 976.27 – 69 268.59] 🔴 (силa=5/5, local: tests=54, rr=0.3148, fr=0.6852)
-- R2 (oper, mixed): ZONE [69 559.40 – 70 994.26] 🔴 (силa=5/5, local: tests=35, rr=0.3714, fr=0.6286)
-- R3 (struct, bounce): ZONE [71 317.08 – 72 705.66] 🟡 (силa=5/5, local: tests=13, rr=0.7692, fr=0.2308)
-- R4 (macro, bounce): ZONE [78 925.75 – 79 794.25] 🟢 (силa=5/5, local: tests=11, rr=1.0, fr=0.0)
+- R1 (oper, magnet): ZONE [67 941.42 – 69 303.44] 🔴 (силa=5/5, local: tests=56, rr=0.3036, fr=0.6964)
+- R2 (oper, mixed): ZONE [69 524.55 – 71 029.11] 🔴 (силa=5/5, local: tests=35, rr=0.3714, fr=0.6286)
+- R3 (struct, bounce): ZONE [71 282.23 – 72 740.51] 🟡 (силa=5/5, local: tests=13, rr=0.6923, fr=0.3077)
+- R4 (macro, bounce): ZONE [78 890.90 – 79 829.10] 🟢 (силa=5/5, local: tests=11, rr=1.0, fr=0.0)
 
 ### Деривативы (live ссылки Binance FAPI)
 - premiumIndex: https://fapi.binance.com/fapi/v1/premiumIndex?symbol=BTCUSDT
@@ -53,20 +52,20 @@ https://fapi.binance.com/fapi/v1/fundingRate?symbol=ETHUSDT&limit=30
 - fundingRate(×30): https://fapi.binance.com/fapi/v1/fundingRate?symbol=BTCUSDT&limit=30
 
 ## ETHUSDT
-- price(state): 1 943.98
+- price(state): 1 963.95
 - range(W1): middle | discount: [1 769.40 – 1 834.16] | mid: 2 032.43 | premium: [2 230.70 – 2 295.46]
 - regime: chop | W1: down | D1: range
-- ATR(D1): 129.53 | ATR(H4): 36.19
+- ATR(D1): 129.53 | ATR(H4): 38.14
 - EMA200(D1): 3 071.20 | EMA200(W1): 2 596.74
 
 ### 4 поддержки / 4 сопротивления (ZONE = рабочая зона)
 Поддержки:
-- S1 (oper, bounce): ZONE [1 880.96 – 1 923.28] 🟡 (силa=5/5, local: tests=12, rr=0.75, fr=0.25)
+- S1 (oper, mixed): ZONE [1 906.62 – 1 958.82] 🔴 (силa=5/5, local: tests=43, rr=0.3953, fr=0.6047)
 - S2 (oper, magnet): ZONE [1 645.84 – 1 834.16] 🔴 (силa=5/5, local: tests=69, rr=0.3043, fr=0.6957)
 - S3 (struct, mixed): ZONE [1 439.80 – 1 628.13] 🔴 (силa=5/5, local: tests=41, rr=0.439, fr=0.561)
 - S4 (macro, magnet): ZONE [1 044.63 – 1 335.37] 🔴 (силa=5/5, local: tests=23, rr=0.2174, fr=0.7826)
 Сопротивления:
-- R1 (oper, mixed): ZONE [1 971.27 – 2 039.79] 🔴 (силa=5/5, local: tests=53, rr=0.3585, fr=0.6415)
+- R1 (oper, magnet): ZONE [1 970.39 – 2 040.67] 🔴 (силa=5/5, local: tests=55, rr=0.3455, fr=0.6545)
 - R2 (oper, magnet): ZONE [2 045.66 – 2 214.04] 🔴 (силa=5/5, local: tests=33, rr=0.2121, fr=0.7879)
 - R3 (struct, magnet): ZONE [2 230.70 – 2 581.30] 🔴 (силa=5/5, local: tests=64, rr=0.1406, fr=0.8594)
 - R4 (macro, mixed): ZONE [2 599.00 – 2 949.60] 🔴 (силa=5/5, local: tests=74, rr=0.3784, fr=0.6216)
