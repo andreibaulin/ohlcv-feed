@@ -1134,7 +1134,13 @@ def main() -> None:
     # Prefer root data; if missing, fallback to docs
     base_dir_root = Path("ohlcv") / "binance"
     base_dir_docs = Path("docs") / "ohlcv" / "binance"
-    base_dir = base_dir_root if base_dir_root.exists() else base_dir_docs
+
+    def _is_valid_ohlcv_dir(p: Path) -> bool:
+        # gen_pack_btc_eth.py writes symbols.json + part files.
+        return (p / "symbols.json").exists() and any(p.glob("*_H4_*part*.json"))
+
+    # Prefer root only if it actually contains pack outputs; else fallback to docs.
+    base_dir = base_dir_root if _is_valid_ohlcv_dir(base_dir_root) else base_dir_docs
 
     out_full: Dict[str, Any] = {
         "updated_utc": updated_utc,
