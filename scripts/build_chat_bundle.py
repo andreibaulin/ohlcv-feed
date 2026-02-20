@@ -43,9 +43,7 @@ CONTRACT_PATH = (
 HANDSHAKE_LINKS = [
     # IRON
     "https://andreibaulin.github.io/ohlcv-feed/ta/binance/chat_bundle_latest.json",
-    "https://andreibaulin.github.io/ohlcv-feed/ta/binance/chat_bundle_latest_pretty.json",
     "https://andreibaulin.github.io/ohlcv-feed/ta/binance/chat_report_latest.md",
-    "https://andreibaulin.github.io/ohlcv-feed/ta/binance/build_status_latest.json",
     # TA (swing + full)
     "https://andreibaulin.github.io/ohlcv-feed/ta/binance/state_btc_eth_latest.json",
     "https://andreibaulin.github.io/ohlcv-feed/ta/binance/state_btc_eth_full_latest.json",
@@ -603,41 +601,12 @@ def build_levels_v2(sym: str, sym_state: Dict[str, Any], now_utc: datetime) -> D
     except Exception as e:
         issues["errors"].append(f"{sym}: levels_check_exception: {e}")
 
-    # Range W1 context (discount / mid / premium)
-    range_w1 = None
-    try:
-        rw1 = (zones.get("range_w1") or {})
-        de = rw1.get("discount_edge")
-        pe = rw1.get("premium_edge")
-        eq = rw1.get("equilibrium")
-        if isinstance(de, (int, float)) and isinstance(pe, (int, float)) and de > 0 and pe > 0 and pe > de:
-            pct = (price - float(de)) / (float(pe) - float(de))
-            if pct < 0:
-                label = "discount"
-            elif pct > 1:
-                label = "premium"
-            else:
-                label = "mid"
-            range_w1 = {
-                "discount_edge": round(float(de), 2),
-                "equilibrium": round(float(eq), 2) if isinstance(eq, (int, float)) else round((float(de)+float(pe))/2.0, 2),
-                "premium_edge": round(float(pe), 2),
-                "pos_pct": round(float(pct), 4),
-                "label": label,
-                "bands": rw1.get("bands") or {},
-            }
-    except Exception:
-        range_w1 = None
-
     out = {
         "price": price,
         "atr_h4": atr_h4,
         "supports": supports,
         "resistances": resistances,
-        "range_w1": range_w1,
-        "issues": issues,
     }
-    return out
 
 
 def build_views_v2(state_full: Dict[str, Any]) -> Dict[str, Any]:
@@ -686,14 +655,6 @@ def render_report(bundle: Dict[str, Any]) -> str:
 
         lines.append(f"- price(state): {fmt_num(fx.get(f'{prefix}.price'), 2)}")
         lines.append(f"- regime: {fx.get(f'{prefix}.regime')} | W1: {fx.get(f'{prefix}.trend.w1')} | D1: {fx.get(f'{prefix}.trend.d1')}")
-        # Range W1 (discount/mid/premium) from TA state (if available)
-        rw1 = v.get("range_w1") or {}
-        if isinstance(rw1, dict) and rw1.get("discount_edge") and rw1.get("premium_edge"):
-            pct = rw1.get("pos_pct")
-            pct_s = f"{round(float(pct)*100.0,1)}%" if isinstance(pct,(int,float)) else "n/a"
-            lines.append(
-                f"- Range(W1): discount≤{fmt_num(rw1.get('discount_edge'))} | EQ {fmt_num(rw1.get('equilibrium'))} | premium≥{fmt_num(rw1.get('premium_edge'))} | pos={rw1.get('label')} ({pct_s})"
-            )
         lines.append(f"- ATR(D1): {fmt_num(fx.get(f'{prefix}.atr.d1'), 2)} | ATR(H4): {fmt_num(fx.get(f'{prefix}.atr.h4'), 2)}")
         lines.append(f"- EMA200(D1): {fmt_num(fx.get(f'{prefix}.ema200.d1'), 2)} | EMA200(W1): {fmt_num(fx.get(f'{prefix}.ema200.w1'), 2)}")
         lines.append("")
@@ -714,18 +675,12 @@ def render_report(bundle: Dict[str, Any]) -> str:
                 q_used = it.get("quality_macro_best") or it.get("quality_local") or {}
                 q_src = "macro" if it.get("quality_macro_best") else "local"
 
-                core_s = fmt_range(core)
-                buf_s = fmt_range(buf)
-                same = False
-                try:
-                    same = (core and buf and float(core[0]) == float(buf[0]) and float(core[1]) == float(buf[1]))
-                except Exception:
-                    same = False
-                cb = f"CORE {core_s}" + (f" | BUF {buf_s}" if not same else " | BUF=CORE")
                 lines.append(
-                    f"- {it['name']} ({role}, {beh}): {cb} "
+                    f"- {it['name']} ({role}, {beh}): {fmt_range(core)} "
                     f"{st.get('emoji','⚪')} (силa={st.get('level')}/5, {q_src}: tests={q_used.get('tests')}, rr={q_used.get('reaction_rate')}, fr={q_used.get('failure_rate')})"
                 )
+                if fmt_range(buf) != fmt_range(core):
+                    lines.append(f"  · buf: {fmt_range(buf)}")
             lines.append("Сопротивления:")
             for it in v.get("resistances", []):
                 core = it.get("core")
@@ -737,18 +692,12 @@ def render_report(bundle: Dict[str, Any]) -> str:
                 q_used = it.get("quality_macro_best") or it.get("quality_local") or {}
                 q_src = "macro" if it.get("quality_macro_best") else "local"
 
-                core_s = fmt_range(core)
-                buf_s = fmt_range(buf)
-                same = False
-                try:
-                    same = (core and buf and float(core[0]) == float(buf[0]) and float(core[1]) == float(buf[1]))
-                except Exception:
-                    same = False
-                cb = f"CORE {core_s}" + (f" | BUF {buf_s}" if not same else " | BUF=CORE")
                 lines.append(
-                    f"- {it['name']} ({role}, {beh}): {cb} "
+                    f"- {it['name']} ({role}, {beh}): {fmt_range(core)} "
                     f"{st.get('emoji','⚪')} (силa={st.get('level')}/5, {q_src}: tests={q_used.get('tests')}, rr={q_used.get('reaction_rate')}, fr={q_used.get('failure_rate')})"
                 )
+                if fmt_range(buf) != fmt_range(core):
+                    lines.append(f"  · buf: {fmt_range(buf)}")
         lines.append("")
         # derivatives (live links; no GitHub dependency)
         lines.append("### Деривативы (live ссылки Binance FAPI)")
@@ -788,13 +737,11 @@ def main() -> None:
 
     # Standard artifact paths (within docs/)
     rel_bundle_latest = Path("ta/binance/chat_bundle_latest.json")
-    rel_bundle_latest_pretty = Path("ta/binance/chat_bundle_latest_pretty.json")
     rel_report_latest = Path("ta/binance/chat_report_latest.md")
     rel_bundle_latest_sha = Path("ta/binance/chat_bundle_latest.sha256")
     rel_report_latest_sha = Path("ta/binance/chat_report_latest.sha256")
 
     rel_bundle_bad = Path("ta/binance/chat_bundle_bad_latest.json")
-    rel_bundle_bad_pretty = Path("ta/binance/chat_bundle_bad_latest_pretty.json")
     rel_report_bad = Path("ta/binance/chat_report_bad_latest.md")
     rel_bundle_bad_sha = Path("ta/binance/chat_bundle_bad_latest.sha256")
     rel_report_bad_sha = Path("ta/binance/chat_report_bad_latest.sha256")
@@ -936,7 +883,8 @@ def main() -> None:
                     bi = _norm_range(items[i].get("buffer"))
                     bj = _norm_range(items[j].get("buffer"))
                     if bi and bj and _ov(bi, bj, eps):
-                        errs.append(f"verify: {sym_key}: overlapping BUFFERS {items[i].get('name')} {bi} vs {items[j].get('name')} {bj}")
+                        # BUFFER overlap is informational (buffers are padding). CORE overlap is still an error.
+                        warns.append(f"verify: {sym_key}: overlapping BUFFERS {items[i].get('name')} {bi} vs {items[j].get('name')} {bj}")
 
         def _check_sym(sym_key: str, prefix: str) -> None:
             v = (bundle.get("views") or {}).get(sym_key) or {}
@@ -1076,7 +1024,6 @@ def main() -> None:
             if has_last_good:
                 status["published"] = {
                     "bundle_rel": str(rel_bundle_latest),
-                "bundle_pretty_rel": str(rel_bundle_latest_pretty),
                     "report_rel": str(rel_report_latest),
                     "bundle_sha256": sha256_file(root / rel_bundle_latest),
                     "report_sha256": sha256_bytes((root / rel_report_latest).read_text(encoding="utf-8").encode("utf-8")),
@@ -1092,7 +1039,6 @@ def main() -> None:
             status["kept_last_good"] = bool(has_last_good)
             status["candidate"] = {
                 "bundle_rel": str(rel_bundle_bad),
-                "bundle_pretty_rel": str(rel_bundle_bad_pretty),
                 "report_rel": str(rel_report_bad),
                 "bundle_sha256": candidate_bundle_sha,
                 "report_sha256": candidate_report_sha,
@@ -1108,7 +1054,6 @@ def main() -> None:
                 status["published"] = None
 
             write_json(root / rel_bundle_bad, candidate_bundle)
-            write_json(root / rel_bundle_bad_pretty, candidate_bundle)
             write_text(root / rel_report_bad, candidate_report)
             write_text(root / rel_bundle_bad_sha, f"{candidate_bundle_sha}  {rel_bundle_bad.name}\n")
             write_text(root / rel_report_bad_sha, f"{candidate_report_sha}  {rel_report_bad.name}\n")
@@ -1125,7 +1070,6 @@ def main() -> None:
             status["published"] = dict(status["candidate"])
 
             write_json(root / rel_bundle_latest, candidate_bundle)
-            write_json(root / rel_bundle_latest_pretty, candidate_bundle)
             write_text(root / rel_report_latest, candidate_report)
             write_text(root / rel_bundle_latest_sha, f"{candidate_bundle_sha}  {rel_bundle_latest.name}\n")
             write_text(root / rel_report_latest_sha, f"{candidate_report_sha}  {rel_report_latest.name}\n")

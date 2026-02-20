@@ -28,6 +28,33 @@ DOCS_ROOT = Path("docs")
 STATUS_PATH = DOCS_ROOT / "ta/binance/build_status_latest.json"
 
 
+
+def deep_equal(a: Any, b: Any, *, rel_tol: float = 1e-6, abs_tol: float = 1e-9) -> bool:
+    """Recursive equality for JSON-like structures with float tolerance."""
+    # numbers
+    if isinstance(a, (int, float)) and isinstance(b, (int, float)):
+        return safe_float_eq(float(a), float(b), rel_tol=rel_tol, abs_tol=abs_tol)
+    # None/bool/str
+    if isinstance(a, (str, bool, type(None))) or isinstance(b, (str, bool, type(None))):
+        return a == b
+    # dicts
+    if isinstance(a, dict) and isinstance(b, dict):
+        if a.keys() != b.keys():
+            return False
+        for k in a.keys():
+            if not deep_equal(a[k], b[k], rel_tol=rel_tol, abs_tol=abs_tol):
+                return False
+        return True
+    # lists
+    if isinstance(a, list) and isinstance(b, list):
+        if len(a) != len(b):
+            return False
+        for i in range(len(a)):
+            if not deep_equal(a[i], b[i], rel_tol=rel_tol, abs_tol=abs_tol):
+                return False
+        return True
+    return a == b
+
 def _choose_target(status: Dict[str, Any]) -> Optional[Dict[str, str]]:
     cand = status.get("candidate")
     if isinstance(cand, dict) and cand.get("bundle_rel") and cand.get("report_rel"):
@@ -160,17 +187,26 @@ def main() -> None:
         if fx2 != fx:
             verify_errors.append("verify: facts_index mismatch: facts_index must exactly match the facts[] list")
 
-        for f in bundle.get("facts", []) or []:
-            try:
-                fid = f["id"]
-                src = f["source"]
-                ptr = f["pointer"]
-                expected = f.get("value")
-                doc = state_doc if src == "state" else deriv_doc
-                actual = json_pointer_get(doc, ptr)
-                if isinstance(expected, (int, float)) and isinstance(actual, (int, float)):
-                    if not safe_float_eq(float(expected), float(actual)):
-                        verify_errors.append(f"verify: fact mismatch {fid}: expected={expected} actual={actual} pointer={ptr} src={src}")
+        
+kept = bool(status.get("kept_last_good"))
+
+for f in bundle.get("facts", []) or []:
+    try:
+        fid = f["id"]
+        src = f["source"]
+        ptr = f["pointer"]
+        expected = f.get("value")
+        doc = state_doc if src == "state" else deriv_doc
+        actual = json_pointer_get(doc, ptr)
+
+        if not deep_equal(expected, actual):
+            msg = f"verify: fact mismatch {fid}: expected={expected} actual={actual} pointer={ptr} src={src}"
+            if kept:
+                verify_warnings.append(msg + " (kept_last_good=true: source may be newer than published bundle)")
+            else:
+                verify_errors.append(msg)
+    except Exception as e:
+        verify_errors.append(f"verify: fact check error: {e}")
                 else:
                     if expected != actual:
                         verify_errors.append(f"verify: fact mismatch {fid}: expected={expected} actual={actual} pointer={ptr} src={src}")
