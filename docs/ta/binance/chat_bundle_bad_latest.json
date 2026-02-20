@@ -1,26 +1,26 @@
 {
-  "bundle_sha256": "69e2d5f8e57a1e0d2671190836639d065b7c8a92e1af4e8cecb2b164bc8d68a6",
+  "bundle_sha256": "12fbd5fc54173d758ec6a6cc9723922b1b81396f5953690279b6abeea9182f36",
   "facts": [
     {
       "id": "state.updated_utc",
       "pointer": "/updated_utc",
       "source": "state",
       "type": "string",
-      "value": "2026-02-19T17:59:25.071132Z"
+      "value": "2026-02-20T07:33:01.412544Z"
     },
     {
       "id": "btc.price",
       "pointer": "/symbols/BTCUSDT/data/price",
       "source": "state",
       "type": "number",
-      "value": 66398.0
+      "value": 67366.25
     },
     {
       "id": "btc.last_close_utc_h4",
       "pointer": "/symbols/BTCUSDT/data/last_close_utc_h4",
       "source": "state",
       "type": "string",
-      "value": "2026-02-19T15:59:59Z"
+      "value": "2026-02-20T03:59:59Z"
     },
     {
       "id": "btc.regime",
@@ -48,21 +48,21 @@
       "pointer": "/symbols/BTCUSDT/vol/atr14/D1",
       "source": "state",
       "type": "number",
-      "value": 4264.72
+      "value": 3599.87
     },
     {
       "id": "btc.atr.h4",
       "pointer": "/symbols/BTCUSDT/vol/atr14/H4",
       "source": "state",
       "type": "number",
-      "value": 1032.69
+      "value": 923.53
     },
     {
       "id": "btc.ema200.d1",
       "pointer": "/symbols/BTCUSDT/ma/ema200/D1",
       "source": "state",
       "type": "number",
-      "value": 93352.62
+      "value": 93090.44
     },
     {
       "id": "btc.ema200.w1",
@@ -98,7 +98,7 @@
       "source": "state",
       "type": "range",
       "value": [
-        59355.6,
+        59688.03,
         61487.96
       ]
     },
@@ -109,7 +109,7 @@
       "type": "range",
       "value": [
         69961.57,
-        72093.93
+        71761.5
       ]
     },
     {
@@ -138,8 +138,8 @@
       "source": "state",
       "type": "range",
       "value": [
-        60341.35,
-        62473.71
+        60539.98,
+        62339.91
       ]
     },
     {
@@ -148,8 +148,8 @@
       "source": "state",
       "type": "range",
       "value": [
-        68855.14,
-        70987.5
+        70410.79,
+        71555.21
       ]
     },
     {
@@ -158,8 +158,8 @@
       "source": "state",
       "type": "object",
       "value": {
-        "days_since_last_reaction": 13.58,
-        "days_since_last_test": 13.58,
+        "days_since_last_reaction": 14.15,
+        "days_since_last_test": 14.15,
         "failure_rate": 0.0,
         "failures": 0,
         "fwd_h4_bars": 18,
@@ -167,8 +167,8 @@
         "last_test_utc": "2026-02-06T03:59:59Z",
         "lookback_h4_bars": 720,
         "median_bars_to_reaction_h4": 1,
-        "median_mae_atr_h4": 0.246,
-        "median_mfe_atr_h4": 7.847,
+        "median_mae_atr_h4": 0.275,
+        "median_mfe_atr_h4": 8.774,
         "reaction_rate": 1.0,
         "reactions": 1,
         "tests": 1,
@@ -181,17 +181,17 @@
       "source": "state",
       "type": "object",
       "value": {
-        "days_since_last_reaction": 4.08,
-        "days_since_last_test": 4.08,
-        "failure_rate": 0.036,
-        "failures": 1,
+        "days_since_last_reaction": 3.65,
+        "days_since_last_test": 3.65,
+        "failure_rate": 0.286,
+        "failures": 8,
         "fwd_h4_bars": 18,
-        "last_reaction_utc": "2026-02-15T15:59:59Z",
-        "last_test_utc": "2026-02-15T15:59:59Z",
+        "last_reaction_utc": "2026-02-16T15:59:59Z",
+        "last_test_utc": "2026-02-16T15:59:59Z",
         "lookback_h4_bars": 720,
         "median_bars_to_reaction_h4": 2,
-        "median_mae_atr_h4": 1.022,
-        "median_mfe_atr_h4": 4.164,
+        "median_mae_atr_h4": 1.194,
+        "median_mfe_atr_h4": 4.413,
         "reaction_rate": 0.964,
         "reactions": 27,
         "tests": 28,
@@ -204,8 +204,8 @@
       "source": "state",
       "type": "object",
       "value": {
-        "days_since_last_reaction": 13.58,
-        "days_since_last_test": 13.58,
+        "days_since_last_reaction": 14.15,
+        "days_since_last_test": 14.15,
         "failure_rate": 0.0,
         "failures": 0,
         "fwd_h4_bars": 18,
@@ -213,11 +213,11 @@
         "last_test_utc": "2026-02-06T03:59:59Z",
         "lookback_h4_bars": 720,
         "median_bars_to_reaction_h4": 1,
-        "median_mae_atr_h4": 1.532,
-        "median_mfe_atr_h4": 8.456,
+        "median_mae_atr_h4": 0.275,
+        "median_mfe_atr_h4": 8.774,
         "reaction_rate": 1.0,
-        "reactions": 2,
-        "tests": 2,
+        "reactions": 1,
+        "tests": 1,
         "threshold_atr_h4": 1.0
       }
     },
@@ -227,20 +227,20 @@
       "source": "state",
       "type": "object",
       "value": {
-        "days_since_last_reaction": 3.25,
-        "days_since_last_test": 3.25,
-        "failure_rate": 0.333,
-        "failures": 16,
+        "days_since_last_reaction": 4.65,
+        "days_since_last_test": 4.65,
+        "failure_rate": 0.304,
+        "failures": 7,
         "fwd_h4_bars": 18,
-        "last_reaction_utc": "2026-02-16T11:59:59Z",
-        "last_test_utc": "2026-02-16T11:59:59Z",
+        "last_reaction_utc": "2026-02-15T15:59:59Z",
+        "last_test_utc": "2026-02-15T15:59:59Z",
         "lookback_h4_bars": 720,
-        "median_bars_to_reaction_h4": 3,
-        "median_mae_atr_h4": 1.263,
-        "median_mfe_atr_h4": 3.163,
-        "reaction_rate": 0.979,
-        "reactions": 47,
-        "tests": 48,
+        "median_bars_to_reaction_h4": 1,
+        "median_mae_atr_h4": 1.172,
+        "median_mfe_atr_h4": 4.953,
+        "reaction_rate": 0.957,
+        "reactions": 22,
+        "tests": 23,
         "threshold_atr_h4": 1.0
       }
     },
@@ -249,14 +249,14 @@
       "pointer": "/symbols/ETHUSDT/data/price",
       "source": "state",
       "type": "number",
-      "value": 1926.3
+      "value": 1954.85
     },
     {
       "id": "eth.last_close_utc_h4",
       "pointer": "/symbols/ETHUSDT/data/last_close_utc_h4",
       "source": "state",
       "type": "string",
-      "value": "2026-02-19T15:59:59Z"
+      "value": "2026-02-20T03:59:59Z"
     },
     {
       "id": "eth.regime",
@@ -284,21 +284,21 @@
       "pointer": "/symbols/ETHUSDT/vol/atr14/D1",
       "source": "state",
       "type": "number",
-      "value": 149.17
+      "value": 129.53
     },
     {
       "id": "eth.atr.h4",
       "pointer": "/symbols/ETHUSDT/vol/atr14/H4",
       "source": "state",
       "type": "number",
-      "value": 40.01
+      "value": 34.58
     },
     {
       "id": "eth.ema200.d1",
       "pointer": "/symbols/ETHUSDT/ma/ema200/D1",
       "source": "state",
       "type": "number",
-      "value": 3082.48
+      "value": 3071.2
     },
     {
       "id": "eth.ema200.w1",
@@ -334,7 +334,7 @@
       "source": "state",
       "type": "range",
       "value": [
-        1759.57,
+        1769.4,
         1834.16
       ]
     },
@@ -345,7 +345,7 @@
       "type": "range",
       "value": [
         2230.7,
-        2305.29
+        2295.46
       ]
     },
     {
@@ -374,8 +374,8 @@
       "source": "state",
       "type": "range",
       "value": [
-        1744.95,
-        1819.54
+        1755.17,
+        1819.93
       ]
     },
     {
@@ -384,8 +384,8 @@
       "source": "state",
       "type": "range",
       "value": [
-        2032.89,
-        2107.48
+        2045.66,
+        2110.42
       ]
     },
     {
@@ -394,17 +394,17 @@
       "source": "state",
       "type": "object",
       "value": {
-        "days_since_last_reaction": 13.58,
-        "days_since_last_test": 13.58,
-        "failure_rate": 0.0,
-        "failures": 0,
+        "days_since_last_reaction": 14.15,
+        "days_since_last_test": 14.15,
+        "failure_rate": 0.5,
+        "failures": 1,
         "fwd_h4_bars": 18,
         "last_reaction_utc": "2026-02-06T03:59:59Z",
         "last_test_utc": "2026-02-06T03:59:59Z",
         "lookback_h4_bars": 720,
         "median_bars_to_reaction_h4": 1,
-        "median_mae_atr_h4": 1.309,
-        "median_mfe_atr_h4": 7.315,
+        "median_mae_atr_h4": 1.514,
+        "median_mfe_atr_h4": 8.465,
         "reaction_rate": 1.0,
         "reactions": 2,
         "tests": 2,
@@ -417,20 +417,20 @@
       "source": "state",
       "type": "object",
       "value": {
-        "days_since_last_reaction": 15.08,
-        "days_since_last_test": 15.08,
-        "failure_rate": 0.722,
-        "failures": 13,
+        "days_since_last_reaction": 15.65,
+        "days_since_last_test": 15.65,
+        "failure_rate": 0.706,
+        "failures": 12,
         "fwd_h4_bars": 18,
         "last_reaction_utc": "2026-02-04T15:59:59Z",
         "last_test_utc": "2026-02-04T15:59:59Z",
         "lookback_h4_bars": 720,
         "median_bars_to_reaction_h4": 1,
-        "median_mae_atr_h4": 1.614,
-        "median_mfe_atr_h4": 11.282,
+        "median_mae_atr_h4": 1.942,
+        "median_mfe_atr_h4": 12.88,
         "reaction_rate": 1.0,
-        "reactions": 18,
-        "tests": 18,
+        "reactions": 17,
+        "tests": 17,
         "threshold_atr_h4": 1.0
       }
     },
@@ -440,8 +440,8 @@
       "source": "state",
       "type": "object",
       "value": {
-        "days_since_last_reaction": 13.58,
-        "days_since_last_test": 13.58,
+        "days_since_last_reaction": 14.15,
+        "days_since_last_test": 14.15,
         "failure_rate": 0.0,
         "failures": 0,
         "fwd_h4_bars": 18,
@@ -449,8 +449,8 @@
         "last_test_utc": "2026-02-06T03:59:59Z",
         "lookback_h4_bars": 720,
         "median_bars_to_reaction_h4": 1,
-        "median_mae_atr_h4": 1.309,
-        "median_mfe_atr_h4": 7.315,
+        "median_mae_atr_h4": 1.514,
+        "median_mfe_atr_h4": 8.465,
         "reaction_rate": 1.0,
         "reactions": 2,
         "tests": 2,
@@ -463,17 +463,17 @@
       "source": "state",
       "type": "object",
       "value": {
-        "days_since_last_reaction": 4.08,
-        "days_since_last_test": 4.08,
-        "failure_rate": 0.571,
-        "failures": 24,
+        "days_since_last_reaction": 4.65,
+        "days_since_last_test": 4.65,
+        "failure_rate": 0.595,
+        "failures": 25,
         "fwd_h4_bars": 18,
         "last_reaction_utc": "2026-02-15T15:59:59Z",
         "last_test_utc": "2026-02-15T15:59:59Z",
         "lookback_h4_bars": 720,
-        "median_bars_to_reaction_h4": 2,
-        "median_mae_atr_h4": 1.254,
-        "median_mfe_atr_h4": 3.785,
+        "median_bars_to_reaction_h4": 1,
+        "median_mae_atr_h4": 1.5,
+        "median_mfe_atr_h4": 4.571,
         "reaction_rate": 0.976,
         "reactions": 41,
         "tests": 42,
@@ -482,48 +482,48 @@
     }
   ],
   "facts_index": {
-    "btc.atr.d1": 4264.72,
-    "btc.atr.h4": 1032.69,
+    "btc.atr.d1": 3599.87,
+    "btc.atr.h4": 923.53,
     "btc.band.d1.resistance_entry": [
-      68855.14,
-      70987.5
+      70410.79,
+      71555.21
     ],
     "btc.band.d1.support_entry": [
-      60341.35,
-      62473.71
+      60539.98,
+      62339.91
     ],
     "btc.band.w1.discount": [
-      59355.6,
+      59688.03,
       61487.96
     ],
     "btc.band.w1.premium": [
       69961.57,
-      72093.93
+      71761.5
     ],
-    "btc.ema200.d1": 93352.62,
+    "btc.ema200.d1": 93090.44,
     "btc.ema200.w1": 68067.71,
-    "btc.last_close_utc_h4": "2026-02-19T15:59:59Z",
-    "btc.price": 66398.0,
+    "btc.last_close_utc_h4": "2026-02-20T03:59:59Z",
+    "btc.price": 67366.25,
     "btc.q.d1.resistance_entry": {
-      "days_since_last_reaction": 3.25,
-      "days_since_last_test": 3.25,
-      "failure_rate": 0.333,
-      "failures": 16,
+      "days_since_last_reaction": 4.65,
+      "days_since_last_test": 4.65,
+      "failure_rate": 0.304,
+      "failures": 7,
       "fwd_h4_bars": 18,
-      "last_reaction_utc": "2026-02-16T11:59:59Z",
-      "last_test_utc": "2026-02-16T11:59:59Z",
+      "last_reaction_utc": "2026-02-15T15:59:59Z",
+      "last_test_utc": "2026-02-15T15:59:59Z",
       "lookback_h4_bars": 720,
-      "median_bars_to_reaction_h4": 3,
-      "median_mae_atr_h4": 1.263,
-      "median_mfe_atr_h4": 3.163,
-      "reaction_rate": 0.979,
-      "reactions": 47,
-      "tests": 48,
+      "median_bars_to_reaction_h4": 1,
+      "median_mae_atr_h4": 1.172,
+      "median_mfe_atr_h4": 4.953,
+      "reaction_rate": 0.957,
+      "reactions": 22,
+      "tests": 23,
       "threshold_atr_h4": 1.0
     },
     "btc.q.d1.support_entry": {
-      "days_since_last_reaction": 13.58,
-      "days_since_last_test": 13.58,
+      "days_since_last_reaction": 14.15,
+      "days_since_last_test": 14.15,
       "failure_rate": 0.0,
       "failures": 0,
       "fwd_h4_bars": 18,
@@ -531,16 +531,16 @@
       "last_test_utc": "2026-02-06T03:59:59Z",
       "lookback_h4_bars": 720,
       "median_bars_to_reaction_h4": 1,
-      "median_mae_atr_h4": 1.532,
-      "median_mfe_atr_h4": 8.456,
+      "median_mae_atr_h4": 0.275,
+      "median_mfe_atr_h4": 8.774,
       "reaction_rate": 1.0,
-      "reactions": 2,
-      "tests": 2,
+      "reactions": 1,
+      "tests": 1,
       "threshold_atr_h4": 1.0
     },
     "btc.q.w1.discount": {
-      "days_since_last_reaction": 13.58,
-      "days_since_last_test": 13.58,
+      "days_since_last_reaction": 14.15,
+      "days_since_last_test": 14.15,
       "failure_rate": 0.0,
       "failures": 0,
       "fwd_h4_bars": 18,
@@ -548,25 +548,25 @@
       "last_test_utc": "2026-02-06T03:59:59Z",
       "lookback_h4_bars": 720,
       "median_bars_to_reaction_h4": 1,
-      "median_mae_atr_h4": 0.246,
-      "median_mfe_atr_h4": 7.847,
+      "median_mae_atr_h4": 0.275,
+      "median_mfe_atr_h4": 8.774,
       "reaction_rate": 1.0,
       "reactions": 1,
       "tests": 1,
       "threshold_atr_h4": 1.0
     },
     "btc.q.w1.premium": {
-      "days_since_last_reaction": 4.08,
-      "days_since_last_test": 4.08,
-      "failure_rate": 0.036,
-      "failures": 1,
+      "days_since_last_reaction": 3.65,
+      "days_since_last_test": 3.65,
+      "failure_rate": 0.286,
+      "failures": 8,
       "fwd_h4_bars": 18,
-      "last_reaction_utc": "2026-02-15T15:59:59Z",
-      "last_test_utc": "2026-02-15T15:59:59Z",
+      "last_reaction_utc": "2026-02-16T15:59:59Z",
+      "last_test_utc": "2026-02-16T15:59:59Z",
       "lookback_h4_bars": 720,
       "median_bars_to_reaction_h4": 2,
-      "median_mae_atr_h4": 1.022,
-      "median_mfe_atr_h4": 4.164,
+      "median_mae_atr_h4": 1.194,
+      "median_mfe_atr_h4": 4.413,
       "reaction_rate": 0.964,
       "reactions": 27,
       "tests": 28,
@@ -586,48 +586,48 @@
       56404.04,
       61487.96
     ],
-    "eth.atr.d1": 149.17,
-    "eth.atr.h4": 40.01,
+    "eth.atr.d1": 129.53,
+    "eth.atr.h4": 34.58,
     "eth.band.d1.resistance_entry": [
-      2032.89,
-      2107.48
+      2045.66,
+      2110.42
     ],
     "eth.band.d1.support_entry": [
-      1744.95,
-      1819.54
+      1755.17,
+      1819.93
     ],
     "eth.band.w1.discount": [
-      1759.57,
+      1769.4,
       1834.16
     ],
     "eth.band.w1.premium": [
       2230.7,
-      2305.29
+      2295.46
     ],
-    "eth.ema200.d1": 3082.48,
+    "eth.ema200.d1": 3071.2,
     "eth.ema200.w1": 2596.74,
-    "eth.last_close_utc_h4": "2026-02-19T15:59:59Z",
-    "eth.price": 1926.3,
+    "eth.last_close_utc_h4": "2026-02-20T03:59:59Z",
+    "eth.price": 1954.85,
     "eth.q.d1.resistance_entry": {
-      "days_since_last_reaction": 4.08,
-      "days_since_last_test": 4.08,
-      "failure_rate": 0.571,
-      "failures": 24,
+      "days_since_last_reaction": 4.65,
+      "days_since_last_test": 4.65,
+      "failure_rate": 0.595,
+      "failures": 25,
       "fwd_h4_bars": 18,
       "last_reaction_utc": "2026-02-15T15:59:59Z",
       "last_test_utc": "2026-02-15T15:59:59Z",
       "lookback_h4_bars": 720,
-      "median_bars_to_reaction_h4": 2,
-      "median_mae_atr_h4": 1.254,
-      "median_mfe_atr_h4": 3.785,
+      "median_bars_to_reaction_h4": 1,
+      "median_mae_atr_h4": 1.5,
+      "median_mfe_atr_h4": 4.571,
       "reaction_rate": 0.976,
       "reactions": 41,
       "tests": 42,
       "threshold_atr_h4": 1.0
     },
     "eth.q.d1.support_entry": {
-      "days_since_last_reaction": 13.58,
-      "days_since_last_test": 13.58,
+      "days_since_last_reaction": 14.15,
+      "days_since_last_test": 14.15,
       "failure_rate": 0.0,
       "failures": 0,
       "fwd_h4_bars": 18,
@@ -635,45 +635,45 @@
       "last_test_utc": "2026-02-06T03:59:59Z",
       "lookback_h4_bars": 720,
       "median_bars_to_reaction_h4": 1,
-      "median_mae_atr_h4": 1.309,
-      "median_mfe_atr_h4": 7.315,
+      "median_mae_atr_h4": 1.514,
+      "median_mfe_atr_h4": 8.465,
       "reaction_rate": 1.0,
       "reactions": 2,
       "tests": 2,
       "threshold_atr_h4": 1.0
     },
     "eth.q.w1.discount": {
-      "days_since_last_reaction": 13.58,
-      "days_since_last_test": 13.58,
-      "failure_rate": 0.0,
-      "failures": 0,
+      "days_since_last_reaction": 14.15,
+      "days_since_last_test": 14.15,
+      "failure_rate": 0.5,
+      "failures": 1,
       "fwd_h4_bars": 18,
       "last_reaction_utc": "2026-02-06T03:59:59Z",
       "last_test_utc": "2026-02-06T03:59:59Z",
       "lookback_h4_bars": 720,
       "median_bars_to_reaction_h4": 1,
-      "median_mae_atr_h4": 1.309,
-      "median_mfe_atr_h4": 7.315,
+      "median_mae_atr_h4": 1.514,
+      "median_mfe_atr_h4": 8.465,
       "reaction_rate": 1.0,
       "reactions": 2,
       "tests": 2,
       "threshold_atr_h4": 1.0
     },
     "eth.q.w1.premium": {
-      "days_since_last_reaction": 15.08,
-      "days_since_last_test": 15.08,
-      "failure_rate": 0.722,
-      "failures": 13,
+      "days_since_last_reaction": 15.65,
+      "days_since_last_test": 15.65,
+      "failure_rate": 0.706,
+      "failures": 12,
       "fwd_h4_bars": 18,
       "last_reaction_utc": "2026-02-04T15:59:59Z",
       "last_test_utc": "2026-02-04T15:59:59Z",
       "lookback_h4_bars": 720,
       "median_bars_to_reaction_h4": 1,
-      "median_mae_atr_h4": 1.614,
-      "median_mfe_atr_h4": 11.282,
+      "median_mae_atr_h4": 1.942,
+      "median_mfe_atr_h4": 12.88,
       "reaction_rate": 1.0,
-      "reactions": 18,
-      "tests": 18,
+      "reactions": 17,
+      "tests": 17,
       "threshold_atr_h4": 1.0
     },
     "eth.regime": "chop",
@@ -690,9 +690,9 @@
       1645.84,
       1834.16
     ],
-    "state.updated_utc": "2026-02-19T17:59:25.071132Z"
+    "state.updated_utc": "2026-02-20T07:33:01.412544Z"
   },
-  "generated_utc": "2026-02-19T17:59:25Z",
+  "generated_utc": "2026-02-20T07:33:01Z",
   "handshake_links": [
     "https://andreibaulin.github.io/ohlcv-feed/ta/binance/chat_bundle_latest.json",
     "https://andreibaulin.github.io/ohlcv-feed/ta/binance/chat_report_latest.md",
@@ -715,7 +715,7 @@
     "https://fapi.binance.com/futures/data/openInterestHist?symbol=ETHUSDT&period=1h&limit=30",
     "https://fapi.binance.com/fapi/v1/fundingRate?symbol=ETHUSDT&limit=30"
   ],
-  "report_sha256": "10c9f2afbf865d7e8f04edd254517c9855fa5c9c1e97f4c78df916d2f9693153",
+  "report_sha256": "741accce3ee21a7c82c8501aca5686598b68551c5f813d076740cec184b36f67",
   "schema": "iron.chat_bundle.v3",
   "sources": {
     "contract": {
@@ -724,9 +724,9 @@
     },
     "state": {
       "path": "docs/ta/binance/state_btc_eth_full_latest.json",
-      "sha256": "ec54638057912c6bc218dcf06bab8b0369cdb52f29c2205a21e8c2b29d8802e0",
+      "sha256": "40329edeacc34b1b03c19879e5e0eb010c45507b624876ea3d22c33721cef721",
       "source": "ta_state_pivots_atr_full",
-      "updated_utc": "2026-02-19T17:59:25.071132Z"
+      "updated_utc": "2026-02-20T07:33:01.412544Z"
     }
   },
   "views": {
