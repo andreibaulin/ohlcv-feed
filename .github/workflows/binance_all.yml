@@ -113,8 +113,21 @@ jobs:
           except Exception as e:
               print("Cannot read build status:", e)
               sys.exit(1)
+
           q = st.get("quality")
+          errs = st.get("errors") or []
+          warns = st.get("warnings") or []
+
           print("IRON quality =", q)
+          if warns:
+              print("WARNINGS (first 10):")
+              for w in warns[:10]:
+                  print("-", w)
+          if errs:
+              print("ERRORS (first 10):")
+              for e in errs[:10]:
+                  print("-", e)
+
           if q == "FAIL":
               sys.exit(1)
           PY
